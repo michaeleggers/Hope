@@ -12,6 +12,7 @@
 
 #include "openglext/glext.h"
 #include "openglext/wglext.h"
+#include "Mathx.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -45,11 +46,15 @@ global_var PFNGLGETPROGRAMINFOLOGPROC       glGetProgramInfoLog;
 global_var PFNGLDETACHSHADERPROC            glDetachShader;
 global_var PFNGLISPROGRAMPROC               glIsProgram;
 global_var PFNGLGETSHADERIVPROC             glGetShaderiv;
+global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
 
 global_var HGLRC global_oglRenderContext;
 global_var HWND  global_windowHandle;
 global_var HDC   global_deviceContext;
 global_var bool running = true;
+
+// TODO(Michael): id for ortho matrix uniform global for now.
+global_var GLuint ortho_loc;
 
 char* load_text(char const * filename)
 {
@@ -100,10 +105,15 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
     {
         case WM_SIZE:
         {
-            float aspectRatio = 16 / 9;
             RECT rect;
             GetClientRect(windowHandle, &rect);
             glViewport(0, 0, rect.right , rect.bottom);
+            
+            // recompute orthographic projection matrix
+            float aspectRatio = (float)rect.right / (float)rect.bottom;
+            float orthoMatrix[16] = { };
+            ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+            glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
         }
         break;
         
@@ -230,6 +240,8 @@ int initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glIsProgram");
         glGetShaderiv= (PFNGLGETSHADERIVPROC)
             wglGetProcAddress("glGetShaderiv");
+        glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
+            wglGetProcAddress("glUniformMatrix4fv");
     }
     
     // create extended DC/RC 
@@ -562,17 +574,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     
+    glUseProgram(shader.shaderProgram); // TODO(Michael): necessary? -> OMG! YES!!!
+    
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    printGlErrMsg();
     int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
-    printGlErrMsg();
     glUniform1i(tex_loc, 0); // use active texture 0
     
     // enable alpha blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    //glUseProgram(shader.shaderProgram);
+    // create ortho matrix
+    float aspectRatio = (float)rect.right / (float)rect.bottom;
+    float orthoMatrix[16] = { };
+    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+    ortho_loc = glGetUniformLocation(shader.shaderProgram, "ortho");
+    printGlErrMsg();
+    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+    printGlErrMsg();
     
     while (running)
     {
@@ -590,7 +609,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         glUseProgram(shader.shaderProgram);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        
         
         SwapBuffers(global_deviceContext);
     }
