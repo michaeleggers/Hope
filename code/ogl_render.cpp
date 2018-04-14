@@ -126,7 +126,6 @@ Texture create_texture(char const * texture_file, GLuint textureslot)
     
     GLuint tex = 0;
     glGenTextures(1, &tex);
-    glActiveTexture(textureslot); // TODO(Michael): FIX THIS! Multiple textures not possible ATM due to mismanagement!!!
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -193,7 +192,9 @@ Mesh create_quad()
     return Mesh { vao };
 }
 
-// TODO(Michael): use existing shader and texture (if loaded) from data-base
+// TODO(Michael): use existing texture (if loaded) from data-base
+// NOTE(Michael): maybe instead of passing a shader, we could just
+// a predefined one.
 Sprite create_sprite(char const * file, Shader * shader)
 {
     Mesh quad = create_quad();

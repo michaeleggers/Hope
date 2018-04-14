@@ -401,6 +401,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     glCullFace (GL_BACK); // cull back face
     glFrontFace (GL_CW); // GL_CCW for counter clock-wise
     
+    // enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     game_init();
     
     while (running)

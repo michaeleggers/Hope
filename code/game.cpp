@@ -24,10 +24,6 @@ void game_init()
     sprite = create_sprite("..\\assets\\uv_checkerboard.jpg", &shader);
     sprite2 = create_sprite("..\\assets\\base.png", &shader);
     
-    // enable alpha blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
     // create and activate ortho matrix
     Rect rect = get_window_dimensions();
     set_ortho(rect.width, rect.height);
