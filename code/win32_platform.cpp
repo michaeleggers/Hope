@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include <windows.h>
 #include <wingdi.h>
 #include <dwmapi.h>
@@ -12,6 +10,7 @@
 
 #include "openglext/glext.h"
 #include "openglext/wglext.h"
+
 #include "Mathx.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -48,6 +47,9 @@ global_var PFNGLISPROGRAMPROC               glIsProgram;
 global_var PFNGLGETSHADERIVPROC             glGetShaderiv;
 global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
 
+#include "helper.cpp"
+#include "render.cpp"
+
 global_var HGLRC global_oglRenderContext;
 global_var HWND  global_windowHandle;
 global_var HDC   global_deviceContext;
@@ -55,48 +57,6 @@ global_var bool running = true;
 
 // TODO(Michael): id for ortho matrix uniform global for now.
 global_var GLuint ortho_loc;
-
-char* load_text(char const * filename)
-{
-    FILE* f = fopen(filename, "r");
-    fseek(f, 0L, SEEK_END);
-    long size = ftell(f);
-    rewind(f);
-    char* buffer =  (char *)VirtualAlloc(0,
-                                         size,
-                                         MEM_RESERVE | MEM_COMMIT,
-                                         PAGE_READWRITE);
-    fread(buffer, sizeof(char), size, f);
-    
-    return buffer;
-}
-
-struct meg_strbuf
-{
-    char * buffer;
-    int pos;
-};
-
-meg_strbuf meg_strbuf_create()
-{
-    meg_strbuf strbuf;
-    strbuf.pos = 0;
-    strbuf.buffer = (char *)VirtualAlloc(0,
-                                         256,
-                                         MEM_RESERVE | MEM_COMMIT,
-                                         PAGE_READWRITE);
-    return strbuf;
-}
-
-// TODO(Michael): check if buffer overflow
-int meg_strbuf_write(meg_strbuf* strbuf, char const * s)
-{
-    int s_length = strlen(s);
-    strcpy(strbuf->buffer + strbuf->pos, s);
-    strbuf->pos += s_length;
-    
-    return strbuf->pos - s_length;
-}
 
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -343,98 +303,6 @@ int initGL(HWND* windowHandle, WNDCLASS* windowClass)
     return 0;
 }
 
-void l_drawTriangle()
-{
-    glBegin(GL_TRIANGLES);
-    glColor3f(1.0f, 0.0f, 0.0f);   glVertex2f(0.0f,   1.0f);
-    glColor3f(0.0f, 1.0f, 0.0f);   glVertex2f(0.87f,  -0.5f);
-    glColor3f(0.0f, 0.0f, 1.0f);   glVertex2f(-0.87f, -0.5f);
-    glEnd();
-}
-
-void printGlErrMsg()
-{
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) 
-    {
-        //printf("OGL Err");
-        GLubyte const * errString;
-        errString = gluErrorString(err);
-        printf("%s\n", errString);
-    }
-}
-
-struct Shader
-{
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint shaderProgram;
-};
-
-void check_shader_error(GLuint shader)
-{
-    GLint success = 0;
-    GLint logSize = 0;
-    GLchar buffer[255];
-    
-    if (glIsProgram(shader))
-    {
-        glGetProgramiv(shader, GL_LINK_STATUS, &success);
-    }
-    else
-    {
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    }
-    
-    if (success == GL_FALSE)
-    {
-        glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-        glGetProgramInfoLog(shader, 255, &logSize, &buffer[0]);
-        printf("Failed to Link Shader Program: %s\n", buffer);
-    }
-}
-
-// TODO(michael): create shader from config 
-Shader create_shader(char const * vs_file, char const * fs_file)
-{
-    Shader result = {};
-    
-    // load shader text from files
-    char * vertCode = load_text(vs_file);
-    char * fragCode = load_text(fs_file);
-    
-    // compile shader program
-    result.vertexShader = glCreateShader (GL_VERTEX_SHADER);
-    glShaderSource(result.vertexShader, 1, &vertCode, NULL);
-    glCompileShader(result.vertexShader);
-    check_shader_error(result.vertexShader);
-    
-    result.fragmentShader = glCreateShader (GL_FRAGMENT_SHADER);
-    glShaderSource(result.fragmentShader, 1, &fragCode, NULL);
-    glCompileShader(result.fragmentShader);
-    check_shader_error(result.fragmentShader);
-    
-    // actual compilation
-    result.shaderProgram = glCreateProgram();
-    glAttachShader(result.shaderProgram, result.vertexShader);
-    glAttachShader(result.shaderProgram, result.fragmentShader);
-    
-    // tell the shader what attribute belongs to which in variable name (OGL3.2 compatibility)
-    // has to be done BEFORE linking!
-    glBindAttribLocation(result.shaderProgram, 0, "vertex_pos");
-    glBindAttribLocation(result.shaderProgram, 1, "texture_pos");
-    
-    glLinkProgram(result.shaderProgram);
-    check_shader_error(result.shaderProgram);
-    // link success?
-    
-    glDetachShader(result.shaderProgram, result.vertexShader);
-    glDetachShader(result.shaderProgram, result.fragmentShader);
-    
-    return result;
-}
-
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
 {
     // Register the window class.
@@ -480,6 +348,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     ShowWindow(global_windowHandle, nCmdShow);
     
+    // show some GL info in window title-bar
     GLubyte const * glVersion = glGetString(GL_VERSION);
     GLubyte const * glRenderer = glGetString(GL_RENDERER);
     meg_strbuf strbuf = meg_strbuf_create();
@@ -545,34 +414,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     glCullFace (GL_BACK); // cull back face
     glFrontFace (GL_CW); // GL_CCW for counter clock-wise
     
+    // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
     Shader shader = create_shader(
-        "..\\code\\anton_vert_hello_triangle.vert",
-        "..\\code\\anton_frag_hello_triangle.frag");
+        "..\\code\\sprite.vert",
+        "..\\code\\sprite.frag");
     
-    // STBI image loading
-    int x, y, n;
-    unsigned char * image_data = stbi_load("..\\assets\\uv_checkerboard.jpg", &x, &y, &n, 4);
-    
-    // ogl texture creation
-    GLuint tex = 0;
-    glGenTextures (1, &tex);
-    glActiveTexture (GL_TEXTURE0);
-    glBindTexture (GL_TEXTURE_2D, tex);
-    glTexImage2D (
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        x,
-        y,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        image_data
-        );
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    Texture texture = create_texture("..\\assets\\uv_checkerboard.jpg");
     
     glUseProgram(shader.shaderProgram); // TODO(Michael): necessary? -> OMG! YES!!!
     
@@ -589,9 +436,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     float orthoMatrix[16] = { };
     ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
     ortho_loc = glGetUniformLocation(shader.shaderProgram, "ortho");
-    printGlErrMsg();
     glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
-    printGlErrMsg();
     
     while (running)
     {
@@ -606,7 +451,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         // render with OpenGL
         glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(shader.shaderProgram);
+        //glUseProgram(shader.shaderProgram);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         
