@@ -6,9 +6,15 @@ void game_init()
     quad = create_quad();
     
     // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
+    char * shaderAttribs[] = {
+        "vertex_pos",
+        "texture_pos"
+    };
     Shader shader = create_shader(
         "..\\code\\sprite.vert",
-        "..\\code\\sprite.frag");
+        "..\\code\\sprite.frag",
+        shaderAttribs,
+        sizeof(shaderAttribs)/sizeof(*shaderAttribs));
     
     Texture texture = create_texture("..\\assets\\uv_checkerboard.jpg");
     

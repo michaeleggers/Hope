@@ -64,7 +64,10 @@ void l_drawTriangle()
     glEnd();
 }
 
-Shader create_shader(char const * vs_file, char const * fs_file)
+Shader create_shader(char const * vs_file,
+                     char const * fs_file,
+                     char ** attribLocations,
+                     int numAttribs)
 {
     Shader result = {};
     
@@ -90,8 +93,14 @@ Shader create_shader(char const * vs_file, char const * fs_file)
     
     // tell the shader what attribute belongs to which in variable name (OGL3.2 compatibility)
     // has to be done BEFORE linking!
-    glBindAttribLocation(result.shaderProgram, 0, "vertex_pos");
-    glBindAttribLocation(result.shaderProgram, 1, "texture_pos");
+    for (int i = 0;
+         i < numAttribs;
+         ++i)
+    {
+        // TODO(Michael): what's the deal with the index???
+        glBindAttribLocation(result.shaderProgram, i, *attribLocations);
+        attribLocations++;
+    }
     
     glLinkProgram(result.shaderProgram);
     check_shader_error(result.shaderProgram);
