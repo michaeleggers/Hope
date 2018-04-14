@@ -118,7 +118,7 @@ Shader create_shader(char const * vs_file,
     return result;
 }
 
-Texture create_texture(char const * texture_file)
+Texture create_texture(char const * texture_file, GLuint textureslot)
 {
     // STBI image loading
     int x, y, n;
@@ -126,7 +126,7 @@ Texture create_texture(char const * texture_file)
     
     GLuint tex = 0;
     glGenTextures(1, &tex);
-    glActiveTexture(GL_TEXTURE0); // TODO(Michael): FIX THIS! Multiple textures not possible ATM due to mismanagement!!!
+    glActiveTexture(textureslot); // TODO(Michael): FIX THIS! Multiple textures not possible ATM due to mismanagement!!!
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -194,32 +194,23 @@ Mesh create_quad()
 }
 
 // TODO(Michael): use existing shader and texture (if loaded) from data-base
-Sprite create_sprite(char const * file)
+Sprite create_sprite(char const * file, Shader * shader)
 {
     Mesh quad = create_quad();
     
-    // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
-    char * shaderAttribs[] = {
-        "vertex_pos",
-        "texture_pos"
-    };
-    Shader shader = create_shader(
-        "..\\code\\sprite.vert",
-        "..\\code\\sprite.frag",
-        shaderAttribs,
-        sizeof(shaderAttribs)/sizeof(*shaderAttribs));
+    // NOTE(Michael): is it OK to use the same texture-slot per model?
+    Texture texture = create_texture(file, GL_TEXTURE0);
     
-    Texture texture = create_texture(file);
-    
-    glUseProgram(shader.shaderProgram);
+    // has to active BEFORE call to glGetUniformLocation!
+    glUseProgram(shader->shaderProgram);
     
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
-    glUniform1i(tex_loc, 1); // use active texture 0
+    int tex_loc = glGetUniformLocation(shader->shaderProgram, "tex");
+    glUniform1i(tex_loc, 0); // use active texture
     
     Sprite result;
     result.mesh = quad;
-    result.shader = shader;
+    result.shader = *shader;
     result.texture = texture;
     
     return result;

@@ -1,6 +1,6 @@
 
-global_var Mesh quad;
 global_var Sprite sprite;
+global_var Sprite sprite2;
 
 struct Rect
 {
@@ -10,9 +10,6 @@ struct Rect
 
 void game_init()
 {
-    quad = create_quad();
-    sprite = create_sprite("..\\assets\\uv_checkerboard.jpg");
-    // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
     char * shaderAttribs[] = {
         "vertex_pos",
         "texture_pos"
@@ -23,27 +20,17 @@ void game_init()
         shaderAttribs,
         sizeof(shaderAttribs)/sizeof(*shaderAttribs));
     
-    Texture texture = create_texture("..\\assets\\base.png");
     
-    glUseProgram(shader.shaderProgram); // TODO(Michael): necessary? -> OMG! YES!!!
-    
-    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
-    glUniform1i(tex_loc, 0); // use active texture 0
+    sprite = create_sprite("..\\assets\\uv_checkerboard.jpg", &shader);
+    sprite2 = create_sprite("..\\assets\\base.png", &shader);
     
     // enable alpha blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    
-    // create ortho matrix
-    // TODO(Michael): query windows size from platform layer
+    // create and activate ortho matrix
     Rect rect = get_window_dimensions();
-    float aspectRatio = (float)rect.width / (float)rect.height;
-    float orthoMatrix[16] = { };
-    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
-    GLuint ortho_loc = glGetUniformLocation(shader.shaderProgram, "ortho");
-    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+    set_ortho(rect.width, rect.height);
 }
 
 void game_render()
@@ -53,8 +40,9 @@ void game_render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glUseProgram(shader.shaderProgram);
     draw_sprite(&sprite);
-    glBindVertexArray(quad.vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    draw_sprite(&sprite2);
+    //glBindVertexArray(quad.vao);
+    //glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 // NOTE(Michael): move to ogl_render?
