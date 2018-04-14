@@ -71,6 +71,16 @@ Rect get_window_dimensions()
     return result;
 }
 
+void update_messages()
+{
+    MSG msg = { };
+    while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+}
+
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;

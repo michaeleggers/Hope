@@ -18,6 +18,13 @@ struct Mesh
     GLuint vao;
 };
 
+struct Sprite
+{
+    Shader shader;
+    Texture texture;
+    Mesh mesh;
+};
+
 void printGlErrMsg()
 {
     GLenum err;
@@ -119,7 +126,7 @@ Texture create_texture(char const * texture_file)
     
     GLuint tex = 0;
     glGenTextures(1, &tex);
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0); // TODO(Michael): FIX THIS! Multiple textures not possible ATM due to mismanagement!!!
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -184,4 +191,44 @@ Mesh create_quad()
     glEnableVertexAttribArray(1);
     
     return Mesh { vao };
+}
+
+// TODO(Michael): use existing shader and texture (if loaded) from data-base
+Sprite create_sprite(char const * file)
+{
+    Mesh quad = create_quad();
+    
+    // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
+    char * shaderAttribs[] = {
+        "vertex_pos",
+        "texture_pos"
+    };
+    Shader shader = create_shader(
+        "..\\code\\sprite.vert",
+        "..\\code\\sprite.frag",
+        shaderAttribs,
+        sizeof(shaderAttribs)/sizeof(*shaderAttribs));
+    
+    Texture texture = create_texture(file);
+    
+    glUseProgram(shader.shaderProgram);
+    
+    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
+    int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
+    glUniform1i(tex_loc, 1); // use active texture 0
+    
+    Sprite result;
+    result.mesh = quad;
+    result.shader = shader;
+    result.texture = texture;
+    
+    return result;
+}
+
+void draw_sprite(Sprite * sprite)
+{
+    glUseProgram(sprite->shader.shaderProgram);
+    glBindVertexArray(sprite->mesh.vao);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

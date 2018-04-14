@@ -1,5 +1,6 @@
 
 global_var Mesh quad;
+global_var Sprite sprite;
 
 struct Rect
 {
@@ -10,7 +11,7 @@ struct Rect
 void game_init()
 {
     quad = create_quad();
-    
+    sprite = create_sprite("..\\assets\\uv_checkerboard.jpg");
     // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
     char * shaderAttribs[] = {
         "vertex_pos",
@@ -22,7 +23,7 @@ void game_init()
         shaderAttribs,
         sizeof(shaderAttribs)/sizeof(*shaderAttribs));
     
-    Texture texture = create_texture("..\\assets\\uv_checkerboard.jpg");
+    Texture texture = create_texture("..\\assets\\base.png");
     
     glUseProgram(shader.shaderProgram); // TODO(Michael): necessary? -> OMG! YES!!!
     
@@ -51,6 +52,7 @@ void game_render()
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glUseProgram(shader.shaderProgram);
+    draw_sprite(&sprite);
     glBindVertexArray(quad.vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -65,4 +67,16 @@ void set_ortho(int width, int height)
     glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
     GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
     glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+}
+
+// NOTE(Michael): Not in use yet. Maybe reverse the control so that
+// the game loop is controlled from the game and not the platform layer.
+void game_loop()
+{
+    bool running = false;
+    
+    while (running)
+    {
+        update_messages();
+    }
 }
