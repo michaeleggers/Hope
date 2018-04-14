@@ -49,6 +49,7 @@ global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
 
 #include "helper.cpp"
 #include "ogl_render.cpp"
+#include "game.h"
 #include "game.cpp"
 
 global_var HGLRC global_oglRenderContext;
@@ -59,6 +60,17 @@ global_var bool running = true;
 // TODO(Michael): id for ortho matrix uniform global for now.
 global_var GLuint ortho_loc;
 
+Rect get_window_dimensions()
+{
+    RECT rect;
+    GetClientRect(global_windowHandle, &rect);
+    Rect result;
+    result.width  = rect.right;
+    result.height = rect.bottom;
+    
+    return result;
+}
+
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
@@ -66,16 +78,19 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
     {
         // TODO(Michael): get uniform id from game layer
         case WM_SIZE:
-        {/*
-                                RECT rect;
-                                GetClientRect(windowHandle, &rect);
-                                glViewport(0, 0, rect.right , rect.bottom);
-                                
-                                // recompute orthographic projection matrix
-                                float aspectRatio = (float)rect.right / (float)rect.bottom;
-                                float orthoMatrix[16] = { };
-                                ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
-                                glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);*/
+        {
+            RECT rect;
+            GetClientRect(windowHandle, &rect);
+            set_ortho(rect.right, rect.bottom);
+            glViewport(0, 0, rect.right , rect.bottom);
+            
+            /*
+        // recompute orthographic projection matrix
+        float aspectRatio = (float)rect.right / (float)rect.bottom;
+        float orthoMatrix[16] = { };
+        ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+        glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+*/
         }
         break;
         

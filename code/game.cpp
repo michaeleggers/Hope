@@ -1,6 +1,12 @@
 
 global_var Mesh quad;
 
+struct Rect
+{
+    int width, height;
+};
+
+
 void game_init()
 {
     quad = create_quad();
@@ -28,25 +34,35 @@ void game_init()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
+    
     // create ortho matrix
     // TODO(Michael): query windows size from platform layer
-    float aspectRatio = (float)1280 / (float)720;
+    Rect rect = get_window_dimensions();
+    float aspectRatio = (float)rect.width / (float)rect.height;
     float orthoMatrix[16] = { };
     ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
     GLuint ortho_loc = glGetUniformLocation(shader.shaderProgram, "ortho");
     glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
-    
 }
 
 void game_render()
 {
-    
     // render with OpenGL
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glUseProgram(shader.shaderProgram);
     glBindVertexArray(quad.vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    
 }
 
+// NOTE(Michael): move to ogl_render?
+void set_ortho(int width, int height)
+{
+    float aspectRatio = (float)width / (float)height;
+    float orthoMatrix[16] = { };
+    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+    GLint shaderID;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
+    GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
+    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+}
