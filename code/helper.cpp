@@ -1,3 +1,5 @@
+// TODO(Michael): there is platform specific code in here!
+
 
 struct meg_strbuf
 {
@@ -24,6 +26,21 @@ int meg_strbuf_write(meg_strbuf* strbuf, char const * s)
     strbuf->pos += s_length;
     
     return strbuf->pos - s_length;
+}
+
+char* load_text(char const * filename)
+{
+    FILE* f = fopen(filename, "r");
+    fseek(f, 0L, SEEK_END);
+    long size = ftell(f);
+    rewind(f);
+    char* buffer =  (char *)VirtualAlloc(0,
+                                         size,
+                                         MEM_RESERVE | MEM_COMMIT,
+                                         PAGE_READWRITE);
+    fread(buffer, sizeof(char), size, f);
+    
+    return buffer;
 }
 
 

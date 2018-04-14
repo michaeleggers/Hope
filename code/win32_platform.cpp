@@ -48,7 +48,8 @@ global_var PFNGLGETSHADERIVPROC             glGetShaderiv;
 global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
 
 #include "helper.cpp"
-#include "render.cpp"
+#include "ogl_render.cpp"
+#include "game.cpp"
 
 global_var HGLRC global_oglRenderContext;
 global_var HWND  global_windowHandle;
@@ -63,19 +64,22 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
     LRESULT result = 0;
     switch (uMsg)
     {
+        // TODO(Michael): get uniform id from game layer
         case WM_SIZE:
-        {
-            RECT rect;
-            GetClientRect(windowHandle, &rect);
-            glViewport(0, 0, rect.right , rect.bottom);
-            
-            // recompute orthographic projection matrix
-            float aspectRatio = (float)rect.right / (float)rect.bottom;
-            float orthoMatrix[16] = { };
-            ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
-            glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+        {/*
+                                RECT rect;
+                                GetClientRect(windowHandle, &rect);
+                                glViewport(0, 0, rect.right , rect.bottom);
+                                
+                                // recompute orthographic projection matrix
+                                float aspectRatio = (float)rect.right / (float)rect.bottom;
+                                float orthoMatrix[16] = { };
+                                ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+                                glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);*/
         }
         break;
+        
+        // TODO(Michael): What's the deal with WM_PAINT?
         
         case WM_CLOSE:
         {
@@ -359,48 +363,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     SetWindowText(global_windowHandle, LPCSTR(strbuf.buffer));
     DwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
     
-    
-    // some test OGL data
-    GLfloat points[] = {
-        -0.5f, 0.5f, 0.0f,
-        0.5f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        -0.5f, 0.5f, 0.0f
-    };
-    GLfloat texturePos[] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f,
-        0.0f, 0.0f
-    };
-    
-    
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    
-    GLuint vbo = 0;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof (points), points, GL_STATIC_DRAW);
-    
-    // first param is index
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    // enable, affects only the previously bound VBOs!
-    glEnableVertexAttribArray(0);
-    
-    GLuint vbo2 = 0;
-    glGenBuffers(1, &vbo2);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texturePos), texturePos, GL_STATIC_DRAW);
-    
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(1);
-    
     //glEnableVertexAttribArray (0);
     //glEnableVertexAttribArray (1);
     
@@ -414,29 +376,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     glCullFace (GL_BACK); // cull back face
     glFrontFace (GL_CW); // GL_CCW for counter clock-wise
     
-    // TODO(Michael): vert and frag are still tightly coupled to impl of create_shader
-    Shader shader = create_shader(
-        "..\\code\\sprite.vert",
-        "..\\code\\sprite.frag");
-    
-    Texture texture = create_texture("..\\assets\\uv_checkerboard.jpg");
-    
-    glUseProgram(shader.shaderProgram); // TODO(Michael): necessary? -> OMG! YES!!!
-    
-    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
-    glUniform1i(tex_loc, 0); // use active texture 0
-    
-    // enable alpha blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    // create ortho matrix
-    float aspectRatio = (float)rect.right / (float)rect.bottom;
-    float orthoMatrix[16] = { };
-    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
-    ortho_loc = glGetUniformLocation(shader.shaderProgram, "ortho");
-    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+    game_init();
     
     while (running)
     {
@@ -448,13 +388,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             DispatchMessage(&msg);
         }
         
-        // render with OpenGL
-        glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //glUseProgram(shader.shaderProgram);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        
+        game_render();
         SwapBuffers(global_deviceContext);
     }
     

@@ -1,4 +1,4 @@
-#include "render.h"
+#include "ogl_render.h"
 
 
 struct Shader
@@ -13,21 +13,10 @@ struct Texture
     GLuint texture_id;
 };
 
-// TODO(Michael): put this elsewhere
-char* load_text(char const * filename)
+struct Mesh
 {
-    FILE* f = fopen(filename, "r");
-    fseek(f, 0L, SEEK_END);
-    long size = ftell(f);
-    rewind(f);
-    char* buffer =  (char *)VirtualAlloc(0,
-                                         size,
-                                         MEM_RESERVE | MEM_COMMIT,
-                                         PAGE_READWRITE);
-    fread(buffer, sizeof(char), size, f);
-    
-    return buffer;
-}
+    GLuint vao;
+};
 
 void printGlErrMsg()
 {
@@ -106,7 +95,6 @@ Shader create_shader(char const * vs_file, char const * fs_file)
     
     glLinkProgram(result.shaderProgram);
     check_shader_error(result.shaderProgram);
-    // link success?
     
     glDetachShader(result.shaderProgram, result.vertexShader);
     glDetachShader(result.shaderProgram, result.fragmentShader);
@@ -135,10 +123,56 @@ Texture create_texture(char const * texture_file)
         GL_UNSIGNED_BYTE,
         image_data
         );
+    // TODO(Michael): pull out later -> this is global texture state!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     
     return Texture { tex };
+}
+
+Mesh create_quad()
+{
+    // some test OGL data
+    GLfloat points[] = {
+        -0.5f, 0.5f, 0.0f,
+        0.5f, 0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        -0.5f, 0.5f, 0.0f
+    };
+    GLfloat texturePos[] = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 1.0f,
+        0.0f, 0.0f
+    };
+    
+    GLuint vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    
+    GLuint vbo = 0;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof (points), points, GL_STATIC_DRAW);
+    
+    // first param is index
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    // enable, affects only the previously bound VBOs!
+    glEnableVertexAttribArray(0);
+    
+    GLuint vbo2 = 0;
+    glGenBuffers(1, &vbo2);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texturePos), texturePos, GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(1);
+    
+    return Mesh { vao };
 }
