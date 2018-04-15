@@ -35,22 +35,11 @@ void game_render()
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glUseProgram(shader.shaderProgram);
-    draw_sprite(&sprite);
-    draw_sprite(&sprite2);
+    //draw_sprite(&sprite);
+    //draw_sprite(&sprite2);
+    draw_sprite(&sprite2, 250, 1);
     //glBindVertexArray(quad.vao);
     //glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-// NOTE(Michael): move to ogl_render?
-void set_ortho(int width, int height)
-{
-    float aspectRatio = (float)width / (float)height;
-    float orthoMatrix[16] = { };
-    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
-    GLint shaderID;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
-    GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
-    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

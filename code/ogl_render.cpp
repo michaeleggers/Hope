@@ -151,12 +151,12 @@ Mesh create_quad()
 {
     // some test OGL data
     GLfloat points[] = {
-        -0.5f, 0.5f, 0.0f,
-        0.5f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        -0.5f, 0.5f, 0.0f
+        -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f
     };
     GLfloat texturePos[] = {
         0.0f, 0.0f,
@@ -192,6 +192,25 @@ Mesh create_quad()
     return Mesh { vao };
 }
 
+void set_ortho(int width, int height)
+{
+    float aspectRatio = (float)width / (float)height;
+    float orthoMatrix[16] = { };
+    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+    GLint shaderID;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
+    GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
+    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+}
+
+void set_model(GLfloat modelMatrix[])
+{
+    GLint shaderID;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
+    GLuint model_loc = glGetUniformLocation(shaderID, "model");
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, modelMatrix);
+}
+
 // TODO(Michael): use existing texture (if loaded) from data-base
 // NOTE(Michael): maybe instead of passing a shader, we could just
 // a predefined one.
@@ -224,3 +243,23 @@ void draw_sprite(Sprite * sprite)
     glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+void draw_sprite(Sprite * sprite,
+                 int x,
+                 int y)
+{
+    float dX = 2.0f / 1000.0f * (float)x;
+    float dY = 2.0f / 1000.0f * (float)y;
+    glUseProgram(sprite->shader.shaderProgram);
+    GLfloat modelMatrix[] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        dX, dY, 0.0f, 1.0f,
+    };
+    set_model(modelMatrix);
+    glBindVertexArray(sprite->mesh.vao);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+

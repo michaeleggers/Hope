@@ -57,8 +57,6 @@ global_var HWND  global_windowHandle;
 global_var HDC   global_deviceContext;
 global_var bool running = true;
 
-// TODO(Michael): id for ortho matrix uniform global for now.
-global_var GLuint ortho_loc;
 
 Rect get_window_dimensions()
 {
@@ -92,7 +90,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             RECT rect;
             GetClientRect(windowHandle, &rect);
             set_ortho(rect.right, rect.bottom);
-            glViewport(0, 0, rect.right , rect.bottom);
+            glViewport(0, 0, rect.right, rect.bottom);
             
             /*
         // recompute orthographic projection matrix
@@ -252,8 +250,8 @@ int initGL(HWND* windowHandle, WNDCLASS* windowClass)
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0,
         0,
-        1280,
-        720,
+        1000,
+        1000,
         0,
         0,
         windowClass->hInstance,
