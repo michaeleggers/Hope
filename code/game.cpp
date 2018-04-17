@@ -35,9 +35,9 @@ void game_render()
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glUseProgram(shader.shaderProgram);
-    //draw_sprite(&sprite);
+    draw_sprite(&sprite);
     //draw_sprite(&sprite2);
-    draw_sprite(&sprite2, 250, 1);
+    draw_sprite(&sprite2, 250, 500);
     //glBindVertexArray(quad.vao);
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 }

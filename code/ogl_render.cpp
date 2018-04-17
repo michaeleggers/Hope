@@ -236,22 +236,38 @@ Sprite create_sprite(char const * file, Shader * shader)
     return result;
 }
 
+// TODO(Michael): do not genereate model matrix for each call
 void draw_sprite(Sprite * sprite)
 {
     glUseProgram(sprite->shader.shaderProgram);
+    GLfloat modelMatrix[] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+    set_model(modelMatrix);
     glBindVertexArray(sprite->mesh.vao);
     glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+// TODO(Michael): get window dimensions (from current
+// render context maybe?).
+// TODO(Michael): do not generate matrix new all the time?
+// rather create a transform in the sprite struct?
+// TODO(Michael): also get dimensions of projection matrix.
+// as at the moment it is set to the range -1 to 1 for both
+// axis.
 void draw_sprite(Sprite * sprite,
                  int x,
                  int y)
 {
     float dX = 2.0f / 1000.0f * (float)x;
-    float dY = 2.0f / 1000.0f * (float)y;
+    // in OpenGL y's origin is bottom of screen
+    float dY = -(2.0f / 1000.0f * (float)y);
     glUseProgram(sprite->shader.shaderProgram);
-    GLfloat modelMatrix[] = {
+    GLfloat modelMatrix[] = { // only translate by x,y atm
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
