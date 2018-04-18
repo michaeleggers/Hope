@@ -1,6 +1,11 @@
 #include "ogl_render.h"
 
 
+struct Rect
+{
+    int width, height;
+};
+
 struct Shader
 {
     GLuint vertexShader;
@@ -194,9 +199,20 @@ Mesh create_quad()
 
 void set_ortho(int width, int height)
 {
-    float aspectRatio = (float)width / (float)height;
+    int targetHeight = ((float)width * 9.0f) / 16.0f;
+    float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
-    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
+    float aspectRatio = (float)width / (float)height;
+    ortho(-10.0f, 10.0f,
+          -10.0f * 1.0f / aspectRatio, 10.0f * 1.0f / aspectRatio,
+          -1.0f, 1.0f,
+          orthoMatrix);
+#if 0 // TODO(Michael): compute matrices for scaling and set glViewport for independent res.
+    if (height >= width)
+    {
+    }
+#endif
+    
     GLint shaderID;
     glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
     GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
@@ -260,18 +276,15 @@ void draw_sprite(Sprite * sprite)
 // as at the moment it is set to the range -1 to 1 for both
 // axis.
 void draw_sprite(Sprite * sprite,
-                 int x,
-                 int y)
+                 float x,
+                 float y)
 {
-    float dX = 2.0f / 1000.0f * (float)x;
-    // in OpenGL y's origin is bottom of screen
-    float dY = -(2.0f / 1000.0f * (float)y);
     glUseProgram(sprite->shader.shaderProgram);
     GLfloat modelMatrix[] = { // only translate by x,y atm
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
-        dX, dY, 0.0f, 1.0f,
+        x, -y, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
     };
     set_model(modelMatrix);
     glBindVertexArray(sprite->mesh.vao);

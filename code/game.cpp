@@ -2,12 +2,6 @@
 global_var Sprite sprite;
 global_var Sprite sprite2;
 
-struct Rect
-{
-    int width, height;
-};
-
-
 void game_init()
 {
     char * shaderAttribs[] = {
@@ -35,9 +29,10 @@ void game_render()
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glUseProgram(shader.shaderProgram);
-    draw_sprite(&sprite);
+    //draw_sprite(&sprite);
     //draw_sprite(&sprite2);
-    draw_sprite(&sprite2, 250, 500);
+    draw_sprite(&sprite, -9.0f, -2.0f);
+    //draw_sprite(&sprite, -20.0f, 0);
     //glBindVertexArray(quad.vao);
     //glDrawArrays(GL_TRIANGLES, 0, 6);
 }

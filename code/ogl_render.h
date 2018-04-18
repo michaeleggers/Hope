@@ -1,10 +1,12 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+struct Rect;
 struct Shader;
 struct Texture;
 struct Mesh;
 
+Rect get_window_dimensions();
 void printGlErrMsg();
 void check_shader_error(GLuint shader);
 void l_drawTriangle();
