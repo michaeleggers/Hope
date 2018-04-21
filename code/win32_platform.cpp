@@ -394,15 +394,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     GetClientRect(global_windowHandle, &rect);
     glViewport(0, 0, rect.right, rect.bottom);
     
-    // backface/frontface culling (creates less shaders if enabled)
-    glEnable (GL_CULL_FACE); // cull face
-    glCullFace (GL_BACK); // cull back face
-    glFrontFace (GL_CW); // GL_CCW for counter clock-wise
-    
-    // enable alpha blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
     game_init();
     
     while (running)

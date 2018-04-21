@@ -1,6 +1,12 @@
 #include "ogl_render.h"
 
 
+struct Window
+{
+    float x, y;
+    float width, height;
+};
+
 struct Rect
 {
     int width, height;
@@ -16,18 +22,26 @@ struct Shader
 struct Texture
 {
     GLuint texture_id;
+    int width, height;
 };
 
-struct Mesh
+struct Quad
 {
     GLuint vao;
+    GLfloat vertexPoints[18];
+    GLfloat textureUVs[12];
 };
 
 struct Sprite
 {
     Shader shader;
     Texture texture;
-    Mesh mesh;
+    Quad mesh;
+};
+
+struct Spritesheet
+{
+    Window windows[256]; // max 256 frames
 };
 
 void printGlErrMsg()
@@ -149,19 +163,20 @@ Texture create_texture(char const * texture_file, GLuint textureslot)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     
-    return Texture { tex };
+    return Texture { tex, x, y };
 }
 
-Mesh create_quad()
+Quad create_quad()
 {
+    Quad mesh;
     // some test OGL data
     GLfloat points[] = {
-        -1.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f
+        -5.0f, 5.0f, 0.0f,
+        5.0f, 5.0f, 0.0f,
+        5.0f, -5.0f, 0.0f,
+        5.0f, -5.0f, 0.0f,
+        -5.0f, -5.0f, 0.0f,
+        -5.0f, 5.0f, 0.0f
     };
     GLfloat texturePos[] = {
         0.0f, 0.0f,
@@ -194,7 +209,12 @@ Mesh create_quad()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(1);
     
-    return Mesh { vao };
+    mesh.vao = vao;
+    // TODO(Michael): use pointers to a global mesh table
+    memcpy(mesh.vertexPoints, points, 18);
+    memcpy(mesh.textureUVs, texturePos, 12);
+    
+    return mesh;
 }
 
 void set_ortho(int width, int height)
@@ -203,8 +223,8 @@ void set_ortho(int width, int height)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(-10.0f, 10.0f,
-          -10.0f * 1.0f / aspectRatio, 10.0f * 1.0f / aspectRatio,
+    ortho(-10.0f * aspectRatio, 10.0f * aspectRatio,
+          -10.0f, 10.0f,
           -1.0f, 1.0f,
           orthoMatrix);
 #if 0 // TODO(Michael): compute matrices for scaling and set glViewport for independent res.
@@ -232,7 +252,7 @@ void set_model(GLfloat modelMatrix[])
 // a predefined one.
 Sprite create_sprite(char const * file, Shader * shader)
 {
-    Mesh quad = create_quad();
+    Quad quad = create_quad();
     
     // NOTE(Michael): is it OK to use the same texture-slot per model?
     Texture texture = create_texture(file, GL_TEXTURE0);
@@ -292,3 +312,56 @@ void draw_sprite(Sprite * sprite,
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+Spritesheet create_spritesheet(Texture * texture,
+                               int width, int height, // framesize in pixel
+                               int numFrames)
+{
+    Spritesheet spritesheet;
+    float windowWidth  =  (1.0f / (float)texture->width) * (float)width;
+    float windowHeight =  (1.0f / (float)texture->height)* (float)height;
+    Window window;
+    window.height = windowHeight;
+    
+    for (int i = 0;
+         i < numFrames;
+         ++i)
+    {
+        window.x = i * windowWidth;
+        // TODO(Michael): compute window.y properly
+        window.y = 0;
+        window.width = i * windowWidth + windowWidth;
+        spritesheet.windows[i] = window;
+    }
+    
+    return spritesheet;
+}
+
+void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame)
+{
+    Window window = spritesheet->windows[frame];
+    
+    sprite->mesh.textureUVs[0] = window.x;
+    //sprite->mesh.textureUVs[1] = spritesheet->window[frame].y;
+    
+    sprite->mesh.textureUVs[2] = window.width;
+    //sprite->mesh.textureUVs[3] = spritesheet->window[frame].y;
+    
+    sprite->mesh.textureUVs[4] = window.x + window.width;
+    sprite->mesh.textureUVs[5] = window.height;
+    
+    sprite->mesh.textureUVs[6] = window.height;
+    //sprite->mesh.textureUVs[7] = ;
+    
+    draw_sprite(sprite, 0, 0);
+}
+/*
+GLfloat texturePos[] = {
+    0.0f, 0.0f,
+    1.0f, 0.0f,
+    1.0f, 1.0f,
+    
+    1.0f, 1.0f,
+    0.0f, 1.0f,
+    0.0f, 0.0f
+};
+*/

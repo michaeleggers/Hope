@@ -1,12 +1,22 @@
 
 global_var Sprite sprite;
 global_var Sprite sprite2;
+global_var Spritesheet spriteSheet;
 
 void game_init()
 {
+    // backface/frontface culling (creates less shaders if enabled)
+    glEnable (GL_CULL_FACE); // cull face
+    glCullFace (GL_BACK); // cull back face
+    glFrontFace (GL_CW); // GL_CCW for counter clock-wise
+    
+    // enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     char * shaderAttribs[] = {
         "vertex_pos",
-        "texture_pos"
+        "texture_pos",
     };
     Shader shader = create_shader(
         "..\\code\\sprite.vert",
@@ -17,6 +27,11 @@ void game_init()
     
     sprite = create_sprite("..\\assets\\uv_checkerboard.jpg", &shader);
     sprite2 = create_sprite("..\\assets\\base.png", &shader);
+    
+    spriteSheet = create_spritesheet(&sprite2.texture,
+                                     16, 16,
+                                     3
+                                     );
     
     // create and activate ortho matrix
     Rect rect = get_window_dimensions();
@@ -31,7 +46,9 @@ void game_render()
     //glUseProgram(shader.shaderProgram);
     //draw_sprite(&sprite);
     //draw_sprite(&sprite2);
-    draw_sprite(&sprite, -9.0f, -2.0f);
+    
+    //draw_sprite(&sprite2, 0.0f, 0.0f);
+    draw_frame(&sprite2, &spriteSheet, 0);
     //draw_sprite(&sprite, -20.0f, 0);
     //glBindVertexArray(quad.vao);
     //glDrawArrays(GL_TRIANGLES, 0, 6);
