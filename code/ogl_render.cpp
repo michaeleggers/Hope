@@ -1,5 +1,11 @@
 #include "ogl_render.h"
 
+enum ShaderType
+{
+    SPRITE,
+    SPRITE_SHEET,
+    MAX_SHADERS
+};
 
 struct Window
 {
@@ -297,6 +303,8 @@ void draw_sprite(Sprite * sprite)
 // TODO(Michael): also get dimensions of projection matrix.
 // as at the moment it is set to the range -1 to 1 for both
 // axis.
+// TODO(Michael): THIS (ALLONE) IS BROKEN DUE TO DRAW_FRAME FUNCTION WHICH
+// USES ANOTHER SHADER...
 void draw_sprite(Sprite * sprite,
                  float x,
                  float y)

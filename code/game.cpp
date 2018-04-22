@@ -2,6 +2,7 @@
 global_var Sprite sprite;
 global_var Sprite sprite2;
 global_var Spritesheet spriteSheet;
+global_var Shader shaders[MAX_SHADERS];
 
 void game_init()
 {
@@ -18,19 +19,24 @@ void game_init()
         "vertex_pos",
         "texture_pos",
     };
-    Shader shader = create_shader(
+    shaders[SPRITE] = create_shader(
         "..\\code\\sprite.vert",
         "..\\code\\sprite.frag",
         shaderAttribs,
         sizeof(shaderAttribs)/sizeof(*shaderAttribs));
     
+    shaders[SPRITE_SHEET] = create_shader(
+        "..\\code\\sprite.vert",
+        "..\\code\\sprite_sheet.frag",
+        shaderAttribs,
+        sizeof(shaderAttribs)/sizeof(*shaderAttribs));
     
-    sprite = create_sprite("..\\assets\\uv_checkerboard.jpg", &shader);
-    sprite2 = create_sprite("..\\assets\\base.png", &shader);
+    sprite = create_sprite("..\\assets\\uv_checkerboard.jpg", &(shaders[SPRITE]));
+    sprite2 = create_sprite("..\\assets\\base.png", &(shaders[SPRITE_SHEET]));
     
     spriteSheet = create_spritesheet(&sprite2.texture,
                                      16, 16,
-                                     16
+                                     17
                                      );
     
     // create and activate ortho matrix
@@ -43,15 +49,9 @@ void game_render()
     // render with OpenGL
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glUseProgram(shader.shaderProgram);
-    //draw_sprite(&sprite);
-    //draw_sprite(&sprite2);
     
-    //draw_sprite(&sprite2, 0.0f, 0.0f);
-    draw_frame(&sprite2, &spriteSheet, 15);
-    //draw_sprite(&sprite, -20.0f, 0);
-    //glBindVertexArray(quad.vao);
-    //glDrawArrays(GL_TRIANGLES, 0, 6);
+    draw_frame(&sprite2, &spriteSheet, 16);
+    draw_sprite(&sprite, 0, 0);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

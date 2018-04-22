@@ -1,6 +1,7 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+enum ShaderType;
 struct Window;
 struct Rect;
 struct Shader;

@@ -39,6 +39,7 @@ char* load_text(char const * filename)
                                          MEM_RESERVE | MEM_COMMIT,
                                          PAGE_READWRITE);
     fread(buffer, sizeof(char), size, f);
+    fclose(f);
     
     return buffer;
 }
