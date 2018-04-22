@@ -341,9 +341,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame)
 {
     Window window = spritesheet->windows[frame];
     
-    GLint shaderID;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
-    int thing_loc = glGetUniformLocation(shaderID, "thing");
+    int thing_loc = glGetUniformLocation(sprite->shader.shaderProgram, "thing");
     glUniform4f(thing_loc,
                 //0.067f, 0.1f,
                 window.width, window.height,

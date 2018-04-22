@@ -7,6 +7,6 @@ out vec4 frag_colour;
 
 void main () 
 {
-  frag_colour = texture2D(tex, vec2(thing) * texturePosForFrag + vec2(thing.z, thing.w));
+  frag_colour = texture2D(tex, vec2(thing) * texturePosForFrag + thing.zw);
 }
 
