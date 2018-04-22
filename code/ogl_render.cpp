@@ -226,7 +226,8 @@ void set_ortho(int width, int height)
     ortho(-10.0f * aspectRatio, 10.0f * aspectRatio,
           -10.0f, 10.0f,
           -1.0f, 1.0f,
-          orthoMatrix);
+          orthoMatrix
+          );
 #if 0 // TODO(Michael): compute matrices for scaling and set glViewport for independent res.
     if (height >= width)
     {
@@ -235,6 +236,7 @@ void set_ortho(int width, int height)
     
     GLint shaderID;
     glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
+    // TODO(Michael): glUseProgram should be called. Maybe pass shader to function?
     GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
     glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
 }
@@ -262,7 +264,7 @@ Sprite create_sprite(char const * file, Shader * shader)
     
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
     int tex_loc = glGetUniformLocation(shader->shaderProgram, "tex");
-    glUniform1i(tex_loc, 0); // use active texture
+    glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
     
     Sprite result;
     result.mesh = quad;
@@ -351,6 +353,12 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame)
     
     sprite->mesh.textureUVs[6] = window.height;
     //sprite->mesh.textureUVs[7] = ;
+    
+    
+    GLint shaderID;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
+    int thing_loc = glGetUniformLocation(shaderID, "thing");
+    glUniform2f(thing_loc, .067f, 0.1f); // use active texture
     
     draw_sprite(sprite, 0, 0);
 }
