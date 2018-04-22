@@ -47,6 +47,7 @@ global_var PFNGLISPROGRAMPROC               glIsProgram;
 global_var PFNGLGETSHADERIVPROC             glGetShaderiv;
 global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
 global_var PFNGLUNIFORM2FPROC               glUniform2f;
+global_var PFNGLUNIFORM4FPROC               glUniform4f;
 
 #include "helper.cpp"
 #include "ogl_render.cpp"
@@ -232,6 +233,8 @@ int initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glUniformMatrix4fv");
         glUniform2f = (PFNGLUNIFORM2FPROC)
             wglGetProcAddress("glUniform2f");
+        glUniform4f = (PFNGLUNIFORM4FPROC)
+            wglGetProcAddress("glUniform4f");
     }
     
     // create extended DC/RC 

@@ -30,7 +30,7 @@ void game_init()
     
     spriteSheet = create_spritesheet(&sprite2.texture,
                                      16, 16,
-                                     3
+                                     16
                                      );
     
     // create and activate ortho matrix
@@ -48,7 +48,7 @@ void game_render()
     //draw_sprite(&sprite2);
     
     //draw_sprite(&sprite2, 0.0f, 0.0f);
-    draw_frame(&sprite2, &spriteSheet, 0);
+    draw_frame(&sprite2, &spriteSheet, 15);
     //draw_sprite(&sprite, -20.0f, 0);
     //glBindVertexArray(quad.vao);
     //glDrawArrays(GL_TRIANGLES, 0, 6);

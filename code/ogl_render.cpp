@@ -319,19 +319,18 @@ Spritesheet create_spritesheet(Texture * texture,
                                int numFrames)
 {
     Spritesheet spritesheet;
-    float windowWidth  =  (1.0f / (float)texture->width) * (float)width;
-    float windowHeight =  (1.0f / (float)texture->height)* (float)height;
     Window window;
-    window.height = windowHeight;
+    int textureWidth = texture->width;
+    int textureHeight = texture->height;
+    window.width  = (1.0f / (float)textureWidth) * (float)width;
+    window.height = (1.0f / (float)textureHeight) * (float)height;
     
     for (int i = 0;
          i < numFrames;
          ++i)
     {
-        window.x = i * windowWidth;
-        // TODO(Michael): compute window.y properly
-        window.y = 0;
-        window.width = i * windowWidth + windowWidth;
+        window.x = (1.0f / (float)textureWidth) * (float)((i * width) % textureWidth);
+        window.y = (1.0f / (float)textureHeight) * (float)(((i * width) / textureWidth) * height);
         spritesheet.windows[i] = window;
     }
     
@@ -342,23 +341,15 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame)
 {
     Window window = spritesheet->windows[frame];
     
-    sprite->mesh.textureUVs[0] = window.x;
-    //sprite->mesh.textureUVs[1] = spritesheet->window[frame].y;
-    
-    sprite->mesh.textureUVs[2] = window.width;
-    //sprite->mesh.textureUVs[3] = spritesheet->window[frame].y;
-    
-    sprite->mesh.textureUVs[4] = window.x + window.width;
-    sprite->mesh.textureUVs[5] = window.height;
-    
-    sprite->mesh.textureUVs[6] = window.height;
-    //sprite->mesh.textureUVs[7] = ;
-    
-    
     GLint shaderID;
     glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
     int thing_loc = glGetUniformLocation(shaderID, "thing");
-    glUniform2f(thing_loc, .067f, 0.1f); // use active texture
+    glUniform4f(thing_loc,
+                //0.067f, 0.1f,
+                window.width, window.height,
+                // offsets
+                window.x, window.y
+                ); // use active texture
     
     draw_sprite(sprite, 0, 0);
 }
