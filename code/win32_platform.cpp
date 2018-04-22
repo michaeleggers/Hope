@@ -91,7 +91,12 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         {
             RECT rect;
             GetClientRect(windowHandle, &rect);
-            set_ortho(rect.right, rect.bottom);
+            for (int i = 0;
+                 i < MAX_SHADERS;
+                 ++i)
+            {
+                set_ortho(rect.right, rect.bottom, &shaders[i]);
+            }
             glViewport(0, 0, rect.right, rect.bottom);
             
             /*
@@ -414,6 +419,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         
         game_render();
         SwapBuffers(global_deviceContext);
+        Sleep(100); // HACK(Michael): lol!
     }
     
     fclose(pCin);

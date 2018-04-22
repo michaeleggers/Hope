@@ -41,17 +41,22 @@ void game_init()
     
     // create and activate ortho matrix
     Rect rect = get_window_dimensions();
-    set_ortho(rect.width, rect.height);
+    set_ortho(rect.width, rect.height, &shaders[SPRITE]);
+    set_ortho(rect.width, rect.height, &shaders[SPRITE_SHEET]);
 }
 
 void game_render()
 {
+    // HACK(Michael): quick way to test if animation works.
+    static int frameCount = 0;
+    
     // render with OpenGL
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    draw_frame(&sprite2, &spriteSheet, 16);
     draw_sprite(&sprite, 0, 0);
+    draw_frame(&sprite2, &spriteSheet, frameCount % 17);
+    frameCount++;
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

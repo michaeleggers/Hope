@@ -223,7 +223,7 @@ Quad create_quad()
     return mesh;
 }
 
-void set_ortho(int width, int height)
+void set_ortho(int width, int height, Shader * shader)
 {
     int targetHeight = ((float)width * 9.0f) / 16.0f;
     float squeeze = (float)targetHeight / (float)height;
@@ -240,10 +240,8 @@ void set_ortho(int width, int height)
     }
 #endif
     
-    GLint shaderID;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
-    // TODO(Michael): glUseProgram should be called. Maybe pass shader to function?
-    GLuint ortho_loc = glGetUniformLocation(shaderID, "ortho");
+    glUseProgram(shader->shaderProgram);
+    GLuint ortho_loc = glGetUniformLocation(shader->shaderProgram, "ortho");
     glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
 }
 
@@ -345,10 +343,13 @@ Spritesheet create_spritesheet(Texture * texture,
     return spritesheet;
 }
 
+// TODO(Michael): glUseProgram is being also called at draw_sprite.
+// this whole shader program mess should be untangled in the future!
+// .. it's crazy!
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame)
 {
     Window window = spritesheet->windows[frame];
-    
+    glUseProgram(sprite->shader.shaderProgram);
     int thing_loc = glGetUniformLocation(sprite->shader.shaderProgram, "thing");
     glUniform4f(thing_loc,
                 //0.067f, 0.1f,

@@ -17,7 +17,7 @@ void l_drawTriangle();
 Shader create_shader(char const * vs_file, char const * fs_file);
 Texture create_texture(char const * texture_file);
 Quad create_quad();
-void set_ortho(int width, int height);
+void set_ortho(int width, int height, Shader * shader);
 Spritesheet create_spritesheet(Texture * texture,
                                int width, int height,
                                int numFrames);
