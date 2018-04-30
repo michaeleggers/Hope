@@ -48,6 +48,7 @@ global_var PFNGLGETSHADERIVPROC             glGetShaderiv;
 global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
 global_var PFNGLUNIFORM2FPROC               glUniform2f;
 global_var PFNGLUNIFORM4FPROC               glUniform4f;
+global_var PFNWGLSWAPINTERVALEXTPROC        wglSwapIntervalEXT;
 
 #include "helper.cpp"
 #include "ogl_render.cpp"
@@ -186,6 +187,11 @@ int initGL(HWND* windowHandle, WNDCLASS* windowClass)
         wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
             wglGetProcAddress("wglCreateContextAttribsARB");
         if (!wglCreateContextAttribsARB) return 0;
+        // TODO(Michael): check if swap control is actually possible
+        // see: https://www.khronos.org/opengl/wiki/Swap_Interval
+        wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)
+            wglGetProcAddress("wglSwapIntervalEXT");
+        
         glGenBuffers = (PFNGLGENBUFFERSPROC)
             wglGetProcAddress("glGenBuffers");
         glBindBuffer = (PFNGLBINDBUFFERPROC)
@@ -419,7 +425,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         
         game_render();
         SwapBuffers(global_deviceContext);
-        Sleep(100); // HACK(Michael): lol!
+        Sleep(16); // HACK(Michael): lol!
     }
     
     fclose(pCin);

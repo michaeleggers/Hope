@@ -163,7 +163,7 @@ Texture create_texture(char const * texture_file, GLuint textureslot)
         GL_UNSIGNED_BYTE,
         image_data
         );
-    // TODO(Michael): pull out later -> this is global texture state!
+    // TODO(Michael): pull this out later, or is this per texture?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -349,7 +349,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
 {
     Window window = spritesheet->windows[frame];
     glUseProgram(sprite->shader.shaderProgram);
-    GLfloat modelMatrix[] = { // only translate by x,y atm
+    GLfloat modelMatrix[] = {
         scaleX * window.width * 1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, scaleY * window.height * 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,

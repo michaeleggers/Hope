@@ -15,6 +15,9 @@ void game_init()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
+    // enable vsync
+    wglSwapIntervalEXT(1);
+    
     char * shaderAttribs[] = {
         "vertex_pos",
         "texture_pos",
@@ -49,6 +52,8 @@ void game_render()
 {
     // HACK(Michael): quick way to test if animation works.
     static int frameCount = 0;
+    static float posX = 0.0f;
+    static float posY = 0.0f;
     
     // render with OpenGL
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
@@ -56,9 +61,11 @@ void game_render()
     
     draw_sprite(&sprite, 0, 0);
     draw_frame(&sprite2, &spriteSheet, frameCount % 17,
-               0.0f, 0.0f, 
-               20.0f, 20.0f);
-    frameCount++;
+               sin(posX), sin(posY), 
+               40.0f, 40.0f);
+    //frameCount++;
+    posX += 0.006f;
+    //posY += 0.6f;
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that
