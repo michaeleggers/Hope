@@ -21,6 +21,7 @@ void set_ortho(int width, int height, Shader * shader);
 Spritesheet create_spritesheet(Texture * texture,
                                int width, int height,
                                int numFrames);
-void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame);
+void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
+                float x, float y, float scaleX, float scaleY);
 
 #endif

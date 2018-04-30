@@ -175,14 +175,13 @@ Texture create_texture(char const * texture_file, GLuint textureslot)
 Quad create_quad()
 {
     Quad mesh;
-    // some test OGL data
     GLfloat points[] = {
-        -5.0f, 5.0f, 0.0f,
-        5.0f, 5.0f, 0.0f,
-        5.0f, -5.0f, 0.0f,
-        5.0f, -5.0f, 0.0f,
-        -5.0f, -5.0f, 0.0f,
-        -5.0f, 5.0f, 0.0f
+        -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f
     };
     GLfloat texturePos[] = {
         0.0f, 0.0f,
@@ -343,22 +342,30 @@ Spritesheet create_spritesheet(Texture * texture,
     return spritesheet;
 }
 
-// TODO(Michael): glUseProgram is being also called at draw_sprite.
-// this whole shader program mess should be untangled in the future!
-// .. it's crazy!
-void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame)
+// TODO(Michael): keep one model matrix rather than generating it all the time on the stack, duh!
+void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
+                float x, float y,
+                float scaleX, float scaleY)
 {
     Window window = spritesheet->windows[frame];
     glUseProgram(sprite->shader.shaderProgram);
-    int thing_loc = glGetUniformLocation(sprite->shader.shaderProgram, "thing");
-    glUniform4f(thing_loc,
+    GLfloat modelMatrix[] = { // only translate by x,y atm
+        scaleX * window.width * 1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, scaleY * window.height * 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        x, -y, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
+    };
+    set_model(modelMatrix);
+    int window_loc = glGetUniformLocation(sprite->shader.shaderProgram, "window");
+    glUniform4f(window_loc,
                 //0.067f, 0.1f,
                 window.width, window.height,
                 // offsets
                 window.x, window.y
                 ); // use active texture
-    
-    draw_sprite(sprite, 0, 0);
+    glBindVertexArray(sprite->mesh.vao);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 /*
 GLfloat texturePos[] = {
