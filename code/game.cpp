@@ -18,6 +18,9 @@ void game_init()
     // enable vsync
     wglSwapIntervalEXT(1);
     
+    // multisampling
+    //glEnable(GL_MULTISAMPLE);
+    
     char * shaderAttribs[] = {
         "vertex_pos",
         "texture_pos",
@@ -48,7 +51,7 @@ void game_init()
     set_ortho(rect.width, rect.height, &shaders[SPRITE_SHEET]);
 }
 
-void game_render()
+void game_update_and_render(float dt)
 {
     // HACK(Michael): quick way to test if animation works.
     static int frameCount = 0;
@@ -64,7 +67,7 @@ void game_render()
                sin(posX), sin(posY), 
                40.0f, 40.0f);
     //frameCount++;
-    posX += 0.006f;
+    posX += 0.000001f * dt;
     //posY += 0.6f;
 }
 

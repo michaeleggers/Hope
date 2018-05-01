@@ -18,37 +18,37 @@
 
 #define global_var static;
 
-global_var PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+global_var PFNWGLCHOOSEPIXELFORMATARBPROC    wglChoosePixelFormatARB;
 global_var PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
+global_var PFNWGLSWAPINTERVALEXTPROC         wglSwapIntervalEXT;
+global_var PFNGLGENBUFFERSPROC               glGenBuffers;
+global_var PFNGLBINDBUFFERPROC               glBindBuffer;
+global_var PFNGLBUFFERDATAPROC               glBufferData;
+global_var PFNGLGENVERTEXARRAYSPROC          glGenVertexArrays;
+global_var PFNGLBINDVERTEXARRAYPROC          glBindVertexArray;
+global_var PFNGLENABLEVERTEXATTRIBARRAYPROC  glEnableVertexAttribArray;
+global_var PFNGLVERTEXATTRIBPOINTERPROC      glVertexAttribPointer;
+global_var PFNGLCREATESHADERPROC             glCreateShader;
+global_var PFNGLSHADERSOURCEPROC             glShaderSource;
+global_var PFNGLCOMPILESHADERPROC            glCompileShader;
+global_var PFNGLCREATESHADERPROC             glCreateShaderProc;
+global_var PFNGLCREATEPROGRAMPROC            glCreateProgram;
+global_var PFNGLATTACHSHADERPROC             glAttachShader;
+global_var PFNGLLINKPROGRAMPROC              glLinkProgram;
+global_var PFNGLUSEPROGRAMPROC               glUseProgram;
+global_var PFNGLBINDATTRIBLOCATIONPROC       glBindAttribLocation;
+global_var PFNGLACTIVETEXTUREPROC            glActiveTexture;
+global_var PFNGLGETUNIFORMLOCATIONPROC       glGetUniformLocation;
+global_var PFNGLUNIFORM1IPROC                glUniform1i;
+global_var PFNGLGETPROGRAMIVPROC             glGetProgramiv;
+global_var PFNGLGETPROGRAMINFOLOGPROC        glGetProgramInfoLog;
+global_var PFNGLDETACHSHADERPROC             glDetachShader;
+global_var PFNGLISPROGRAMPROC                glIsProgram;
+global_var PFNGLGETSHADERIVPROC              glGetShaderiv;
+global_var PFNGLUNIFORMMATRIX4FVPROC         glUniformMatrix4fv;
+global_var PFNGLUNIFORM2FPROC                glUniform2f;
+global_var PFNGLUNIFORM4FPROC                glUniform4f;
 
-global_var PFNGLGENBUFFERSPROC              glGenBuffers;
-global_var PFNGLBINDBUFFERPROC              glBindBuffer;
-global_var PFNGLBUFFERDATAPROC              glBufferData;
-global_var PFNGLGENVERTEXARRAYSPROC         glGenVertexArrays;
-global_var PFNGLBINDVERTEXARRAYPROC         glBindVertexArray;
-global_var PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-global_var PFNGLVERTEXATTRIBPOINTERPROC     glVertexAttribPointer;
-global_var PFNGLCREATESHADERPROC            glCreateShader;
-global_var PFNGLSHADERSOURCEPROC            glShaderSource;
-global_var PFNGLCOMPILESHADERPROC           glCompileShader;
-global_var PFNGLCREATESHADERPROC            glCreateShaderProc;
-global_var PFNGLCREATEPROGRAMPROC           glCreateProgram;
-global_var PFNGLATTACHSHADERPROC            glAttachShader;
-global_var PFNGLLINKPROGRAMPROC             glLinkProgram;
-global_var PFNGLUSEPROGRAMPROC              glUseProgram;
-global_var PFNGLBINDATTRIBLOCATIONPROC      glBindAttribLocation;
-global_var PFNGLACTIVETEXTUREPROC           glActiveTexture;
-global_var PFNGLGETUNIFORMLOCATIONPROC      glGetUniformLocation;
-global_var PFNGLUNIFORM1IPROC               glUniform1i;
-global_var PFNGLGETPROGRAMIVPROC            glGetProgramiv;
-global_var PFNGLGETPROGRAMINFOLOGPROC       glGetProgramInfoLog;
-global_var PFNGLDETACHSHADERPROC            glDetachShader;
-global_var PFNGLISPROGRAMPROC               glIsProgram;
-global_var PFNGLGETSHADERIVPROC             glGetShaderiv;
-global_var PFNGLUNIFORMMATRIX4FVPROC        glUniformMatrix4fv;
-global_var PFNGLUNIFORM2FPROC               glUniform2f;
-global_var PFNGLUNIFORM4FPROC               glUniform4f;
-global_var PFNWGLSWAPINTERVALEXTPROC        wglSwapIntervalEXT;
 
 #include "helper.cpp"
 #include "ogl_render.cpp"
@@ -59,7 +59,7 @@ global_var HGLRC global_oglRenderContext;
 global_var HWND  global_windowHandle;
 global_var HDC   global_deviceContext;
 global_var bool running = true;
-
+global_var LARGE_INTEGER performanceFrequency;
 
 Rect get_window_dimensions()
 {
@@ -413,8 +413,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     game_init();
     
+    // set up timing stuff
+    QueryPerformanceFrequency(&performanceFrequency);
+    LARGE_INTEGER startingTime, endingTime, elapsedTime;
+    QueryPerformanceCounter(&startingTime);
+    QueryPerformanceCounter(&endingTime);
+    elapsedTime.QuadPart = 0;
+    
     while (running)
     {
+        
         // Run the message loop.
         MSG msg = { };
         while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
@@ -423,9 +431,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             DispatchMessage(&msg);
         }
         
-        game_render();
+        game_update_and_render((float)elapsedTime.QuadPart);
         SwapBuffers(global_deviceContext);
-        Sleep(16); // HACK(Michael): lol!
+        
+        QueryPerformanceCounter(&endingTime);
+        elapsedTime.QuadPart = endingTime.QuadPart - startingTime.QuadPart;
+        elapsedTime.QuadPart *= 1000000;
+        elapsedTime.QuadPart /= performanceFrequency.QuadPart;
+        
+        QueryPerformanceCounter(&startingTime);
+        //Sleep(16); // HACK(Michael): lol!
     }
     
     fclose(pCin);
