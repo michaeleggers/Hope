@@ -419,6 +419,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     QueryPerformanceCounter(&startingTime);
     QueryPerformanceCounter(&endingTime);
     elapsedTime.QuadPart = 0;
+    float fps = 0.0f;
     
     while (running)
     {
@@ -436,11 +437,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         
         QueryPerformanceCounter(&endingTime);
         elapsedTime.QuadPart = endingTime.QuadPart - startingTime.QuadPart;
-        elapsedTime.QuadPart *= 1000000;
+        fps = performanceFrequency.QuadPart / elapsedTime.QuadPart;
+        elapsedTime.QuadPart *= 1000000; // microseconds
         elapsedTime.QuadPart /= performanceFrequency.QuadPart;
         
+        printf("%f\n", fps);
+        
         QueryPerformanceCounter(&startingTime);
-        //Sleep(16); // HACK(Michael): lol!
+        //Sleep(16); // HACK(Michael): artificial time
     }
     
     fclose(pCin);

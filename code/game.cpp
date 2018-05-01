@@ -57,17 +57,21 @@ void game_update_and_render(float dt)
     static int frameCount = 0;
     static float posX = 0.0f;
     static float posY = 0.0f;
+    static float scaleX = 1.0f;
+    static float scaleY = 1.0f;
     
     // render with OpenGL
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     draw_sprite(&sprite, 0, 0);
-    draw_frame(&sprite2, &spriteSheet, frameCount % 17,
+    draw_frame(&sprite2, &spriteSheet, frameCount % 10,
                sin(posX), sin(posY), 
-               40.0f, 40.0f);
+               40*abs(sin(scaleX)), 40*abs(sin(scaleY)));
     //frameCount++;
     posX += 0.000001f * dt;
+    scaleX += 0.000001f * dt;
+    scaleY += 0.000001f * dt;
     //posY += 0.6f;
 }
 
