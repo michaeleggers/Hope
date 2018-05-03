@@ -6,6 +6,8 @@ global_var Shader shaders[MAX_SHADERS];
 
 void game_init()
 {
+    // TODO(Michael): get the OpenGL Shit outta here!
+    
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
     glCullFace (GL_BACK); // cull back face

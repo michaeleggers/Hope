@@ -444,7 +444,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         printf("%f\n", fps);
         
         QueryPerformanceCounter(&startingTime);
-        Sleep(500); // HACK(Michael): artificial time
+        //Sleep(500); // HACK(Michael): artificial time
     }
     
     fclose(pCin);

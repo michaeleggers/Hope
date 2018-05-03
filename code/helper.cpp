@@ -38,7 +38,7 @@ char* load_text(char const * filename)
                                          size,
                                          MEM_RESERVE | MEM_COMMIT,
                                          PAGE_READWRITE);
-    fread(buffer, sizeof(char), size, f);
+    fread(buffer, sizeof *buffer, size, f);
     fclose(f);
     
     return buffer;
