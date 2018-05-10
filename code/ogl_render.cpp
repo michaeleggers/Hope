@@ -168,7 +168,8 @@ Texture create_texture(char const * texture_file, GLuint textureslot)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     return Texture { tex, x, y };
 }
 
@@ -358,10 +359,10 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
     set_model(modelMatrix);
     int window_loc = glGetUniformLocation(sprite->shader.shaderProgram, "window");
     glUniform4f(window_loc,
-                //0.067f, 0.1f,
-                window.width, window.height,
                 // offsets
-                window.x, window.y
+                window.x, window.y,
+                //0.067f, 0.1f,
+                window.width, window.height
                 ); // use active texture
     glBindVertexArray(sprite->mesh.vao);
     glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);

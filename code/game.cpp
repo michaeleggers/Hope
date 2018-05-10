@@ -21,7 +21,7 @@ void game_init()
     wglSwapIntervalEXT(1);
     
     // multisampling
-    //glEnable(GL_MULTISAMPLE);
+    glEnable(GL_MULTISAMPLE);
     
     char * shaderAttribs[] = {
         "vertex_pos",
