@@ -100,6 +100,9 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             }
             glViewport(0, 0, rect.right, rect.bottom);
             
+            //game_update_and_render(100000000.0f);
+            //SwapBuffers(global_deviceContext);
+            
             /*
         // recompute orthographic projection matrix
         float aspectRatio = (float)rect.right / (float)rect.bottom;
@@ -110,7 +113,32 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         }
         break;
         
+        case WM_SIZING:
+        {
+            printf("WM_SIZING message received!\n");
+            game_update_and_render(0.0f);
+            SwapBuffers(global_deviceContext);
+        }
+        
+        case WM_MOVE:
+        {
+            printf("WM_MOVE message received!\n");
+            //game_update_and_render(100000000.0f);
+            SwapBuffers(global_deviceContext);
+        }
+        break;
+        
         // TODO(Michael): What's the deal with WM_PAINT?
+        case WM_PAINT:
+        {
+            PAINTSTRUCT pstr;
+            HDC deviceContext = BeginPaint(windowHandle, &pstr);
+            //game_update_and_render(100000000.0f);
+            SwapBuffers(deviceContext); // same handle as global DC?
+            EndPaint(windowHandle, &pstr);
+            result = DefWindowProc(windowHandle, WM_ERASEBKGND, wParam, lParam);
+        }
+        break;
         
         case WM_CLOSE:
         {
@@ -356,6 +384,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     windowClass.lpfnWndProc   = WindowProcCallback;
     windowClass.hInstance     = hInstance;
     windowClass.lpszClassName = "meg_oglcontext";
+    windowClass.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    windowClass.hbrBackground = NULL;
     
     RegisterClass(&windowClass);
     
@@ -421,9 +451,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     elapsedTime.QuadPart = 0;
     float fps = 0.0f;
     
+    
+    
     while (running)
     {
         
+        // if test
+#if _WIN32
+        printf("ON WIN32 PLATFORM!\n");
+#endif
         // Run the message loop.
         MSG msg = { };
         while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
@@ -432,7 +468,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             DispatchMessage(&msg);
         }
         
-        game_update_and_render((float)elapsedTime.QuadPart);
+        game_update_and_render((float)elapsedTime.QuadPart); 
         SwapBuffers(global_deviceContext);
         
         QueryPerformanceCounter(&endingTime);
@@ -442,7 +478,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         elapsedTime.QuadPart /= performanceFrequency.QuadPart;
         
         printf("%f\n", fps);
-        
+        printf("elapsed time: %f\n", (float)elapsedTime.QuadPart / 1000.0f);
         QueryPerformanceCounter(&startingTime);
         //Sleep(500); // HACK(Michael): artificial time
     }
