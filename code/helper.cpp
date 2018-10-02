@@ -1,5 +1,7 @@
 // TODO(Michael): there is platform specific code in here!
 
+#include <windows.h>
+#include <stdio.h>
 
 struct meg_strbuf
 {
