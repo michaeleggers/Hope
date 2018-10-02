@@ -13,20 +13,23 @@
 
 #include "Mathx.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+//#define STB_IMAGE_IMPLEMENTATION
+//#include "stb_image.h"
 
 #define global_var static;
 
 
-#include "helper.cpp"
-#include "ogl_render.cpp"
-#include "game.h"
-#include "game.cpp"
+#include "helper.h"
+//#include "ogl_render.cpp"
+//#include "game.h"
+//#include "game.cpp"
+#include "ref.h"
 
+
+global_var extern refexport_t ref; // rendering API
 
 global_var HWND  global_windowHandle;
-global_var HDC   global_deviceContext;
+// global_var HDC   global_deviceContext;
 global_var bool running = true;
 global_var LARGE_INTEGER performanceFrequency;
 
@@ -51,6 +54,21 @@ void update_messages()
     }
 }
 
+global_var HINSTANCE reflib_library;
+global_var refexport_t re;
+
+bool VID_LoadRefresh(char const * name)
+{
+    GetRefAPI_t GetRefAPI;
+    
+    reflib_library = LoadLibrary(name);
+    GetRefAPI = (GetRefAPI_t)GetProcAddress(reflib_library, "GetRefAPI");
+    
+    re = GetRefAPI();
+    
+    return true;
+}
+
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
@@ -59,6 +77,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         // TODO(Michael): get uniform id from game layer
         case WM_SIZE:
         {
+            /*
             RECT rect;
             GetClientRect(windowHandle, &rect);
             for (int i = 0;
@@ -85,15 +104,15 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         case WM_SIZING:
         {
             printf("WM_SIZING message received!\n");
-            game_update_and_render(0.0f);
-            SwapBuffers(global_deviceContext);
+            //game_update_and_render(0.0f);
+            //SwapBuffers(global_deviceContext);
         }
         
         case WM_MOVE:
         {
             printf("WM_MOVE message received!\n");
             //game_update_and_render(100000000.0f);
-            SwapBuffers(global_deviceContext);
+            //SwapBuffers(global_deviceContext);
         }
         break;
         
@@ -109,6 +128,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         }
         break;
         
+        
         case WM_CLOSE:
         {
             running = false;
@@ -122,10 +142,6 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         }
     }
     return result;
-}
-
-int initGL(HWND* windowHandle, WNDCLASS* windowClass)
-{
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
@@ -171,7 +187,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     freopen_s(&pCerr, "conout$", "w", stderr);
     
     // init GL
-    initGL(&global_windowHandle, &windowClass);
+    VID_LoadRefresh("win32_opengl.dll");
+    // initGL(&global_windowHandle, &windowClass);
     
     ShowWindow(global_windowHandle, nCmdShow);
     
@@ -194,7 +211,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     GetClientRect(global_windowHandle, &rect);
     glViewport(0, 0, rect.right, rect.bottom);
     
-    game_init();
+    //game_init();
     
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);
@@ -221,8 +238,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             DispatchMessage(&msg);
         }
         
-        game_update_and_render((float)elapsedTime.QuadPart); 
-        SwapBuffers(global_deviceContext);
+        //game_update_and_render((float)elapsedTime.QuadPart); 
+        //SwapBuffers(global_deviceContext);
         
         QueryPerformanceCounter(&endingTime);
         elapsedTime.QuadPart = endingTime.QuadPart - startingTime.QuadPart;
@@ -241,9 +258,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     fclose(pCerr);
     FreeConsole();
     
-    wglMakeCurrent(0, 0);
-    wglDeleteContext(global_oglRenderContext);
-    ReleaseDC(global_windowHandle, global_deviceContext);
+    //wglMakeCurrent(0, 0);
+    //wglDeleteContext(global_oglRenderContext);
+    //ReleaseDC(global_windowHandle, global_deviceContext);
     
     return 0;
 }

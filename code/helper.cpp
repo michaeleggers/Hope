@@ -1,13 +1,8 @@
 // TODO(Michael): there is platform specific code in here!
+#include "helper.h"
 
-#include <windows.h>
 #include <stdio.h>
-
-struct meg_strbuf
-{
-    char * buffer;
-    int pos;
-};
+#include <windows.h>
 
 meg_strbuf meg_strbuf_create()
 {
@@ -45,5 +40,3 @@ char* load_text(char const * filename)
     
     return buffer;
 }
-
-

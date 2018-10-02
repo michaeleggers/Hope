@@ -13,11 +13,6 @@ struct Window
     float width, height;
 };
 
-struct Rect
-{
-    int width, height;
-};
-
 struct Shader
 {
     GLuint vertexShader;
@@ -599,4 +594,14 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 #endif
     
     return 0;
+}
+
+
+// init the struct
+refexport_t GetRefAPI()
+{
+    refexport_t re;
+    re.init = win32_initGL;
+    
+    return re;
 }

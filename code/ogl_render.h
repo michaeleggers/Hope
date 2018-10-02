@@ -15,6 +15,8 @@
 #include "helper.h"
 #include "Mathx.h"
 
+#include "ref.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -57,7 +59,6 @@ global_var HGLRC global_oglRenderContext;
 
 enum ShaderType;
 struct Window;
-struct Rect;
 struct Shader;
 struct Texture;
 struct Quad;
@@ -82,7 +83,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
 // exported functions
 extern "C"
 {
-    int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
+    refexport_t GetRefAPI();
 }
 
 #endif
