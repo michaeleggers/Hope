@@ -188,6 +188,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     // init GL
     VID_LoadRefresh("win32_opengl.dll");
+    re.init(&global_windowHandle, &windowClass);
     // initGL(&global_windowHandle, &windowClass);
     
     ShowWindow(global_windowHandle, nCmdShow);
