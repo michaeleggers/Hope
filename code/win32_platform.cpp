@@ -5,26 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <gl/gl.h>
-#include <gl/glu.h>
-
-#include "openglext/glext.h"
-#include "openglext/wglext.h"
-
 #include "Mathx.h"
-
-//#define STB_IMAGE_IMPLEMENTATION
-//#include "stb_image.h"
-
-#define global_var static;
 
 
 #include "helper.h"
-//#include "ogl_render.cpp"
 //#include "game.h"
 //#include "game.cpp"
 #include "ref.h"
 
+
+
+#define global_var static;
 
 global_var extern refexport_t ref; // rendering API
 
@@ -194,6 +185,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     ShowWindow(global_windowHandle, nCmdShow);
     
     // show some GL info in window title-bar
+    // TODO(Michael): query info via implementation in DLL
+    /*
     GLubyte const * glVersion = glGetString(GL_VERSION);
     GLubyte const * glRenderer = glGetString(GL_RENDERER);
     meg_strbuf strbuf = meg_strbuf_create();
@@ -203,6 +196,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     meg_strbuf_write(&strbuf, (char*)glRenderer);
     SetWindowText(global_windowHandle, LPCSTR(strbuf.buffer));
     DwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
+    */
     
     //glEnableVertexAttribArray (0);
     //glEnableVertexAttribArray (1);
@@ -210,7 +204,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     // set viewport dimensions
     RECT rect;
     GetClientRect(global_windowHandle, &rect);
-    glViewport(0, 0, rect.right, rect.bottom);
+    //glViewport(0, 0, rect.right, rect.bottom); // TODO(Michael): do in renderer
     
     //game_init();
     

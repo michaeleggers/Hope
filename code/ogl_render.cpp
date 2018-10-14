@@ -363,6 +363,11 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
     glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+void gl_renderFrame(float* vertices, int numVertices)
+{
+}
+
 /*
 GLfloat texturePos[] = {
     0.0f, 0.0f,
@@ -374,6 +379,14 @@ GLfloat texturePos[] = {
     0.0f, 0.0f
 };
 */
+
+struct RenderState
+{
+    HDC deviceContext;
+    HGLRC renderContext;
+}
+
+global_var RenderState gRenderState;
 
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 {
@@ -397,33 +410,33 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
         0,
         0, 0, 0
     };
-    global_deviceContext = GetDC(*windowHandle);
+    gRenderState.deviceContext = GetDC(*windowHandle);
     // try to find best matching pixel format.
-    int pixelFormatNr = ChoosePixelFormat(global_deviceContext, &pixelFormatDescriptor);
+    int pixelFormatNr = ChoosePixelFormat(gRenderState.deviceContext, &pixelFormatDescriptor);
     if (!pixelFormatNr) // was null
     {
         OutputDebugStringA("could not get pxl format nr\n");
         return 1;
     }
     
-    DescribePixelFormat(global_deviceContext, 
+    DescribePixelFormat(gRenderState.deviceContext, 
                         pixelFormatNr,
                         sizeof(pixelFormatDescriptor), 
                         &pixelFormatDescriptor);
     
-    if (!SetPixelFormat(global_deviceContext, pixelFormatNr, &pixelFormatDescriptor))
+    if (!SetPixelFormat(gRenderState.deviceContext, pixelFormatNr, &pixelFormatDescriptor))
     {
         return 1;
     }
     
-    global_oglRenderContext = wglCreateContext(global_deviceContext);
-    if (!global_oglRenderContext)
+    gRenderState.renderContext = wglCreateContext(gRenderState.deviceContext);
+    if (!gRenderState.renderContext)
     {
         return 1;
     }
     
     // load extensions
-    if (wglMakeCurrent(global_deviceContext, global_oglRenderContext))
+    if (wglMakeCurrent(gRenderState.deviceContext, gRenderState.renderContext))
     {
         OutputDebugStringA("ogl rendering context made current\n");
         // TODO(Michael): query supported extensions
@@ -505,8 +518,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
         return 1;
     }
     
-    wglDeleteContext(global_oglRenderContext);
-    ReleaseDC(*windowHandle, global_deviceContext);
+    wglDeleteContext(gRenderState.renderContext);
+    ReleaseDC(*windowHandle, gRenderState.deviceContext);
     DestroyWindow(*windowHandle);
     
     // create "real" opengl context
@@ -528,7 +541,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     {
         return 1;
     }
-    global_deviceContext = GetDC(*windowHandle);
+    gRenderState.deviceContext = GetDC(*windowHandle);
     
     const int pixelAttribs[] = {
         WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -548,7 +561,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     int pixelFormat;
     UINT numFormats;
     // get the pixel format id by checking the DC and the attributes
-    int ok = wglChoosePixelFormatARB(global_deviceContext,
+    int ok = wglChoosePixelFormatARB(gRenderState.deviceContext,
                                      pixelAttribs,
                                      0,
                                      1, // max pixel formats we want
@@ -563,9 +576,9 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     // fill the PFD struct by telling what the pixel format is set
     PIXELFORMATDESCRIPTOR PFD;
-    DescribePixelFormat(global_deviceContext, pixelFormat, sizeof(PFD), &PFD);
+    DescribePixelFormat(gRenderState.deviceContext, pixelFormat, sizeof(PFD), &PFD);
     // set the DC's pixel format
-    if (SetPixelFormat(global_deviceContext, pixelFormat, &PFD) == 0)
+    if (SetPixelFormat(gRenderState.deviceContext, pixelFormat, &PFD) == 0)
     {
         return 1;
     }
@@ -580,14 +593,14 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     };
     
     // create gl render context
-    global_oglRenderContext = wglCreateContextAttribsARB(global_deviceContext, 0, contextAttribs);
+    gRenderState.renderContext = wglCreateContextAttribsARB(gRenderState.deviceContext, 0, contextAttribs);
     
-    if (global_oglRenderContext == 0)
+    if (gRenderState.renderContext == 0)
     {
         return 1;
     }
     
-    if (!wglMakeCurrent(global_deviceContext, global_oglRenderContext))
+    if (!wglMakeCurrent(gRenderState.deviceContext, gRenderState.renderContext))
     {
         return 1;
     }
@@ -602,6 +615,7 @@ refexport_t GetRefAPI()
 {
     refexport_t re;
     re.init = win32_initGL;
+    re.renderFrame = gl_renderFrame;
     
     return re;
 }

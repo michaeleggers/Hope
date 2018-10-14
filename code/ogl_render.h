@@ -54,9 +54,6 @@ global_var PFNGLUNIFORMMATRIX4FVPROC         glUniformMatrix4fv;
 global_var PFNGLUNIFORM2FPROC                glUniform2f;
 global_var PFNGLUNIFORM4FPROC                glUniform4f;
 
-global_var HDC global_deviceContext;
-global_var HGLRC global_oglRenderContext;
-
 enum ShaderType;
 struct Window;
 struct Shader;
