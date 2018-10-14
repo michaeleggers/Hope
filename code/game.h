@@ -6,7 +6,7 @@
 
 /* local to game.cpp */
 Background loadBackground(char const * file);
-void drawRoom(refexport_t* re, Room* room);
+void drawRoom(Room* room, refexport_t* re);
 
 /* services from platform layer */
 void update_messages();

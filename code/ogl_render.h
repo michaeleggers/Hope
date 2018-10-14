@@ -69,6 +69,7 @@ void check_shader_error(GLuint shader);
 void l_drawTriangle();
 Shader create_shader(char const * vs_file, char const * fs_file);
 Texture create_texture(char const * texture_file);
+Texture create_texture(Background * bg);
 Quad create_quad();
 void set_ortho(int width, int height, Shader * shader);
 

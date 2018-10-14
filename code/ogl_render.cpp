@@ -146,11 +146,41 @@ Shader create_shader(char const * vs_file,
     return result;
 }
 
-Texture create_texture(char const * texture_file, GLuint textureslot)
+Texture create_texture(char const * texture_file)
 {
     // STBI image loading
     int x, y, n;
     unsigned char * image_data = stbi_load(texture_file, &x, &y, &n, 4);
+    
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        x,
+        y,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        image_data
+        );
+    // TODO(Michael): pull this out later, or is this per texture?
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    return Texture { tex, x, y };
+}
+
+Texture create_texture_from_background(Background* bg)
+{
+    unsigned char * image_data = bg->image;
+    int x = bg->x;
+    int y = bg->y;
     
     GLuint tex = 0;
     glGenTextures(1, &tex);
@@ -264,7 +294,7 @@ Sprite create_sprite(char const * file, Shader * shader)
     Quad quad = create_quad();
     
     // NOTE(Michael): is it OK to use the same texture-slot per model?
-    Texture texture = create_texture(file, GL_TEXTURE0);
+    Texture texture = create_texture(file);
     
     // has to active BEFORE call to glGetUniformLocation!
     glUseProgram(shader->shaderProgram);
@@ -372,8 +402,43 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+// for now
+static char * shaderAttribs[] = {
+    "vertex_pos",
+    "texture_pos",
+};
+
+static Quad quad;
+static Texture texture;
+static Shader shader;
+
 void gl_renderFrame(Room* room)
 {
+    glViewport(0, 0, 1000, 1000);
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    quad = create_quad();
+    texture = create_texture_from_background(&room->background);
+    shader = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
+                           shaderAttribs,
+                           sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    GLfloat modelMatrix[] = { // only translate by x,y atm
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
+    };
+    set_model(modelMatrix);
+    set_ortho(1000, 1000, &shader);
+    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
+    glUseProgram(shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
+    int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
+    glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
+    glBindVertexArray(quad.vao);
+    glBindTexture(GL_TEXTURE_2D, texture.texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    SwapBuffers(gRenderState.deviceContext);
 }
 
 /*
