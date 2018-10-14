@@ -1,11 +1,34 @@
+#include "game.h"
 
-global_var Sprite sprite;
-global_var Sprite sprite2;
-global_var Spritesheet spriteSheet;
-global_var Shader shaders[MAX_SHADERS];
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+
+//global_var Sprite sprite;
+//global_var Sprite sprite2;
+//global_var Spritesheet spriteSheet;
+//global_var Shader shaders[MAX_SHADERS];
+
+global_var Room gRoomList[1];
+
+Background loadBackground(char const * file)
+{
+    Background bg;
+    bg.image = stbi_load(file, &bg.x, &bg.y, &bg.n, 4);
+    if (bg.image == 0) printf("fuck! %s failed to load!\n", file);
+    
+    return bg;
+}
+
+void drawRoom(Room* room, refexport_t* re)
+{
+    re->renderFrame(room);
+}
 
 void game_init()
 {
+    /*
+    
     // TODO(Michael): get the OpenGL Shit outta here!
     
     // backface/frontface culling (creates less shaders if enabled)
@@ -32,13 +55,13 @@ void game_init()
         "..\\code\\sprite.frag",
         shaderAttribs,
         sizeof(shaderAttribs)/sizeof(*shaderAttribs));
-    
+        
     shaders[SPRITE_SHEET] = create_shader(
         "..\\code\\sprite.vert",
         "..\\code\\sprite_sheet.frag",
         shaderAttribs,
         sizeof(shaderAttribs)/sizeof(*shaderAttribs));
-    
+        
     sprite = create_sprite("..\\assets\\uv_checkerboard.jpg", &(shaders[SPRITE]));
     sprite2 = create_sprite("..\\assets\\base.png", &(shaders[SPRITE_SHEET]));
     
@@ -46,15 +69,24 @@ void game_init()
                                      16, 16,
                                      17
                                      );
-    
+                                     
     // create and activate ortho matrix
     Rect rect = get_window_dimensions();
     set_ortho(rect.width, rect.height, &shaders[SPRITE]);
     set_ortho(rect.width, rect.height, &shaders[SPRITE_SHEET]);
+    
+    */
+    
+    // load "room"
+    Room testRoom;
+    testRoom.background = loadBackground("..\\assets\\azores.png");
+    gRoomList[0] = testRoom;
 }
 
-void game_update_and_render(float dt)
+void game_update_and_render(float dt, refexport_t* re)
 {
+    /*
+    
     // HACK(Michael): quick way to test if animation works.
     static int frameCount = 0;
     static float posX = 0.0f;
@@ -75,6 +107,10 @@ void game_update_and_render(float dt)
     scaleX += 0.000001f * dt;
     scaleY += 0.000001f * dt;
     //posY += 0.6f;
+    
+    */
+    
+    drawRoom(&gRoomList[0], re);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

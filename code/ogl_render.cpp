@@ -45,6 +45,14 @@ struct Spritesheet
     Window windows[256]; // max 256 frames
 };
 
+struct RenderState
+{
+    HDC deviceContext;
+    HGLRC renderContext;
+}
+
+global_var RenderState gRenderState;
+
 void printGlErrMsg()
 {
     GLenum err;
@@ -364,7 +372,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void gl_renderFrame(float* vertices, int numVertices)
+void gl_renderFrame(Room* room)
 {
 }
 
@@ -379,14 +387,6 @@ GLfloat texturePos[] = {
     0.0f, 0.0f
 };
 */
-
-struct RenderState
-{
-    HDC deviceContext;
-    HGLRC renderContext;
-}
-
-global_var RenderState gRenderState;
 
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 {

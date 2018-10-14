@@ -16,6 +16,7 @@
 #include "Mathx.h"
 
 #include "ref.h"
+#include "game.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -70,12 +71,15 @@ Shader create_shader(char const * vs_file, char const * fs_file);
 Texture create_texture(char const * texture_file);
 Quad create_quad();
 void set_ortho(int width, int height, Shader * shader);
+
 Spritesheet create_spritesheet(Texture * texture,
                                int width, int height,
                                int numFrames);
+
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
+void gl_renderFrame(Room* room);
 
 // exported functions
 extern "C"

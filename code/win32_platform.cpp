@@ -9,13 +9,13 @@
 
 
 #include "helper.h"
-//#include "game.h"
-//#include "game.cpp"
 #include "ref.h"
 
-
-
 #define global_var static;
+
+//#include "game.h"
+#include "game.cpp"
+
 
 global_var extern refexport_t ref; // rendering API
 
@@ -206,7 +206,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     GetClientRect(global_windowHandle, &rect);
     //glViewport(0, 0, rect.right, rect.bottom); // TODO(Michael): do in renderer
     
-    //game_init();
+    game_init();
     
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);
@@ -217,14 +217,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     float fps = 0.0f;
     
     
+    // if test
+#if _WIN32
+    printf("ON WIN32 PLATFORM!\n");
+#endif
     
     while (running)
     {
         
-        // if test
-#if _WIN32
-        printf("ON WIN32 PLATFORM!\n");
-#endif
         // Run the message loop.
         MSG msg = { };
         while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
@@ -233,7 +233,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             DispatchMessage(&msg);
         }
         
-        //game_update_and_render((float)elapsedTime.QuadPart); 
+        game_update_and_render((float)elapsedTime.QuadPart, &re); 
         //SwapBuffers(global_deviceContext);
         
         QueryPerformanceCounter(&endingTime);
@@ -242,8 +242,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         elapsedTime.QuadPart *= 1000000; // microseconds
         elapsedTime.QuadPart /= performanceFrequency.QuadPart;
         
-        printf("%f\n", fps);
-        printf("elapsed time: %f\n", (float)elapsedTime.QuadPart / 1000.0f);
+        //printf("%f\n", fps);
+        //printf("elapsed time: %f\n", (float)elapsedTime.QuadPart / 1000.0f);
         QueryPerformanceCounter(&startingTime);
         //Sleep(500); // HACK(Michael): artificial time
     }
