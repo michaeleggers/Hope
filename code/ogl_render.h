@@ -16,13 +16,65 @@
 #include "Mathx.h"
 
 #include "ref.h"
-#include "game.h"
+#include "scene.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 
 #define global_var static;
+
+
+enum ShaderType
+{
+    SPRITE,
+    SPRITE_SHEET,
+    MAX_SHADERS
+};
+
+struct Window
+{
+    float x, y;
+    float width, height;
+};
+
+struct Shader
+{
+    GLuint vertexShader;
+    GLuint fragmentShader;
+    GLuint shaderProgram;
+};
+
+struct Texture
+{
+    GLuint texture_id;
+    int width, height;
+};
+
+struct Quad
+{
+    GLuint vao;
+    GLfloat vertexPoints[18];
+    GLfloat textureUVs[12];
+};
+
+struct Sprite
+{
+    Shader shader;
+    Texture texture;
+    Quad mesh;
+};
+
+struct Spritesheet
+{
+    Window windows[256]; // max 256 frames
+};
+
+struct RenderState
+{
+    HDC deviceContext;
+    HGLRC renderContext;
+}
 
 global_var PFNWGLCHOOSEPIXELFORMATARBPROC    wglChoosePixelFormatARB;
 global_var PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
@@ -55,19 +107,13 @@ global_var PFNGLUNIFORMMATRIX4FVPROC         glUniformMatrix4fv;
 global_var PFNGLUNIFORM2FPROC                glUniform2f;
 global_var PFNGLUNIFORM4FPROC                glUniform4f;
 
-enum ShaderType;
-struct Window;
-struct Shader;
-struct Texture;
-struct Quad;
-struct Sprite;
-struct Spritesheet;
-
 Rect get_window_dimensions();
 void printGlErrMsg();
 void check_shader_error(GLuint shader);
 void l_drawTriangle();
-Shader create_shader(char const * vs_file, char const * fs_file);
+Shader create_shader(char const * vs_file, char const * fs_file,
+                     char ** attribLocations,
+                     int numAttribs);
 Texture create_texture(char const * texture_file);
 Texture create_texture(Background * bg);
 Quad create_quad();
@@ -77,10 +123,17 @@ Spritesheet create_spritesheet(Texture * texture,
                                int width, int height,
                                int numFrames);
 
+Sprite create_sprite(char const * file, Shader * shader);
+
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
-void gl_renderFrame(Room* room);
+void gl_renderFrame(Sprite* sprites, int spriteCount);
+
+// exported stuff
+int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
+void glLoadRooms(Room* room);
+void glRender();
 
 // exported functions
 extern "C"

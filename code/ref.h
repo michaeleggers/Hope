@@ -9,7 +9,8 @@
 struct refexport_t
 {
     int (*init)(HWND* windowHandle, WNDCLASS* windowClass);
-    void (*renderFrame)(Room* room);
+    void (*loadRooms)(Room* room);
+    void (*render)();
 };
 
 typedef refexport_t (*GetRefAPI_t)();

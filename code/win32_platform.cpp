@@ -206,7 +206,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     GetClientRect(global_windowHandle, &rect);
     //glViewport(0, 0, rect.right, rect.bottom); // TODO(Michael): do in renderer
     
-    game_init();
+    game_init(&re);
     
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);

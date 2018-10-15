@@ -1,57 +1,28 @@
 #include "ogl_render.h"
 
-enum ShaderType
-{
-    SPRITE,
-    SPRITE_SHEET,
-    MAX_SHADERS
-};
-
-struct Window
-{
-    float x, y;
-    float width, height;
-};
-
-struct Shader
-{
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint shaderProgram;
-};
-
-struct Texture
-{
-    GLuint texture_id;
-    int width, height;
-};
-
-struct Quad
-{
-    GLuint vao;
-    GLfloat vertexPoints[18];
-    GLfloat textureUVs[12];
-};
-
-struct Sprite
-{
-    Shader shader;
-    Texture texture;
-    Quad mesh;
-};
-
-struct Spritesheet
-{
-    Window windows[256]; // max 256 frames
-};
-
-struct RenderState
-{
-    HDC deviceContext;
-    HGLRC renderContext;
-}
 
 global_var RenderState gRenderState;
+global_var Shader gShaders[MAX_SHADERS];
+global_var Sprite gSprites[100];
+
+// load all rooms (or later on scenes) onto GPU (for now just one room)
+// TODO(Michael): get data from actual room data, lol
+// TODO(Michael): load data from asset file or some other resource handling stuff
+void glLoadRooms(Room* room)
+{
+    
+    char * shaderAttribs[] = {
+        "vertex_pos",
+        "texture_pos",
+    };
+    gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
+                                     shaderAttribs,
+                                     sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    gSprites[0] = create_sprite("..\\assets\\azores.png", &gShaders[SPRITE]);
+    
+    glUseProgram(gSprites[0].shader.shaderProgram);
+    set_ortho(1000, 1000, &gSprites[0].shader);
+}
 
 void printGlErrMsg()
 {
@@ -408,36 +379,39 @@ static char * shaderAttribs[] = {
     "texture_pos",
 };
 
-static Quad quad;
-static Texture texture;
-static Shader shader;
-
-void gl_renderFrame(Room* room)
+// determine from game logic what is to render and set it up here
+void glRender()
 {
-    glViewport(0, 0, 1000, 1000);
+    gl_renderFrame(gSprites, 1);
+}
+
+void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?
+{
+    if (spriteCount == 0) return;
+    
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    quad = create_quad();
-    texture = create_texture_from_background(&room->background);
-    shader = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
-                           shaderAttribs,
-                           sizeof(shaderAttribs) / sizeof(*shaderAttribs));
     GLfloat modelMatrix[] = { // only translate by x,y atm
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
     };
-    set_model(modelMatrix);
-    set_ortho(1000, 1000, &shader);
-    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    glUseProgram(shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
-    int tex_loc = glGetUniformLocation(shader.shaderProgram, "tex");
-    glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
-    glBindVertexArray(quad.vao);
-    glBindTexture(GL_TEXTURE_2D, texture.texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    int i = 0;
+    while (i < spriteCount)
+    {
+        Sprite sprite = sprites[i];
+        
+        // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
+        glUseProgram(sprite.shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
+        set_model(modelMatrix);
+        glBindVertexArray(sprite.mesh.vao);
+        glBindTexture(GL_TEXTURE_2D, sprite.texture.texture_id);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        i++;
+    }
+    
     SwapBuffers(gRenderState.deviceContext);
 }
 
@@ -671,6 +645,24 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     }
 #endif
     
+    glViewport(0, 0, 1000, 1000); // TODO(Michael): variable size!
+    
+    // backface/frontface culling (creates less shaders if enabled)
+    glEnable (GL_CULL_FACE); // cull face
+    glCullFace (GL_BACK); // cull back face
+    glFrontFace (GL_CW); // GL_CCW for counter clock-wise
+    
+    // enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // enable vsync
+    wglSwapIntervalEXT(1);
+    
+    // multisampling
+    glEnable(GL_MULTISAMPLE);
+    
+    
     return 0;
 }
 
@@ -680,7 +672,8 @@ refexport_t GetRefAPI()
 {
     refexport_t re;
     re.init = win32_initGL;
-    re.renderFrame = gl_renderFrame;
+    re.loadRooms = glLoadRooms;
+    re.render = glRender;
     
     return re;
 }

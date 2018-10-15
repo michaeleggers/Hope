@@ -22,10 +22,10 @@ Background loadBackground(char const * file)
 
 void drawRoom(Room* room, refexport_t* re)
 {
-    re->renderFrame(room);
+    re->render();
 }
 
-void game_init()
+void game_init(refexport_t* re)
 {
     /*
     
@@ -81,6 +81,7 @@ void game_init()
     Room testRoom;
     testRoom.background = loadBackground("..\\assets\\azores.png");
     gRoomList[0] = testRoom;
+    re->loadRooms(&gRoomList[0]);
 }
 
 void game_update_and_render(float dt, refexport_t* re)

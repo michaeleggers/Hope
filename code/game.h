@@ -13,7 +13,7 @@ void update_messages();
 
 
 /* services to platform layer */
-void game_init();
+void game_init(refexport_t* re);
 void game_update_and_render(float dt, refexport_t* re);
 
 #endif GAME_H
