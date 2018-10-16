@@ -63,6 +63,7 @@ struct Sprite
     Shader shader;
     Texture texture;
     Quad mesh;
+    int width, height; // width, height of sprite. init to image attributes.
 };
 
 struct Spritesheet

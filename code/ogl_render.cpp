@@ -287,7 +287,8 @@ Sprite create_sprite(char const * file, Shader * shader)
     result.mesh = quad;
     result.shader = *shader;
     result.texture = texture;
-    
+    result.width = texture.width;
+    result.height = texture.height;
     return result;
 }
 
@@ -411,7 +412,9 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
     while (i < spriteCount)
     {
         Sprite sprite = sprites[i];
-        
+        float ratio = (float)sprite.width / (float)sprite.height;
+        modelMatrix[0] = ratio * 5.0f;
+        modelMatrix[5] = 1.0f * 5.0f; // TODO(Michael): precompute this
         // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
         glUseProgram(sprite.shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
         set_model(modelMatrix);
