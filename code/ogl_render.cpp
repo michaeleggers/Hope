@@ -10,7 +10,6 @@ global_var Sprite gSprites[100];
 // TODO(Michael): load data from asset file or some other resource handling stuff
 void glLoadRooms(Room* room)
 {
-    
     char * shaderAttribs[] = {
         "vertex_pos",
         "texture_pos",
@@ -18,7 +17,7 @@ void glLoadRooms(Room* room)
     gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
-    gSprites[0] = create_sprite("..\\assets\\azores.png", &gShaders[SPRITE]);
+    gSprites[0] = create_sprite(room->background.imageFile, &gShaders[SPRITE]);
     
     glUseProgram(gSprites[0].shader.shaderProgram);
     set_ortho(1000, 1000, &gSprites[0].shader);
@@ -121,7 +120,15 @@ Texture create_texture(char const * texture_file)
 {
     // STBI image loading
     int x, y, n;
-    unsigned char * image_data = stbi_load(texture_file, &x, &y, &n, 4);
+    unsigned char * image_data;
+    if (texture_file == 0)
+    {
+        image_data = stbi_load("..\\assets\\fuckoboingo.png", &x, &y, &n, 4);
+    }
+    else
+    {
+        image_data = stbi_load(texture_file, &x, &y, &n, 4);
+    }
     
     GLuint tex = 0;
     glGenTextures(1, &tex);
@@ -147,6 +154,7 @@ Texture create_texture(char const * texture_file)
     return Texture { tex, x, y };
 }
 
+/*
 Texture create_texture_from_background(Background* bg)
 {
     unsigned char * image_data = bg->image;
@@ -176,6 +184,7 @@ Texture create_texture_from_background(Background* bg)
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     return Texture { tex, x, y };
 }
+*/
 
 Quad create_quad()
 {

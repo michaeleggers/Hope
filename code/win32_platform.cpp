@@ -45,6 +45,22 @@ void update_messages()
     }
 }
 
+bool fileExists(char const * file)
+{
+    WIN32_FIND_DATA findFileData;
+    HANDLE hFind = FindFirstFile(file, &findFileData);
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        printf("FindFirstFile failed (%d) for %s\n", GetLastError(), file);
+        return false;
+    }
+    else
+    {
+        FindClose(hFind);
+        return true;
+    }
+}
+
 global_var HINSTANCE reflib_library;
 global_var refexport_t re;
 

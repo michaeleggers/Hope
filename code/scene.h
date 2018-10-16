@@ -3,7 +3,7 @@
 
 struct Background
 {
-    unsigned char * image;
+    char * imageFile;
     int x, y, n;
 };
 

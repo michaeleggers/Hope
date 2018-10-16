@@ -5,12 +5,12 @@
 #include "scene.h"
 
 /* local to game.cpp */
-Background loadBackground(char const * file);
+Background loadBackground(char * file);
 void drawRoom(Room* room, refexport_t* re);
 
 /* services from platform layer */
 void update_messages();
-
+bool fileExists(char const * file);
 
 /* services to platform layer */
 void game_init(refexport_t* re);

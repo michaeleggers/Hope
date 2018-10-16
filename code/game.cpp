@@ -11,12 +11,19 @@
 
 global_var Room gRoomList[1];
 
-Background loadBackground(char const * file)
+Background loadBackground(char * file)
 {
     Background bg;
-    bg.image = stbi_load(file, &bg.x, &bg.y, &bg.n, 4);
-    if (bg.image == 0) printf("fuck! %s failed to load!\n", file);
-    
+    // check if file exists!
+    if (!fileExists(file))
+    {
+        bg.imageFile = 0;
+        printf("fuck! Failed to load %s!\n", file);
+    }
+    else
+    {
+        bg.imageFile = file;
+    }
     return bg;
 }
 
