@@ -73,9 +73,10 @@ struct Spritesheet
 
 struct RenderState
 {
+    HWND* windowHandle;
     HDC deviceContext;
     HGLRC renderContext;
-}
+};
 
 global_var PFNWGLCHOOSEPIXELFORMATARBPROC    wglChoosePixelFormatARB;
 global_var PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
@@ -135,6 +136,8 @@ void gl_renderFrame(Sprite* sprites, int spriteCount);
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
 void glLoadRooms(Room* room);
 void glRender();
+void glSetViewport(int xLeft, int yBottom, int width, int height);
+void glSetProjection(Projection_t projType);
 
 // exported functions
 extern "C"

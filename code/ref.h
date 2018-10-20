@@ -5,12 +5,15 @@
 // for the moment not platform 
 
 #include "scene.h"
+#include "common_render.h"
 
 struct refexport_t
 {
     int (*init)(HWND* windowHandle, WNDCLASS* windowClass);
     void (*loadRooms)(Room* room);
     void (*render)();
+    void (*setViewport)(int xLeft, int yBottom, int width, int height);
+    void (*setProjection)(Projection_t projType);
 };
 
 typedef refexport_t (*GetRefAPI_t)();

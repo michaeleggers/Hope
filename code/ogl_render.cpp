@@ -389,6 +389,33 @@ static char * shaderAttribs[] = {
     "texture_pos",
 };
 
+void glSetViewport(int xLeft, int yBottom, int width, int height)
+{
+    glViewport((GLint)xLeft, (GLint)yBottom, (GLsizei)width, (GLsizei)height);
+}
+
+void glSetProjection(Projection_t projType)
+{
+    switch (projType)
+    {
+        case ORTHO:
+        {
+            RECT rect;
+            GetClientRect(*gRenderState.windowHandle, &rect);
+            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE]);
+        }
+        break;
+        
+        default: // TODO(Michael): implement perspective projection
+        {
+            RECT rect;
+            GetClientRect(*gRenderState.windowHandle, &rect);
+            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE]);
+        }
+        break;
+    }
+}
+
 // determine from game logic what is to render and set it up here
 void glRender()
 {
@@ -441,7 +468,7 @@ GLfloat texturePos[] = {
 
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 {
-    
+    gRenderState.windowHandle = windowHandle;
     PIXELFORMATDESCRIPTOR pixelFormatDescriptor =
     {
         sizeof(PIXELFORMATDESCRIPTOR),
@@ -580,8 +607,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0,
         0,
-        1000,
-        1000,
+        1024,
+        576,
         0,
         0,
         windowClass->hInstance,
@@ -657,7 +684,13 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     }
 #endif
     
-    glViewport(0, 0, 1000, 1000); // TODO(Michael): variable size!
+    RECT windowDimension;
+    GetClientRect(
+        *windowHandle,
+        &windowDimension
+        );
+    glViewport(windowDimension.left, windowDimension.top, 
+               windowDimension.right, windowDimension.bottom); // TODO(Michael): variable size!
     
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
@@ -685,7 +718,9 @@ refexport_t GetRefAPI()
     refexport_t re;
     re.init = win32_initGL;
     re.loadRooms = glLoadRooms;
+    re.setViewport = glSetViewport;
     re.render = glRender;
+    re.setProjection = glSetProjection;
     
     return re;
 }
