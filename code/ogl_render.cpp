@@ -6,7 +6,6 @@ global_var Shader gShaders[MAX_SHADERS];
 global_var Sprite gSprites[100];
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
-// TODO(Michael): get data from actual room data, lol
 // TODO(Michael): load data from asset file or some other resource handling stuff
 void glLoadRooms(Room* room)
 {
@@ -18,9 +17,14 @@ void glLoadRooms(Room* room)
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
     gSprites[0] = create_sprite(room->background.imageFile, &gShaders[SPRITE]);
+    gSprites[0].x = room->background.x;
+    gSprites[0].y = room->background.y;
     gSprites[1] = create_sprite(room->object.imageFile, &gShaders[SPRITE]);
+    gSprites[1].x = room->object.x;
+    gSprites[1].y = room->object.y;
     
     glUseProgram(gSprites[0].shader.shaderProgram);
+    
     set_ortho(1000, 1000, &gSprites[0].shader);
 }
 
@@ -418,7 +422,7 @@ void glSetProjection(Projection_t projType)
 }
 
 // determine from game logic what is to render and set it up here
-void glRender()
+void glRender(Room * room)
 {
     gl_renderFrame(gSprites, 2);
 }
@@ -443,6 +447,8 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
         float ratio = (float)sprite.width / (float)sprite.height;
         modelMatrix[0] = ratio * 5.0f;
         modelMatrix[5] = 1.0f * 5.0f; // TODO(Michael): precompute this
+        modelMatrix[12] = sprite.x;
+        modelMatrix[13] = sprite.y;
         // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
         glUseProgram(sprite.shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
         set_model(modelMatrix);
@@ -691,7 +697,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
         &windowDimension
         );
     glViewport(windowDimension.left, windowDimension.top, 
-               windowDimension.right, windowDimension.bottom); // TODO(Michael): variable size!
+               windowDimension.right, windowDimension.bottom);
     
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face

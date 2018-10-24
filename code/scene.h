@@ -5,13 +5,14 @@ struct Background
 {
     char * imageFile;
     int imgWidth, imgHeight, channels;
+    int x, y;
 };
 
 struct Object
 {
     char * imageFile;
     int imgWidth, imgHeight, channels;
-    int xPos, yPos;
+    int x, y;
 };
 
 struct Room

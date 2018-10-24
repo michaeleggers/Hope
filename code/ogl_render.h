@@ -64,6 +64,7 @@ struct Sprite
     Texture texture;
     Quad mesh;
     int width, height; // width, height of sprite. init to image attributes.
+    int x, y;
 };
 
 struct Spritesheet
@@ -135,7 +136,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount);
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
 void glLoadRooms(Room* room);
-void glRender();
+void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
 

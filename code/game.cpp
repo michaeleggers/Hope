@@ -27,7 +27,6 @@ Background loadBackground(char * file)
     return bg;
 }
 
-
 Object loadObject(char * file)
 {
     Object obj;
@@ -46,7 +45,8 @@ Object loadObject(char * file)
 
 void drawRoom(Room* room, refexport_t* re)
 {
-    re->render();
+    // TODO(Michael): actually only needs metadata of the scene/room ???
+    re->render(room);
 }
 
 void game_init(refexport_t* re)
@@ -104,7 +104,11 @@ void game_init(refexport_t* re)
     // load "room"
     Room testRoom;
     testRoom.background = loadBackground("..\\assets\\azores.png");
+    testRoom.background.x = 0;
+    testRoom.background.y = 0;
     testRoom.object = loadObject("..\\assets\\fiona.png");
+    testRoom.object.x = 15;
+    testRoom.object.y = 5;
     gRoomList[0] = testRoom;
     re->loadRooms(&gRoomList[0]);
 }
@@ -136,6 +140,7 @@ void game_update_and_render(float dt, refexport_t* re)
     
     */
     
+    // draw room we're in
     drawRoom(&gRoomList[0], re);
 }
 

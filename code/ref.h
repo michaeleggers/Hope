@@ -11,7 +11,7 @@ struct refexport_t
 {
     int (*init)(HWND* windowHandle, WNDCLASS* windowClass);
     void (*loadRooms)(Room* room);
-    void (*render)();
+    void (*render)(Room* room);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
 };
