@@ -18,6 +18,7 @@ void glLoadRooms(Room* room)
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
     gSprites[0] = create_sprite(room->background.imageFile, &gShaders[SPRITE]);
+    gSprites[1] = create_sprite(room->object.imageFile, &gShaders[SPRITE]);
     
     glUseProgram(gSprites[0].shader.shaderProgram);
     set_ortho(1000, 1000, &gSprites[0].shader);
@@ -419,7 +420,7 @@ void glSetProjection(Projection_t projType)
 // determine from game logic what is to render and set it up here
 void glRender()
 {
-    gl_renderFrame(gSprites, 1);
+    gl_renderFrame(gSprites, 2);
 }
 
 void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?

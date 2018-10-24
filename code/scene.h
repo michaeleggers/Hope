@@ -4,12 +4,20 @@
 struct Background
 {
     char * imageFile;
-    int x, y, n;
+    int imgWidth, imgHeight, channels;
+};
+
+struct Object
+{
+    char * imageFile;
+    int imgWidth, imgHeight, channels;
+    int xPos, yPos;
 };
 
 struct Room
 {
     Background background;
+    Object object;
     // other stuff...
 };
 

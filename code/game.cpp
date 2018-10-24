@@ -27,6 +27,23 @@ Background loadBackground(char * file)
     return bg;
 }
 
+
+Object loadObject(char * file)
+{
+    Object obj;
+    // check if file exists!
+    if (!fileExists(file))
+    {
+        obj.imageFile = 0;
+        printf("fuck! Failed to load %s!\n", file);
+    }
+    else
+    {
+        obj.imageFile = file;
+    }
+    return obj;
+}
+
 void drawRoom(Room* room, refexport_t* re)
 {
     re->render();
@@ -87,6 +104,7 @@ void game_init(refexport_t* re)
     // load "room"
     Room testRoom;
     testRoom.background = loadBackground("..\\assets\\azores.png");
+    testRoom.object = loadObject("..\\assets\\fiona.png");
     gRoomList[0] = testRoom;
     re->loadRooms(&gRoomList[0]);
 }
