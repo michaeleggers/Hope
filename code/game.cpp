@@ -7,7 +7,7 @@
 //global_var Sprite sprite;
 //global_var Sprite sprite2;
 //global_var Spritesheet spriteSheet;
-//global_var Shader shaders[MAX_SHADERS];
+//global_var Shader shaders[MAX_SHADERS]; 
 
 global_var Room gRoomList[1];
 
@@ -46,6 +46,8 @@ Object loadObject(char * file)
 void drawRoom(Room* room, refexport_t* re)
 {
     // TODO(Michael): actually only needs metadata of the scene/room ???
+    // eg get all the rendering related stuff out of the scene/room and
+    // only send that to the renderer?
     re->render(room);
 }
 
