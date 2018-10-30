@@ -65,7 +65,7 @@ struct Sprite
     Quad mesh;
     int width, height; // width, height of sprite. init to image width, height
     int x, y;
-    char * name;
+    char name[64];
 };
 
 struct Spritesheet
@@ -140,7 +140,7 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
-void * glRegisterSprite(char const * filename);
+void * glRegisterSprite(char * filename);
 
 // exported functions
 extern "C"

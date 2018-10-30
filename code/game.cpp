@@ -105,6 +105,7 @@ void game_init(refexport_t* re)
     
     // load "room"
     Room testRoom;
+    /*
     testRoom.background = loadBackground("..\\assets\\azores.png");
     testRoom.background.x = 0;
     testRoom.background.y = 0;
@@ -113,6 +114,17 @@ void game_init(refexport_t* re)
     testRoom.object.y = 5;
     gRoomList[0] = testRoom;
     re->loadRooms(&gRoomList[0]);
+    */
+    void * resource = re->registerSprite("..\\assets\\azores.png");
+    testRoom.background.entityResource.modelData = resource;
+    
+    Room testRoom2;
+    void * resource2 = re->registerSprite("..\\assets\\fiona.png");
+    testRoom2.background.entityResource.modelData = resource2;
+    
+    Room testRoom3;
+    void * resource3 = re->registerSprite("..\\assets\\azores.png");
+    testRoom3.background.entityResource.modelData = resource3;
 }
 
 void game_update_and_render(float dt, refexport_t* re)
@@ -143,7 +155,7 @@ void game_update_and_render(float dt, refexport_t* re)
     */
     
     // draw room we're in
-    drawRoom(&gRoomList[0], re);
+    //drawRoom(&gRoomList[0], re);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

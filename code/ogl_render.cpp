@@ -31,7 +31,7 @@ void glLoadRooms(Room* room)
     set_ortho(1000, 1000, &gSpritesKnown[0].shader);
 }
 
-void * glRegisterSprite(char const * filename)
+void * glRegisterSprite(char * filename)
 {
     Sprite * sprite = gSpritesKnown;
     
@@ -59,9 +59,21 @@ void * glRegisterSprite(char const * filename)
         printf("RegisterSprite error: gUnknownSprites == MAX_SPRITES\n");
     else
         gUnknownSpriteIndex++;
-    strcpy(sprite->name, filename);
+    //strcpy(sprite->name, filename);
     
     // load the sprite
+    *sprite = create_sprite(filename, &gShaders[SPRITE]);
+    
+    
+    glUseProgram(sprite->shader.shaderProgram);
+    
+    set_ortho(1000, 1000, &sprite->shader);
+    
+    return (void*)sprite;
+}
+
+void initShaders()
+{
     char * shaderAttribs[] = {
         "vertex_pos",
         "texture_pos",
@@ -69,13 +81,6 @@ void * glRegisterSprite(char const * filename)
     gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
-    *sprite = create_sprite(sprite->name, &gShaders[SPRITE]);
-    
-    glUseProgram(sprite->shader.shaderProgram);
-    
-    set_ortho(1000, 1000, &sprite->shader);
-    
-    return (void*)sprite;
 }
 
 void printGlErrMsg()
@@ -344,6 +349,7 @@ Sprite create_sprite(char const * file, Shader * shader)
     result.texture = texture;
     result.width = texture.width;
     result.height = texture.height;
+    strcpy(result.name, file);
     return result;
 }
 
@@ -748,6 +754,9 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
         );
     glViewport(windowDimension.left, windowDimension.top, 
                windowDimension.right, windowDimension.bottom);
+    
+    // init shaders
+    initShaders();
     
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face

@@ -4,6 +4,7 @@
 #include "ref.h"
 #include "scene.h"
 
+
 /* local to game.cpp */
 Background loadBackground(char * file);
 void drawRoom(Room* room, refexport_t* re);
