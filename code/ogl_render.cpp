@@ -3,7 +3,10 @@
 
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
-global_var Sprite gSprites[100];
+
+#define MAX_SPRITES 512
+global_var Sprite gSpritesKnown[MAX_SPRITES];
+global_var int gUnknownSpriteIndex;
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
 // TODO(Michael): load data from asset file or some other resource handling stuff
@@ -16,16 +19,63 @@ void glLoadRooms(Room* room)
     gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
-    gSprites[0] = create_sprite(room->background.imageFile, &gShaders[SPRITE]);
-    gSprites[0].x = room->background.x;
-    gSprites[0].y = room->background.y;
-    gSprites[1] = create_sprite(room->object.imageFile, &gShaders[SPRITE]);
-    gSprites[1].x = room->object.x;
-    gSprites[1].y = room->object.y;
+    gSpritesKnown[0] = create_sprite(room->background.imageFile, &gShaders[SPRITE]);
+    gSpritesKnown[0].x = room->background.x;
+    gSpritesKnown[0].y = room->background.y;
+    gSpritesKnown[1] = create_sprite(room->object.imageFile, &gShaders[SPRITE]);
+    gSpritesKnown[1].x = room->object.x;
+    gSpritesKnown[1].y = room->object.y;
     
-    glUseProgram(gSprites[0].shader.shaderProgram);
+    glUseProgram(gSpritesKnown[0].shader.shaderProgram);
     
-    set_ortho(1000, 1000, &gSprites[0].shader);
+    set_ortho(1000, 1000, &gSpritesKnown[0].shader);
+}
+
+void * glRegisterSprite(char const * filename)
+{
+    Sprite * sprite = gSpritesKnown;
+    
+    // search currently loaded sprites
+    for (int i = 0;
+         i < gUnknownSpriteIndex;
+         i++)
+    {
+        if (!strcmp(sprite->name, filename))
+            return (void*)sprite;
+        sprite++;
+        
+    }
+    
+    // find free slot for new sprite
+    for (int i = 0;
+         i < gUnknownSpriteIndex;
+         i++)
+    {
+        if (!sprite->name[0])
+            break; // free slot found
+        sprite++;
+    }
+    if (gUnknownSpriteIndex == MAX_SPRITES) // sprite slots full, overwriting last sprite!
+        printf("RegisterSprite error: gUnknownSprites == MAX_SPRITES\n");
+    else
+        gUnknownSpriteIndex++;
+    strcpy(sprite->name, filename);
+    
+    // load the sprite
+    char * shaderAttribs[] = {
+        "vertex_pos",
+        "texture_pos",
+    };
+    gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
+                                     shaderAttribs,
+                                     sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    *sprite = create_sprite(sprite->name, &gShaders[SPRITE]);
+    
+    glUseProgram(sprite->shader.shaderProgram);
+    
+    set_ortho(1000, 1000, &sprite->shader);
+    
+    return (void*)sprite;
 }
 
 void printGlErrMsg()
@@ -162,32 +212,32 @@ Texture create_texture(char const * texture_file)
 /*
 Texture create_texture_from_background(Background* bg)
 {
-    unsigned char * image_data = bg->image;
-    int x = bg->x;
-    int y = bg->y;
-    
-    GLuint tex = 0;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        x,
-        y,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        image_data
-        );
-    // TODO(Michael): pull this out later, or is this per texture?
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    return Texture { tex, x, y };
+unsigned char * image_data = bg->image;
+int x = bg->x;
+int y = bg->y;
+
+GLuint tex = 0;
+glGenTextures(1, &tex);
+glBindTexture(GL_TEXTURE_2D, tex);
+glTexImage2D(
+GL_TEXTURE_2D,
+0,
+GL_RGBA,
+x,
+y,
+0,
+GL_RGBA,
+GL_UNSIGNED_BYTE,
+image_data
+);
+// TODO(Michael): pull this out later, or is this per texture?
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+return Texture { tex, x, y };
 }
 */
 
@@ -424,7 +474,7 @@ void glSetProjection(Projection_t projType)
 // determine from game logic what is to render and set it up here
 void glRender(Room * room)
 {
-    gl_renderFrame(gSprites, 2);
+    gl_renderFrame(gSpritesKnown, 2);
 }
 
 void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?
@@ -463,13 +513,13 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
 
 /*
 GLfloat texturePos[] = {
-    0.0f, 0.0f,
-    1.0f, 0.0f,
-    1.0f, 1.0f,
-    
-    1.0f, 1.0f,
-    0.0f, 1.0f,
-    0.0f, 0.0f
+0.0f, 0.0f,
+1.0f, 0.0f,
+1.0f, 1.0f,
+
+1.0f, 1.0f,
+0.0f, 1.0f,
+0.0f, 0.0f
 };
 */
 
@@ -728,6 +778,6 @@ refexport_t GetRefAPI()
     re.setViewport = glSetViewport;
     re.render = glRender;
     re.setProjection = glSetProjection;
-    
+    re.registerSprite = glRegisterSprite;
     return re;
 }

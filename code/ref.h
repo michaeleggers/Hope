@@ -14,6 +14,7 @@ struct refexport_t
     void (*render)(Room* room);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
+    void * (*registerSprite)(char const * filename);
 };
 
 typedef refexport_t (*GetRefAPI_t)();

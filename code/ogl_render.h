@@ -63,8 +63,9 @@ struct Sprite
     Shader shader;
     Texture texture;
     Quad mesh;
-    int width, height; // width, height of sprite. init to image attributes.
+    int width, height; // width, height of sprite. init to image width, height
     int x, y;
+    char * name;
 };
 
 struct Spritesheet
@@ -139,6 +140,7 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
+void * glRegisterSprite(char const * filename);
 
 // exported functions
 extern "C"
