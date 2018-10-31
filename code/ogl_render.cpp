@@ -10,6 +10,7 @@ global_var int gUnknownSpriteIndex;
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
 // TODO(Michael): load data from asset file or some other resource handling stuff
+/*
 void glLoadRooms(Room* room)
 {
     char * shaderAttribs[] = {
@@ -30,8 +31,9 @@ void glLoadRooms(Room* room)
     
     set_ortho(1000, 1000, &gSpritesKnown[0].shader);
 }
+*/
 
-void * glRegisterSprite(char * filename)
+Sprite * glRegisterSprite(char * filename)
 {
     Sprite * sprite = gSpritesKnown;
     
@@ -41,7 +43,7 @@ void * glRegisterSprite(char * filename)
          i++)
     {
         if (!strcmp(sprite->name, filename))
-            return (void*)sprite;
+            return sprite;
         sprite++;
         
     }
@@ -69,7 +71,7 @@ void * glRegisterSprite(char * filename)
     
     set_ortho(1000, 1000, &sprite->shader);
     
-    return (void*)sprite;
+    return sprite;
 }
 
 void initShaders()
@@ -478,10 +480,12 @@ void glSetProjection(Projection_t projType)
 }
 
 // determine from game logic what is to render and set it up here
+/*
 void glRender(Room * room)
 {
     gl_renderFrame(gSpritesKnown, 2);
 }
+*/
 
 void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?
 {
@@ -783,9 +787,9 @@ refexport_t GetRefAPI()
 {
     refexport_t re;
     re.init = win32_initGL;
-    re.loadRooms = glLoadRooms;
+    //re.loadRooms = glLoadRooms;
     re.setViewport = glSetViewport;
-    re.render = glRender;
+    //re.render = glRender;
     re.setProjection = glSetProjection;
     re.registerSprite = glRegisterSprite;
     return re;

@@ -48,7 +48,7 @@ void drawRoom(Room* room, refexport_t* re)
     // TODO(Michael): actually only needs metadata of the scene/room ???
     // eg get all the rendering related stuff out of the scene/room and
     // only send that to the renderer?
-    re->render(room);
+    //re->render(room);
 }
 
 void game_init(refexport_t* re)
@@ -115,16 +115,16 @@ void game_init(refexport_t* re)
     gRoomList[0] = testRoom;
     re->loadRooms(&gRoomList[0]);
     */
-    void * resource = re->registerSprite("..\\assets\\azores.png");
-    testRoom.background.entityResource.modelData = resource;
+    Sprite * resource = re->registerSprite("..\\assets\\azores.png");
+    testRoom.background.refSprite = resource;
     
     Room testRoom2;
-    void * resource2 = re->registerSprite("..\\assets\\fiona.png");
-    testRoom2.background.entityResource.modelData = resource2;
+    Sprite * resource2 = re->registerSprite("..\\assets\\fiona.png");
+    testRoom2.background.refSprite = resource2;
     
     Room testRoom3;
-    void * resource3 = re->registerSprite("..\\assets\\azores.png");
-    testRoom3.background.entityResource.modelData = resource3;
+    Sprite * resource3 = re->registerSprite("..\\assets\\azores.png");
+    testRoom3.background.refSprite = resource3;
 }
 
 void game_update_and_render(float dt, refexport_t* re)

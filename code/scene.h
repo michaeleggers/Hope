@@ -1,14 +1,14 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "common_render.h"
+#include "ref.h"
 
 struct Background
 {
     char * imageFile;
     int imgWidth, imgHeight, channels;
     int x, y;
-    EntityResource entityResource;
+    Sprite * refSprite;
 };
 
 struct Object

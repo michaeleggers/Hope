@@ -140,7 +140,7 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
-void * glRegisterSprite(char * filename);
+Sprite * glRegisterSprite(char * filename);
 
 // exported functions
 extern "C"
