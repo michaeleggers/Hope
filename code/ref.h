@@ -4,10 +4,22 @@
 // interface for renderer. To be implemented in DLL (OpenGL, DirectX, ...)
 // for the moment not platform 
 
-//#include "scene.h"
 #include "common_render.h"
 
+#define MAX_SPRITES 512
+
 struct Sprite;
+
+struct Entity
+{
+    Sprite * sprite;
+};
+
+struct Refdef
+{
+    int numEntities;
+    Entity * entities;
+};
 
 struct refexport_t
 {
@@ -17,6 +29,7 @@ struct refexport_t
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
     Sprite * (*registerSprite)(char * filename);
+    void (*renderFrame)(Refdef * refdef);
 };
 
 typedef refexport_t (*GetRefAPI_t)();

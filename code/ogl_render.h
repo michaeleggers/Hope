@@ -141,6 +141,7 @@ void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
 Sprite * glRegisterSprite(char * filename);
+void gl_renderFrame(Refdef * refdef);
 
 // exported functions
 extern "C"

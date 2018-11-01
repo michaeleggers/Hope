@@ -4,7 +4,6 @@
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
 
-#define MAX_SPRITES 512
 global_var Sprite gSpritesKnown[MAX_SPRITES];
 global_var int gUnknownSpriteIndex;
 
@@ -351,6 +350,8 @@ Sprite create_sprite(char const * file, Shader * shader)
     result.texture = texture;
     result.width = texture.width;
     result.height = texture.height;
+    result.x = 0;
+    result.y = 0;
     strcpy(result.name, file);
     return result;
 }
@@ -487,12 +488,28 @@ void glRender(Room * room)
 }
 */
 
+void gl_renderFrame(Refdef * refdef)
+{
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    Entity * entity = refdef->entities;
+    int numEntities = refdef->numEntities;
+    for (int i = 0;
+         i < numEntities;
+         i++)
+    {
+        Sprite * sprite = entity->sprite;
+        gl_renderFrame(sprite, 1);
+        entity++;
+    }
+    
+    SwapBuffers(gRenderState.deviceContext);
+}
+
 void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?
 {
     if (spriteCount == 0) return;
-    
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GLfloat modelMatrix[] = { // only translate by x,y atm
         1.0f, 0.0f, 0.0f, 0.0f,
@@ -517,8 +534,6 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
         glDrawArrays(GL_TRIANGLES, 0, 6);
         i++;
     }
-    
-    SwapBuffers(gRenderState.deviceContext);
 }
 
 /*
@@ -792,5 +807,6 @@ refexport_t GetRefAPI()
     //re.render = glRender;
     re.setProjection = glSetProjection;
     re.registerSprite = glRegisterSprite;
+    re.renderFrame = gl_renderFrame;
     return re;
 }

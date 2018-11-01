@@ -8,6 +8,8 @@
 /* local to game.cpp */
 Background loadBackground(char * file);
 void drawRoom(Room* room, refexport_t* re);
+void addRoom(Room * room);
+void addEntity(Entity * entity);
 
 /* services from platform layer */
 void update_messages();

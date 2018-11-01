@@ -3,13 +3,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-
 //global_var Sprite sprite;
 //global_var Sprite sprite2;
 //global_var Spritesheet spriteSheet;
 //global_var Shader shaders[MAX_SHADERS]; 
 
-global_var Room gRoomList[1];
+global_var Room gRoomList[MAX_SPRITES];
+global_var int gNumRooms;
+global_var Entity gEntitiesList[MAX_SPRITES];
+global_var int gNumEntities;
+global_var Refdef gRefdef;
 
 Background loadBackground(char * file)
 {
@@ -114,17 +117,37 @@ void game_init(refexport_t* re)
     testRoom.object.y = 5;
     gRoomList[0] = testRoom;
     re->loadRooms(&gRoomList[0]);
-    */
     Sprite * resource = re->registerSprite("..\\assets\\azores.png");
     testRoom.background.refSprite = resource;
+    addRoom(&testRoom);
+    */
     
-    Room testRoom2;
-    Sprite * resource2 = re->registerSprite("..\\assets\\fiona.png");
-    testRoom2.background.refSprite = resource2;
-    
-    Room testRoom3;
+    // TODO(Michael): the order of registration matters at the moment,
+    // because renderer will draw paint over last pixels...
+    Entity testRoom3;
     Sprite * resource3 = re->registerSprite("..\\assets\\azores.png");
-    testRoom3.background.refSprite = resource3;
+    testRoom3.sprite = resource3;
+    addEntity(&testRoom3);
+    
+    Entity testRoom2;
+    Sprite * resource2 = re->registerSprite("..\\assets\\fiona.png");
+    testRoom2.sprite = resource2;
+    addEntity(&testRoom2);
+    
+}
+
+void addRoom(Room * room)
+{
+    if (gNumRooms >= MAX_SPRITES) return;
+    gRoomList[gNumRooms] = *room;
+    gNumRooms++;
+}
+
+void addEntity(Entity * entity)
+{
+    if (gNumEntities >= MAX_SPRITES) return;
+    gEntitiesList[gNumEntities] = *entity;
+    gNumEntities++;
 }
 
 void game_update_and_render(float dt, refexport_t* re)
@@ -156,6 +179,11 @@ void game_update_and_render(float dt, refexport_t* re)
     
     // draw room we're in
     //drawRoom(&gRoomList[0], re);
+    
+    // TODO(Michael): figure out what room to draw...
+    gRefdef.numEntities = gNumEntities;
+    gRefdef.entities = gEntitiesList;
+    re->renderFrame(&gRefdef);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that
