@@ -118,6 +118,7 @@ void l_drawTriangle();
 Shader create_shader(char const * vs_file, char const * fs_file,
                      char ** attribLocations,
                      int numAttribs);
+Texture createTexture(unsigned char * imageData, int width, int height);
 Texture create_texture(char const * texture_file);
 Texture create_texture(Background * bg);
 Quad create_quad();
@@ -127,7 +128,7 @@ Spritesheet create_spritesheet(Texture * texture,
                                int width, int height,
                                int numFrames);
 
-Sprite create_sprite(char const * file, Shader * shader);
+Sprite create_sprite(char * filename, unsigned char * imageData, int width, int height, Shader * shader);
 
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
@@ -140,7 +141,7 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
-Sprite * glRegisterSprite(char * filename);
+Sprite * glRegisterSprite(char * filename, unsigned char * imageData, int width, int height);
 void gl_renderFrame(Refdef * refdef);
 
 // exported functions

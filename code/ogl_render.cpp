@@ -32,7 +32,7 @@ void glLoadRooms(Room* room)
 }
 */
 
-Sprite * glRegisterSprite(char * filename)
+Sprite * glRegisterSprite(char * filename, unsigned char * imageData, int width, int height)
 {
     Sprite * sprite = gSpritesKnown;
     
@@ -63,8 +63,7 @@ Sprite * glRegisterSprite(char * filename)
     //strcpy(sprite->name, filename);
     
     // load the sprite
-    *sprite = create_sprite(filename, &gShaders[SPRITE]);
-    
+    *sprite = create_sprite(filename, imageData, width, height, &gShaders[SPRITE]);
     
     glUseProgram(sprite->shader.shaderProgram);
     
@@ -175,6 +174,32 @@ Shader create_shader(char const * vs_file,
     glDetachShader(result.shaderProgram, result.fragmentShader);
     
     return result;
+}
+
+Texture createTexture(unsigned char * imageData, int width, int height)
+{
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        width,
+        height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        imageData
+        );
+    // TODO(Michael): pull this out later, or is this per texture?
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    return Texture { tex, width, height };
 }
 
 Texture create_texture(char const * texture_file)
@@ -327,15 +352,14 @@ void set_model(GLfloat modelMatrix[])
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, modelMatrix);
 }
 
-// TODO(Michael): use existing texture (if loaded) from data-base
 // NOTE(Michael): maybe instead of passing a shader, we could just
 // a predefined one.
-Sprite create_sprite(char const * file, Shader * shader)
+Sprite create_sprite(char * filename, unsigned char * imageData, int width, int height, Shader * shader)
 {
     Quad quad = create_quad();
     
     // NOTE(Michael): is it OK to use the same texture-slot per model?
-    Texture texture = create_texture(file);
+    Texture texture = createTexture(imageData, width, height);
     
     // has to active BEFORE call to glGetUniformLocation!
     glUseProgram(shader->shaderProgram);
@@ -352,7 +376,7 @@ Sprite create_sprite(char const * file, Shader * shader)
     result.height = texture.height;
     result.x = 0;
     result.y = 0;
-    strcpy(result.name, file);
+    strcpy(result.name, filename);
     return result;
 }
 

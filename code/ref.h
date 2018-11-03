@@ -28,7 +28,7 @@ struct refexport_t
     //void (*render)(Room* room);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
-    Sprite * (*registerSprite)(char * filename);
+    Sprite * (*registerSprite)(char * filename, unsigned char * imageData, int width, int height);
     void (*renderFrame)(Refdef * refdef);
 };
 

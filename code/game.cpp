@@ -124,16 +124,49 @@ void game_init(refexport_t* re)
     
     // TODO(Michael): the order of registration matters at the moment,
     // because renderer will draw paint over last pixels...
+    // TODO(Michael): later the image file will not define the sprites
+    // size. It should be determined by user defined values from asset file.
+    // Also, the filename will come from asset file.
     Entity testRoom3;
-    Sprite * resource3 = re->registerSprite("..\\assets\\azores.png");
+    int width, height, n;
+    unsigned char * testRoom3image;
+    Sprite * resource3;
+    if (fileExists("..\\assets\\azores.png"))
+    {
+        testRoom3image = stbi_load("..\\assets\\azores.png", &width, &height, &n, 4);
+    }
+    else
+    {
+        // TODO(Michael): load random values into Sprite resource data for debug
+        width = 320; // from asset file
+        height = 200; // from asset file
+        testRoom3image = (unsigned char*)malloc(sizeof(unsigned char) * width * height);
+        for (int row = 0;
+             row < height;
+             row++)
+        {
+            for (int col = 0;
+                 col < width;
+                 col++)
+            {
+                *testRoom3image = 0x12;
+                testRoom3image++;
+            }
+        }
+        
+    }
+    resource3 = re->registerSprite("..\\assets\\azores.png", // string just for texture database
+                                   testRoom3image, 
+                                   width, height);
     testRoom3.sprite = resource3;
     addEntity(&testRoom3);
     
+    /*
     Entity testRoom2;
     Sprite * resource2 = re->registerSprite("..\\assets\\fiona.png");
     testRoom2.sprite = resource2;
     addEntity(&testRoom2);
-    
+    */
 }
 
 void addRoom(Room * room)
