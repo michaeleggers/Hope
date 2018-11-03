@@ -199,6 +199,29 @@ Texture createTexture(unsigned char * imageData, int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    
+    if (!imageData)
+    {
+        unsigned char * pixels = (unsigned char*)malloc(sizeof(unsigned char) * width * height);
+        if (pixels)
+        {
+            for (int row = 0;
+                 row < height;
+                 row++)
+            {
+                for (int col = 0;
+                     col < width;
+                     col++)
+                {
+                    *pixels = 0x12;
+                    pixels++;
+                }
+            }
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+            //free(pixels);
+        }
+    }
+    
     return Texture { tex, width, height };
 }
 

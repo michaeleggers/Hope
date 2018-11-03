@@ -129,7 +129,7 @@ void game_init(refexport_t* re)
     // Also, the filename will come from asset file.
     Entity testRoom3;
     int width, height, n;
-    unsigned char * testRoom3image;
+    unsigned char * testRoom3image = 0;
     Sprite * resource3;
     if (fileExists("..\\assets\\azores.png"))
     {
@@ -140,6 +140,7 @@ void game_init(refexport_t* re)
         // TODO(Michael): load random values into Sprite resource data for debug
         width = 320; // from asset file
         height = 200; // from asset file
+        /*
         testRoom3image = (unsigned char*)malloc(sizeof(unsigned char) * width * height);
         for (int row = 0;
              row < height;
@@ -153,7 +154,7 @@ void game_init(refexport_t* re)
                 testRoom3image++;
             }
         }
-        
+        */
     }
     resource3 = re->registerSprite("..\\assets\\azores.png", // string just for texture database
                                    testRoom3image, 
