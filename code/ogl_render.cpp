@@ -1,11 +1,16 @@
 #include "ogl_render.h"
 
 
+// TODO(Michael): separate sprite size = the size of the sprite on screen
+// from texture size = size of the texture data on GPU
+
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
 
 global_var Sprite gSpritesKnown[MAX_SPRITES];
 global_var int gUnknownSpriteIndex;
+
+
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
 // TODO(Michael): load data from asset file or some other resource handling stuff
@@ -176,8 +181,42 @@ Shader create_shader(char const * vs_file,
     return result;
 }
 
+// NOTE(Michael): just a test! remove this stuff later!
+#define checkImageWidth 64
+#define checkImageHeight 64
+static GLubyte checkImage[checkImageHeight][checkImageWidth][4];
+void makeCheckImage(void)
+{
+    int i, j, c;
+    
+    for (i = 0; i < checkImageHeight; i++) {
+        for (j = 0; j < checkImageWidth; j++) {
+            c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+            checkImage[i][j][0] = (GLubyte) c;
+            checkImage[i][j][1] = (GLubyte) c;
+            checkImage[i][j][2] = (GLubyte) c;
+            checkImage[i][j][3] = (GLubyte) 255;
+        }
+    }
+}
+
 Texture createTexture(unsigned char * imageData, int width, int height)
 {
+    makeCheckImage();
+    unsigned int * pixels = (unsigned int*)malloc(sizeof(unsigned int) * width * height);
+    for (int row = 0;
+         row < height;
+         row++)
+    {
+        for (int col = 0;
+             col < width;
+             col++)
+        {
+            *pixels = 0xffffffff;
+            pixels++;
+        }
+    }
+    
     GLuint tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -192,6 +231,19 @@ Texture createTexture(unsigned char * imageData, int width, int height)
         GL_UNSIGNED_BYTE,
         imageData
         );
+    
+    if (!imageData)
+    {
+        
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        //glEnable(GL_TEXTURE_2D);
+        //glBindTexture(GL_TEXTURE_2D, tex);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, checkImageWidth, checkImageHeight, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+        //free(pixels);
+        
+    }
+    
+    
     // TODO(Michael): pull this out later, or is this per texture?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -199,28 +251,6 @@ Texture createTexture(unsigned char * imageData, int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    
-    if (!imageData)
-    {
-        unsigned char * pixels = (unsigned char*)malloc(sizeof(unsigned char) * width * height);
-        if (pixels)
-        {
-            for (int row = 0;
-                 row < height;
-                 row++)
-            {
-                for (int col = 0;
-                     col < width;
-                     col++)
-                {
-                    *pixels = 0x12;
-                    pixels++;
-                }
-            }
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
-            //free(pixels);
-        }
-    }
     
     return Texture { tex, width, height };
 }

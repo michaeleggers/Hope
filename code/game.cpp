@@ -131,15 +131,15 @@ void game_init(refexport_t* re)
     int width, height, n;
     unsigned char * testRoom3image = 0;
     Sprite * resource3;
-    if (fileExists("..\\assets\\azores.png"))
+    if (fileExists("..\\assets\\azore.png"))
     {
         testRoom3image = stbi_load("..\\assets\\azores.png", &width, &height, &n, 4);
     }
     else
     {
         // TODO(Michael): load random values into Sprite resource data for debug
-        width = 320; // from asset file
-        height = 200; // from asset file
+        width = 560; // from asset file
+        height = 144; // from asset file
         /*
         testRoom3image = (unsigned char*)malloc(sizeof(unsigned char) * width * height);
         for (int row = 0;
