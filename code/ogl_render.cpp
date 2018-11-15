@@ -70,10 +70,6 @@ Sprite * glRegisterSprite(char * filename, unsigned char * imageData, int width,
     // load the sprite
     *sprite = create_sprite(filename, imageData, width, height, &gShaders[SPRITE]);
     
-    glUseProgram(sprite->shader.shaderProgram);
-    
-    set_ortho(1000, 1000, &sprite->shader);
-    
     return sprite;
 }
 
@@ -220,29 +216,39 @@ Texture createTexture(unsigned char * imageData, int width, int height)
     GLuint tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        width,
-        height,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        imageData
-        );
-    
-    if (!imageData)
+    if (imageData)
     {
-        
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            width,
+            height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            imageData
+            );
+    }
+    else
+    {
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            checkImageWidth,
+            checkImageHeight,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            checkImage
+            );
+        //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         //glEnable(GL_TEXTURE_2D);
         //glBindTexture(GL_TEXTURE_2D, tex);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, checkImageWidth, checkImageHeight, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+        //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
         //free(pixels);
-        
     }
-    
     
     // TODO(Michael): pull this out later, or is this per texture?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -570,13 +576,22 @@ void gl_renderFrame(Refdef * refdef)
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    RECT windowDimension;
+    GetClientRect(
+        *gRenderState.windowHandle,
+        &windowDimension
+        );
+    
     Entity * entity = refdef->entities;
     int numEntities = refdef->numEntities;
     for (int i = 0;
          i < numEntities;
          i++)
     {
+        
         Sprite * sprite = entity->sprite;
+        glUseProgram(sprite->shader.shaderProgram); // TODO(Michael): do this only once
+        set_ortho(windowDimension.right, windowDimension.bottom, &sprite->shader);
         gl_renderFrame(sprite, 1);
         entity++;
     }
@@ -599,8 +614,8 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
     {
         Sprite sprite = sprites[i];
         float ratio = (float)sprite.width / (float)sprite.height;
-        modelMatrix[0] = ratio * 5.0f;
-        modelMatrix[5] = 1.0f * 5.0f; // TODO(Michael): precompute this
+        modelMatrix[0] = ratio;
+        modelMatrix[5] = 1.0f; // TODO(Michael): precompute this
         modelMatrix[12] = sprite.x;
         modelMatrix[13] = sprite.y;
         // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
