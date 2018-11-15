@@ -9,7 +9,7 @@ global_var Shader gShaders[MAX_SHADERS];
 
 global_var Sprite gSpritesKnown[MAX_SPRITES];
 global_var int gUnknownSpriteIndex;
-
+global_var Texture gFallbackTexture;
 
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
@@ -194,11 +194,37 @@ void makeCheckImage(void)
             checkImage[i][j][3] = (GLubyte) 255;
         }
     }
+    
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        checkImageWidth,
+        checkImageHeight,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        checkImage
+        );
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    //glEnable(GL_TEXTURE_2D);
+    //glBindTexture(GL_TEXTURE_2D, tex);
+    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+    //free(pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    
+    gFallbackTexture = Texture { tex, checkImageWidth, checkImageHeight };
 }
 
 Texture createTexture(unsigned char * imageData, int width, int height)
 {
-    makeCheckImage();
     unsigned int * pixels = (unsigned int*)malloc(sizeof(unsigned int) * width * height);
     for (int row = 0;
          row < height;
@@ -232,22 +258,7 @@ Texture createTexture(unsigned char * imageData, int width, int height)
     }
     else
     {
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA,
-            checkImageWidth,
-            checkImageHeight,
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            checkImage
-            );
-        //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        //glEnable(GL_TEXTURE_2D);
-        //glBindTexture(GL_TEXTURE_2D, tex);
-        //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
-        //free(pixels);
+        return { gFallbackTexture.texture_id, width, height };
     }
     
     // TODO(Michael): pull this out later, or is this per texture?
@@ -884,6 +895,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // multisampling
     glEnable(GL_MULTISAMPLE);
     
+    makeCheckImage();
     
     return 0;
 }
