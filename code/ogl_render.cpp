@@ -178,20 +178,21 @@ Shader create_shader(char const * vs_file,
 }
 
 // NOTE(Michael): just a test! remove this stuff later!
-#define checkImageWidth 64
-#define checkImageHeight 64
-static GLubyte checkImage[checkImageHeight][checkImageWidth][4];
-void makeCheckImage(void)
+#define gCheckImageHeight 64
+#define gCheckImageWidth 64
+global_var GLubyte gCheckImage[gCheckImageWidth * gCheckImageHeight * 4];
+void createFallbackTexture()
 {
     int i, j, c;
     
-    for (i = 0; i < checkImageHeight; i++) {
-        for (j = 0; j < checkImageWidth; j++) {
-            c = ((((i&0x8)==0)^((j&0x8))==0))*255;
-            checkImage[i][j][0] = (GLubyte) c;
-            checkImage[i][j][1] = (GLubyte) c;
-            checkImage[i][j][2] = (GLubyte) c;
-            checkImage[i][j][3] = (GLubyte) 255;
+    for (i = 0; i < gCheckImageHeight; i++) {
+        for (j = 0; j < gCheckImageWidth; j++) {
+            c = ( (((i&0x8)==0)^((j&0x8))==0) ) * 255;
+            int index = 4*(i * gCheckImageWidth + j);
+            gCheckImage[index] = (GLubyte) c;
+            gCheckImage[index+1] = (GLubyte) c;
+            gCheckImage[index+2] = (GLubyte) c;
+            gCheckImage[index+3] = (GLubyte) 255;
         }
     }
     
@@ -203,24 +204,24 @@ void makeCheckImage(void)
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        checkImageWidth,
-        checkImageHeight,
+        gCheckImageWidth,
+        gCheckImageHeight,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
-        checkImage
+        gCheckImage
         );
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     //glEnable(GL_TEXTURE_2D);
     //glBindTexture(GL_TEXTURE_2D, tex);
-    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, checkImage);
+    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, gCheckImage);
     //free(pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     
-    gFallbackTexture = Texture { tex, checkImageWidth, checkImageHeight };
+    gFallbackTexture = Texture { tex, gCheckImageWidth, gCheckImageHeight };
 }
 
 Texture createTexture(unsigned char * imageData, int width, int height)
@@ -895,7 +896,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // multisampling
     glEnable(GL_MULTISAMPLE);
     
-    makeCheckImage();
+    createFallbackTexture();
     
     return 0;
 }

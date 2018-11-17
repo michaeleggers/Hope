@@ -134,6 +134,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
 void gl_renderFrame(Sprite* sprites, int spriteCount);
+void createFallbackTexture();
 
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
