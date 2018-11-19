@@ -94,10 +94,10 @@ void game_init(refexport_t* re)
         }
         */
     }
-    int spriteWidth = 62;
-    int spriteHeight = 62;
-    int xOffset = 280;
-    int yOffset = 72;
+    int spriteWidth = 248;
+    int spriteHeight = 124;
+    int xOffset = 62;
+    int yOffset = 62;
     resource3 = re->registerSprite("..\\assets\\uv_checkerboard.jpg", // string just for texture database
                                    testRoom3image,
                                    textureWidth, textureHeight,

@@ -511,8 +511,6 @@ void draw_sprite(Sprite * sprite,
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-// NOTE(Michael): xOffset, yOffset are only the initial offset
-// but affect every window atm. fix this.
 Spritesheet create_spritesheet(Texture * texture,
                                int xOffset, int yOffset,
                                int width, int height, // framesize in pixel
@@ -524,8 +522,13 @@ Spritesheet create_spritesheet(Texture * texture,
     int textureHeight = texture->height;
     window.width  = (1.0f / (float)textureWidth) * (float)width;
     window.height = (1.0f / (float)textureHeight) * (float)height;
+    if (xOffset > 0)
+        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+    if (yOffset > 0)
+        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+    spritesheet.windows[0] = window;
     
-    for (int i = 0;
+    for (int i = 1;
          i < numFrames;
          ++i)
     {
