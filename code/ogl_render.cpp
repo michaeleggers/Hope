@@ -37,7 +37,8 @@ void glLoadRooms(Room* room)
 }
 */
 
-Sprite * glRegisterSprite(char * filename, unsigned char * imageData, 
+Sprite * glRegisterSprite(char * filename, 
+                          unsigned char * imageData, 
                           int textureWidth, int textureHeight,
                           int xOffset, int yOffset,
                           int width, int height)
@@ -75,7 +76,7 @@ Sprite * glRegisterSprite(char * filename, unsigned char * imageData,
                             textureWidth, textureHeight,
                             xOffset, yOffset,
                             width, height, 
-                            &gShaders[SPRITE]);
+                            &gShaders[SPRITE_SHEET]);
     
     return sprite;
 }
@@ -89,6 +90,9 @@ void initShaders()
     gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite_sheet.frag",
+                                           shaderAttribs,
+                                           sizeof(shaderAttribs) / sizeof(*shaderAttribs));
 }
 
 void printGlErrMsg()
@@ -507,6 +511,8 @@ void draw_sprite(Sprite * sprite,
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+// NOTE(Michael): xOffset, yOffset are only the initial offset
+// but affect every window atm. fix this.
 Spritesheet create_spritesheet(Texture * texture,
                                int xOffset, int yOffset,
                                int width, int height, // framesize in pixel
@@ -640,6 +646,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
     while (i < spriteCount)
     {
         Sprite sprite = sprites[i];
+        Window window = sprite.spritesheet.windows[0];
         float ratio = (float)sprite.width / (float)sprite.height;
         modelMatrix[0] = ratio;
         modelMatrix[5] = 1.0f; // TODO(Michael): precompute this
@@ -647,6 +654,13 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
         modelMatrix[13] = sprite.y;
         // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
         glUseProgram(sprite.shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
+        int window_loc = glGetUniformLocation(sprite.shader.shaderProgram, "window");
+        glUniform4f(window_loc,
+                    // offsets
+                    window.x, window.y,
+                    //0.067f, 0.1f,
+                    window.width, window.height
+                    ); // use active texture
         set_model(modelMatrix);
         glBindVertexArray(sprite.mesh.vao);
         glBindTexture(GL_TEXTURE_2D, sprite.texture.texture_id);

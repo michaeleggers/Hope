@@ -71,7 +71,7 @@ struct Sprite
     Texture texture;
     Quad mesh;
     int width, height; // width, height of sprite. init to image width, height
-    int x, y;
+    int x, y; // pos (where to draw, not necessarily logical pos of entity)
     char name[64];
     Spritesheet spritesheet;
 };

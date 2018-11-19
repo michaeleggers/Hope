@@ -69,9 +69,9 @@ void game_init(refexport_t* re)
     int textureWidth, textureHeight, n;
     unsigned char * testRoom3image = 0;
     Sprite * resource3;
-    if (fileExists("..\\assets\\azores.png"))
+    if (fileExists("..\\assets\\uv_checkerboard.jpg"))
     {
-        testRoom3image = stbi_load("..\\assets\\azores.png", &textureWidth, &textureHeight, &n, 4);
+        testRoom3image = stbi_load("..\\assets\\uv_checkerboard.jpg", &textureWidth, &textureHeight, &n, 4);
     }
     else
     {
@@ -94,11 +94,11 @@ void game_init(refexport_t* re)
         }
         */
     }
-    int spriteWidth = 200;
-    int spriteHeight = 100;
-    int xOffset = 100;
-    int yOffset = 100;
-    resource3 = re->registerSprite("..\\assets\\azores.png", // string just for texture database
+    int spriteWidth = 62;
+    int spriteHeight = 62;
+    int xOffset = 280;
+    int yOffset = 72;
+    resource3 = re->registerSprite("..\\assets\\uv_checkerboard.jpg", // string just for texture database
                                    testRoom3image,
                                    textureWidth, textureHeight,
                                    xOffset, yOffset,
