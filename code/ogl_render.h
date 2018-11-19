@@ -24,6 +24,7 @@
 
 #define global_var static;
 
+#define MAX_SPRITESHEET_WINDOWS 256
 
 enum ShaderType
 {
@@ -58,6 +59,12 @@ struct Quad
     GLfloat textureUVs[12];
 };
 
+struct Spritesheet
+{
+    Window windows[MAX_SPRITESHEET_WINDOWS]; // max 256 frames
+    int freeSlot;
+};
+
 struct Sprite
 {
     Shader shader;
@@ -66,11 +73,7 @@ struct Sprite
     int width, height; // width, height of sprite. init to image width, height
     int x, y;
     char name[64];
-};
-
-struct Spritesheet
-{
-    Window windows[256]; // max 256 frames
+    Spritesheet spritesheet;
 };
 
 struct RenderState
@@ -125,16 +128,22 @@ Quad create_quad();
 void set_ortho(int width, int height, Shader * shader);
 
 Spritesheet create_spritesheet(Texture * texture,
+                               int xOffset, int yOffset,
                                int width, int height,
                                int numFrames);
 
-Sprite create_sprite(char * filename, unsigned char * imageData, int width, int height, Shader * shader);
+Sprite create_sprite(char * filename, unsigned char * imageData, 
+                     int textureWidth, int textureHeight,
+                     int xOffset, int yOffset,
+                     int width, int height,
+                     Shader * shader);
 
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
 void gl_renderFrame(Sprite* sprites, int spriteCount);
 void createFallbackTexture();
+void createWindow(int xOffset, int yOffset, int width, int height);
 
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
@@ -142,7 +151,10 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
-Sprite * glRegisterSprite(char * filename, unsigned char * imageData, int width, int height);
+Sprite * glRegisterSprite(char * filename, unsigned char * imageData,
+                          int textureWidth, int textureHeight,
+                          int xOffset, int yOffset,
+                          int width, int height);
 void gl_renderFrame(Refdef * refdef);
 
 // exported functions

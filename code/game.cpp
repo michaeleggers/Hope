@@ -66,18 +66,18 @@ void game_init(refexport_t* re)
     // size. It should be determined by user defined values from asset file.
     // Also, the filename will come from asset file.
     Entity testRoom3;
-    int width, height, n;
+    int textureWidth, textureHeight, n;
     unsigned char * testRoom3image = 0;
     Sprite * resource3;
-    if (fileExists("..\\assets\\azore.png"))
+    if (fileExists("..\\assets\\azores.png"))
     {
-        testRoom3image = stbi_load("..\\assets\\azores.png", &width, &height, &n, 4);
+        testRoom3image = stbi_load("..\\assets\\azores.png", &textureWidth, &textureHeight, &n, 4);
     }
     else
     {
         // TODO(Michael): load random values into Sprite resource data for debug
-        width = 560; // from asset file
-        height = 144; // from asset file
+        textureWidth = 560; // from asset file
+        textureHeight= 144; // from asset file
         /*
         testRoom3image = (unsigned char*)malloc(sizeof(unsigned char) * width * height);
         for (int row = 0;
@@ -94,9 +94,15 @@ void game_init(refexport_t* re)
         }
         */
     }
+    int spriteWidth = 200;
+    int spriteHeight = 100;
+    int xOffset = 100;
+    int yOffset = 100;
     resource3 = re->registerSprite("..\\assets\\azores.png", // string just for texture database
-                                   testRoom3image, 
-                                   width, height);
+                                   testRoom3image,
+                                   textureWidth, textureHeight,
+                                   xOffset, yOffset,
+                                   spriteWidth, spriteHeight);
     testRoom3.sprite = resource3;
     addEntity(&testRoom3);
     

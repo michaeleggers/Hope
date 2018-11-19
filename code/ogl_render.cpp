@@ -37,7 +37,10 @@ void glLoadRooms(Room* room)
 }
 */
 
-Sprite * glRegisterSprite(char * filename, unsigned char * imageData, int width, int height)
+Sprite * glRegisterSprite(char * filename, unsigned char * imageData, 
+                          int textureWidth, int textureHeight,
+                          int xOffset, int yOffset,
+                          int width, int height)
 {
     Sprite * sprite = gSpritesKnown;
     
@@ -68,7 +71,11 @@ Sprite * glRegisterSprite(char * filename, unsigned char * imageData, int width,
     //strcpy(sprite->name, filename);
     
     // load the sprite
-    *sprite = create_sprite(filename, imageData, width, height, &gShaders[SPRITE]);
+    *sprite = create_sprite(filename, imageData, 
+                            textureWidth, textureHeight,
+                            xOffset, yOffset,
+                            width, height, 
+                            &gShaders[SPRITE]);
     
     return sprite;
 }
@@ -425,12 +432,16 @@ void set_model(GLfloat modelMatrix[])
 
 // NOTE(Michael): maybe instead of passing a shader, we could just
 // a predefined one.
-Sprite create_sprite(char * filename, unsigned char * imageData, int width, int height, Shader * shader)
+Sprite create_sprite(char * filename, unsigned char * imageData, 
+                     int textureWidth, int textureHeight,
+                     int xOffset, int yOffset,
+                     int width, int height,
+                     Shader * shader)
 {
     Quad quad = create_quad();
     
     // NOTE(Michael): is it OK to use the same texture-slot per model?
-    Texture texture = createTexture(imageData, width, height);
+    Texture texture = createTexture(imageData, textureWidth, textureHeight);
     
     // has to active BEFORE call to glGetUniformLocation!
     glUseProgram(shader->shaderProgram);
@@ -439,14 +450,17 @@ Sprite create_sprite(char * filename, unsigned char * imageData, int width, int 
     int tex_loc = glGetUniformLocation(shader->shaderProgram, "tex");
     glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
     
+    Spritesheet spritesheet = create_spritesheet(&texture, xOffset, yOffset, width, height, 1);
+    
     Sprite result;
     result.mesh = quad;
     result.shader = *shader;
     result.texture = texture;
-    result.width = texture.width;
-    result.height = texture.height;
+    result.width = width;
+    result.height = height;
     result.x = 0;
     result.y = 0;
+    result.spritesheet = spritesheet;
     strcpy(result.name, filename);
     return result;
 }
@@ -494,6 +508,7 @@ void draw_sprite(Sprite * sprite,
 }
 
 Spritesheet create_spritesheet(Texture * texture,
+                               int xOffset, int yOffset,
                                int width, int height, // framesize in pixel
                                int numFrames)
 {
