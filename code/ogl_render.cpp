@@ -653,7 +653,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
     while (i < spriteCount)
     {
         Sprite sprite = sprites[i];
-        Window window = sprite.windows[0];
+        Window window = sprite.windows[1];
         float ratio = (float)sprite.width / (float)sprite.height;
         modelMatrix[0] = ratio;
         modelMatrix[5] = 1.0f; // TODO(Michael): precompute this

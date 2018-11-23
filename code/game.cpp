@@ -102,7 +102,15 @@ void game_init(refexport_t* re)
         textureWidth, textureHeight,
         xOffset, yOffset,
         spriteWidth, spriteHeight);
+    testRoom3.sprite = re->registerSprite(
+        "..\\assets\\uv_checkerboard.jpg", // string just for texture database
+        testRoom3image,
+        textureWidth, textureHeight,
+        xOffset*2, yOffset,
+        spriteWidth, spriteHeight);
     addEntity(&testRoom3);
+    
+    
     
     /*
     Entity juggler;
