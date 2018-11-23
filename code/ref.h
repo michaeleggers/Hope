@@ -6,7 +6,9 @@
 
 #include "common_render.h"
 
+
 #define MAX_SPRITES 512
+#define MAX_TEXTURES 256
 
 struct Sprite;
 

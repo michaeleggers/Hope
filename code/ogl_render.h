@@ -49,6 +49,7 @@ struct Shader
 struct Texture
 {
     GLuint texture_id;
+    char name[64];
     int width, height;
 };
 
@@ -68,12 +69,13 @@ struct Spritesheet
 struct Sprite
 {
     Shader shader;
-    Texture texture;
+    Texture * texture;
     Quad mesh;
     int width, height; // width, height of sprite. init to image width, height
     int x, y; // pos (where to draw, not necessarily logical pos of entity)
     char name[64];
-    Spritesheet spritesheet;
+    Window windows[MAX_SPRITESHEET_WINDOWS];
+    int freeWindowIndex;
 };
 
 struct RenderState
@@ -121,7 +123,7 @@ void l_drawTriangle();
 Shader create_shader(char const * vs_file, char const * fs_file,
                      char ** attribLocations,
                      int numAttribs);
-Texture createTexture(unsigned char * imageData, int width, int height);
+Texture * createTexture(unsigned char * imageData, int width, int height);
 Texture create_texture(char const * texture_file);
 Texture create_texture(Background * bg);
 Quad create_quad();
@@ -142,7 +144,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
 void gl_renderFrame(Sprite* sprites, int spriteCount);
-void createFallbackTexture();
+void createFallbackTexture(Texture * texture);
 void createWindow(int xOffset, int yOffset, int width, int height);
 
 // exported stuff

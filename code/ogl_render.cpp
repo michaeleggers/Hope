@@ -7,9 +7,12 @@
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
 
-global_var Sprite gSpritesKnown[MAX_SPRITES];
+global_var Sprite gSpritesKnown[MAX_SPRITES]; 
 global_var int gUnknownSpriteIndex;
+global_var Texture gTexturesKnown[MAX_TEXTURES];
+global_var int gUnknownTextureIndex;
 global_var Texture gFallbackTexture;
+
 
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
@@ -37,25 +40,35 @@ void glLoadRooms(Room* room)
 }
 */
 
-Sprite * glRegisterSprite(char * filename, 
-                          unsigned char * imageData, 
-                          int textureWidth, int textureHeight,
-                          int xOffset, int yOffset,
-                          int width, int height)
+Sprite * glRegisterSprite(
+char * filename, 
+unsigned char * imageData, 
+int textureWidth, int textureHeight,
+int xOffset, int yOffset,
+int width, int height)
 {
     Sprite * sprite = gSpritesKnown;
-    
     // search currently loaded sprites
     for (int i = 0;
          i < gUnknownSpriteIndex;
          i++)
     {
-        if (!strcmp(sprite->name, filename))
+        if (!strcmp(sprite->name, filename)) // TODO(Michael): use another id for sprites than texture name?
+        {
+            Window window;
+            Texture * texture = sprite->texture;
+            int textureWidth = texture->width;
+            int textureHeight = texture->height;
+            window.width  = (1.0f / (float)textureWidth) * (float)width;
+            window.height = (1.0f / (float)textureHeight) * (float)height;
+            window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+            window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+            sprite->windows[sprite->freeWindowIndex] = window;
+            sprite->freeWindowIndex++;
             return sprite;
+        }
         sprite++;
-        
     }
-    
     // find free slot for new sprite
     for (int i = 0;
          i < gUnknownSpriteIndex;
@@ -192,7 +205,7 @@ Shader create_shader(char const * vs_file,
 #define gCheckImageHeight 64
 #define gCheckImageWidth 64
 global_var GLubyte gCheckImage[gCheckImageWidth * gCheckImageHeight * 4];
-void createFallbackTexture()
+void createFallbackTexture(Texture * texture)
 {
     int i, j, c;
     
@@ -232,24 +245,40 @@ void createFallbackTexture()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     
-    gFallbackTexture = Texture { tex, gCheckImageWidth, gCheckImageHeight };
+    // gFallbackTexture = Texture { tex, gCheckImageWidth, gCheckImageHeight };
+    texture->texture_id = tex;
+    texture->width = gCheckImageWidth;
+    texture->height = gCheckImageHeight;
 }
 
-Texture createTexture(unsigned char * imageData, int width, int height)
+Texture * createTexture(char * filename, unsigned char * imageData, int width, int height)
 {
-    unsigned int * pixels = (unsigned int*)malloc(sizeof(unsigned int) * width * height);
-    for (int row = 0;
-         row < height;
-         row++)
+    Texture * texture = gTexturesKnown;
+    
+    // search currently loaded sprites
+    for (int i = 0;
+         i < gUnknownTextureIndex;
+         i++)
     {
-        for (int col = 0;
-             col < width;
-             col++)
-        {
-            *pixels = 0xffffffff;
-            pixels++;
-        }
+        if (!strcmp(texture->name, filename))
+            return texture;
+        texture++;
+        
     }
+    
+    // find free slot for new sprite
+    for (int i = 0;
+         i < gUnknownTextureIndex;
+         i++)
+    {
+        if (!texture->name[0])
+            break; // free slot found
+        texture++;
+    }
+    if (gUnknownTextureIndex == MAX_TEXTURES) // sprite slots full, overwriting last sprite!
+        printf("createTexture error: gUnknownTextureIndex == MAX_TEXTURES\n");
+    else
+        gUnknownTextureIndex++;
     
     GLuint tex = 0;
     glGenTextures(1, &tex);
@@ -270,7 +299,8 @@ Texture createTexture(unsigned char * imageData, int width, int height)
     }
     else
     {
-        return { gFallbackTexture.texture_id, width, height };
+        createFallbackTexture(texture);
+        return texture;
     }
     
     // TODO(Michael): pull this out later, or is this per texture?
@@ -280,46 +310,11 @@ Texture createTexture(unsigned char * imageData, int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    texture->texture_id = tex;
+    texture->width = width;
+    texture->height = height;
     
-    return Texture { tex, width, height };
-}
-
-Texture create_texture(char const * texture_file)
-{
-    // STBI image loading
-    int x, y, n;
-    unsigned char * image_data;
-    if (texture_file == 0)
-    {
-        image_data = stbi_load("..\\assets\\fuckoboingo.png", &x, &y, &n, 4);
-    }
-    else
-    {
-        image_data = stbi_load(texture_file, &x, &y, &n, 4);
-    }
-    
-    GLuint tex = 0;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        x,
-        y,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        image_data
-        );
-    // TODO(Michael): pull this out later, or is this per texture?
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    return Texture { tex, x, y };
+    return texture;
 }
 
 /*
@@ -442,10 +437,11 @@ Sprite create_sprite(char * filename, unsigned char * imageData,
                      int width, int height,
                      Shader * shader)
 {
+    Sprite result;
     Quad quad = create_quad();
     
     // NOTE(Michael): is it OK to use the same texture-slot per model?
-    Texture texture = createTexture(imageData, textureWidth, textureHeight);
+    Texture * texture = createTexture(filename, imageData, textureWidth, textureHeight);
     
     // has to active BEFORE call to glGetUniformLocation!
     glUseProgram(shader->shaderProgram);
@@ -454,9 +450,17 @@ Sprite create_sprite(char * filename, unsigned char * imageData,
     int tex_loc = glGetUniformLocation(shader->shaderProgram, "tex");
     glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
     
-    Spritesheet spritesheet = create_spritesheet(&texture, xOffset, yOffset, width, height, 1);
+    //Spritesheet spritesheet = create_spritesheet(texture, xOffset, yOffset, width, height, 1);
+    // creating spritesheet window
+    Window window;
+    window.width  = (1.0f / (float)textureWidth) * (float)width;
+    window.height = (1.0f / (float)textureHeight) * (float)height;
+    window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+    window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
     
-    Sprite result;
+    result.freeWindowIndex = 0; // first initialization of sprite requres this to be set!
+    result.windows[result.freeWindowIndex] = window;
+    result.freeWindowIndex++;
     result.mesh = quad;
     result.shader = *shader;
     result.texture = texture;
@@ -464,7 +468,7 @@ Sprite create_sprite(char * filename, unsigned char * imageData,
     result.height = height;
     result.x = 0;
     result.y = 0;
-    result.spritesheet = spritesheet;
+    //result.spritesheet = spritesheet;
     strcpy(result.name, filename);
     return result;
 }
@@ -481,7 +485,7 @@ void draw_sprite(Sprite * sprite)
     };
     set_model(modelMatrix);
     glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -507,7 +511,7 @@ void draw_sprite(Sprite * sprite,
     };
     set_model(modelMatrix);
     glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -562,7 +566,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 window.width, window.height
                 ); // use active texture
     glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture.texture_id);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -649,7 +653,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
     while (i < spriteCount)
     {
         Sprite sprite = sprites[i];
-        Window window = sprite.spritesheet.windows[0];
+        Window window = sprite.windows[0];
         float ratio = (float)sprite.width / (float)sprite.height;
         modelMatrix[0] = ratio;
         modelMatrix[5] = 1.0f; // TODO(Michael): precompute this
@@ -666,7 +670,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
                     ); // use active texture
         set_model(modelMatrix);
         glBindVertexArray(sprite.mesh.vao);
-        glBindTexture(GL_TEXTURE_2D, sprite.texture.texture_id);
+        glBindTexture(GL_TEXTURE_2D, sprite.texture->texture_id);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         i++;
     }
@@ -927,8 +931,6 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     // multisampling
     glEnable(GL_MULTISAMPLE);
-    
-    createFallbackTexture();
     
     return 0;
 }

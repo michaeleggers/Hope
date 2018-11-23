@@ -58,7 +58,6 @@ void game_init(refexport_t* re)
 {
     
     // load "room"
-    Room testRoom;
     
     // TODO(Michael): the order of registration matters at the moment,
     // because renderer will draw paint over last pixels...
@@ -68,7 +67,6 @@ void game_init(refexport_t* re)
     Entity testRoom3;
     int textureWidth, textureHeight, n;
     unsigned char * testRoom3image = 0;
-    Sprite * resource3;
     if (fileExists("..\\assets\\uv_checkerboard.jpg"))
     {
         testRoom3image = stbi_load("..\\assets\\uv_checkerboard.jpg", &textureWidth, &textureHeight, &n, 4);
@@ -98,14 +96,30 @@ void game_init(refexport_t* re)
     int spriteHeight = 124;
     int xOffset = 62;
     int yOffset = 62;
-    resource3 = re->registerSprite("..\\assets\\uv_checkerboard.jpg", // string just for texture database
-                                   testRoom3image,
-                                   textureWidth, textureHeight,
-                                   xOffset, yOffset,
-                                   spriteWidth, spriteHeight);
-    testRoom3.sprite = resource3;
+    testRoom3.sprite = re->registerSprite(
+        "..\\assets\\uv_checkerboard.jpg", // string just for texture database
+        testRoom3image,
+        textureWidth, textureHeight,
+        xOffset, yOffset,
+        spriteWidth, spriteHeight);
     addEntity(&testRoom3);
     
+    /*
+    Entity juggler;
+    unsigned char * jugglerSheet = stbi_load("..\\assets\\juggler\\spritesheet_juggler.png", &textureWidth, &textureHeight, &n, 4);
+    int jugglerFrameCount = 10;
+    for (int i =0;
+         i < jugglerFrameCount;
+         ++i)
+    {
+        re->registerSprite(
+            &juggler.sprite,
+            jugglerSheet,
+            400, 65,
+            i*40, 0,
+            40,65);
+    }
+    */
     /*
     Entity testRoom2;
     Sprite * resource2 = re->registerSprite("..\\assets\\fiona.png");
