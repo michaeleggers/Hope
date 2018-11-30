@@ -14,6 +14,7 @@ struct Sprite;
 
 struct Entity
 {
+    float xPos, yPos, zPos;
     Sprite * sprite;
 };
 
@@ -35,6 +36,7 @@ struct refexport_t
                                int xOffset, int yOffset,
                                int width, int height);
     void (*renderFrame)(Refdef * refdef);
+    void (*notify)(void);
 };
 
 typedef refexport_t (*GetRefAPI_t)();

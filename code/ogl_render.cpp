@@ -406,8 +406,8 @@ void set_ortho(int width, int height, Shader * shader)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio,
-          -1.0f, 1.0f,
+    ortho(-10.0f * aspectRatio, 10.0f * aspectRatio,
+          -10.0f, 10.0f,
           -1.0f, 1.0f,
           orthoMatrix
           );
@@ -618,6 +618,19 @@ void glRender(Room * room)
 }
 */
 
+// stuff we have to update when the platform calls notify.
+// eg. update some uniforms in the shader so projection matrix is being adjusted.
+void gl_notify()
+{
+    RECT windowDimension;
+    GetClientRect(
+        *gRenderState.windowHandle,
+        &windowDimension
+        );
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE]);
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET]);
+}
+
 void gl_renderFrame(Refdef * refdef)
 {
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
@@ -637,8 +650,10 @@ void gl_renderFrame(Refdef * refdef)
     {
         
         Sprite * sprite = entity->sprite;
+        sprite->x = entity->xPos;
+        sprite->y = entity->yPos;
+        sprite->z = entity->zPos;
         glUseProgram(sprite->shader.shaderProgram); // TODO(Michael): do this only once
-        set_ortho(windowDimension.right, windowDimension.bottom, &sprite->shader);
         gl_renderFrame(sprite, 1);
         entity++;
     }
@@ -924,6 +939,10 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // init shaders
     initShaders();
     
+    // upload orthographic projection uniform
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE]);
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET]);
+    
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
     glCullFace (GL_BACK); // cull back face
@@ -954,5 +973,6 @@ refexport_t GetRefAPI()
     re.setProjection = glSetProjection;
     re.registerSprite = glRegisterSprite;
     re.renderFrame = gl_renderFrame;
+    re.notify = gl_notify;
     return re;
 }

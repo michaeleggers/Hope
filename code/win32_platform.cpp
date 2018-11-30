@@ -88,6 +88,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             GetClientRect(windowHandle, &rect);
             re.setViewport(rect.left, rect.top, rect.right, rect.bottom);
             re.setProjection(ORTHO);
+            re.notify();
             /*
             for (int i = 0;
                  i < MAX_SHADERS;
