@@ -314,7 +314,7 @@ Texture * createTexture(char * filename, unsigned char * imageData, int width, i
     texture->texture_id = tex;
     texture->width = width;
     texture->height = height;
-    
+    strcpy(texture->name, filename);
     return texture;
 }
 

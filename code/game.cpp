@@ -157,6 +157,12 @@ addEntity(&testRoom3);
                                560, 144,
                                0, 0,
                                560, 144);
+    Entity azores2 = loadSprite(re,
+                                "spriteID_3",
+                                "..\\assets\\azores.png",
+                                560, 144,
+                                0, 0,
+                                560, 144);
     
     addEntity(&azores);
     addEntity(&checkerboard1);
