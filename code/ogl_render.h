@@ -134,7 +134,7 @@ Spritesheet create_spritesheet(Texture * texture,
                                int width, int height,
                                int numFrames);
 
-Sprite create_sprite(char * filename, unsigned char * imageData, 
+Sprite create_sprite(char * spriteID, char * filename, unsigned char * imageData, 
                      int textureWidth, int textureHeight,
                      int xOffset, int yOffset,
                      int width, int height,
@@ -153,7 +153,7 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
-Sprite * glRegisterSprite(char * filename, unsigned char * imageData,
+Sprite * glRegisterSprite(char * spriteID, char * filename, unsigned char * imageData,
                           int textureWidth, int textureHeight,
                           int xOffset, int yOffset,
                           int width, int height);

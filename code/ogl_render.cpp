@@ -41,6 +41,7 @@ void glLoadRooms(Room* room)
 */
 
 Sprite * glRegisterSprite(
+char * spriteID,
 char * filename, 
 unsigned char * imageData, 
 int textureWidth, int textureHeight,
@@ -53,7 +54,7 @@ int width, int height)
          i < gUnknownSpriteIndex;
          i++)
     {
-        if (!strcmp(sprite->name, filename)) // TODO(Michael): use another id for sprites than texture name?
+        if (!strcmp(sprite->name, spriteID))
         {
             Window window;
             Texture * texture = sprite->texture;
@@ -85,7 +86,7 @@ int width, int height)
     //strcpy(sprite->name, filename);
     
     // load the sprite
-    *sprite = create_sprite(filename, imageData, 
+    *sprite = create_sprite(spriteID, filename, imageData, 
                             textureWidth, textureHeight,
                             xOffset, yOffset,
                             width, height, 
@@ -405,8 +406,8 @@ void set_ortho(int width, int height, Shader * shader)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(-10.0f * aspectRatio, 10.0f * aspectRatio,
-          -10.0f, 10.0f,
+    ortho(-1.0f * aspectRatio, 1.0f * aspectRatio,
+          -1.0f, 1.0f,
           -1.0f, 1.0f,
           orthoMatrix
           );
@@ -431,7 +432,7 @@ void set_model(GLfloat modelMatrix[])
 
 // NOTE(Michael): maybe instead of passing a shader, we could just
 // a predefined one.
-Sprite create_sprite(char * filename, unsigned char * imageData, 
+Sprite create_sprite(char * spriteID, char * filename, unsigned char * imageData, 
                      int textureWidth, int textureHeight,
                      int xOffset, int yOffset,
                      int width, int height,
@@ -455,8 +456,14 @@ Sprite create_sprite(char * filename, unsigned char * imageData,
     Window window;
     window.width  = (1.0f / (float)textureWidth) * (float)width;
     window.height = (1.0f / (float)textureHeight) * (float)height;
-    window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
-    window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+    if (xOffset > 0)
+        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+    else
+        window.x = 0;
+    if (yOffset > 0)
+        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+    else
+        window.y = 0;
     
     result.freeWindowIndex = 0; // first initialization of sprite requres this to be set!
     result.windows[result.freeWindowIndex] = window;
@@ -469,7 +476,7 @@ Sprite create_sprite(char * filename, unsigned char * imageData,
     result.x = 0;
     result.y = 0;
     //result.spritesheet = spritesheet;
-    strcpy(result.name, filename);
+    strcpy(result.name, spriteID);
     return result;
 }
 
@@ -653,7 +660,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
     while (i < spriteCount)
     {
         Sprite sprite = sprites[i];
-        Window window = sprite.windows[1];
+        Window window = sprite.windows[0];
         float ratio = (float)sprite.width / (float)sprite.height;
         modelMatrix[0] = ratio;
         modelMatrix[5] = 1.0f; // TODO(Michael): precompute this

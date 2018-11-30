@@ -54,6 +54,31 @@ void drawRoom(Room* room, refexport_t* re)
     //re->render(room);
 }
 
+Entity loadSprite(refexport_t* re,
+                  char * spriteID,
+                  char * texturename,
+                  int textureWidth, int textureHeight,
+                  int xOffset, int yOffset,
+                  int spriteWidth, int spriteHeight)
+{
+    Entity entity;
+    int x, y, n;
+    unsigned char * textureData = 0;
+    if (fileExists(texturename))
+        textureData = stbi_load(texturename, &x, &y, &n, 4);
+    else
+    {
+    }
+    entity.sprite = re->registerSprite(
+        spriteID,
+        texturename,
+        textureData,
+        textureWidth, textureHeight,
+        xOffset, yOffset,
+        spriteWidth, spriteHeight);
+    return entity;
+}
+
 void game_init(refexport_t* re)
 {
     
@@ -64,6 +89,7 @@ void game_init(refexport_t* re)
     // TODO(Michael): later the image file will not define the sprites
     // size. It should be determined by user defined values from asset file.
     // Also, the filename will come from asset file.
+    /*
     Entity testRoom3;
     int textureWidth, textureHeight, n;
     unsigned char * testRoom3image = 0;
@@ -90,42 +116,65 @@ void game_init(refexport_t* re)
                 testRoom3image++;
             }
         }
-        */
-    }
-    int spriteWidth = 248;
-    int spriteHeight = 124;
-    int xOffset = 62;
-    int yOffset = 62;
-    testRoom3.sprite = re->registerSprite(
-        "..\\assets\\uv_checkerboard.jpg", // string just for texture database
-        testRoom3image,
-        textureWidth, textureHeight,
-        xOffset, yOffset,
-        spriteWidth, spriteHeight);
-    testRoom3.sprite = re->registerSprite(
-        "..\\assets\\uv_checkerboard.jpg", // string just for texture database
-        testRoom3image,
-        textureWidth, textureHeight,
-        xOffset*2, yOffset,
-        spriteWidth, spriteHeight);
-    addEntity(&testRoom3);
+        }
+int spriteWidth = 248;
+int spriteHeight = 124;
+int xOffset = 62;
+int yOffset = 62;
+testRoom3.sprite = re->registerSprite(
+"..\\assets\\uv_checkerboard.jpg", // string just for texture database
+testRoom3image,
+textureWidth, textureHeight,
+xOffset, yOffset,
+spriteWidth, spriteHeight);
+testRoom3.sprite = re->registerSprite(
+"..\\assets\\uv_checkerboard.jpg", // string just for texture database
+testRoom3image,
+textureWidth, textureHeight,
+xOffset*2, yOffset,
+spriteWidth, spriteHeight);
+addEntity(&testRoom3);
+*/
+    
+    Entity checkerboard1 = loadSprite(re,
+                                      "spriteID_1",
+                                      "..\\assets\\uv_checkerboard.jpg",
+                                      1024, 1024,
+                                      0, 0,
+                                      1024, 1024);
+    
+    loadSprite(re,
+               "spriteID_1",
+               "..\\assets\\uv_checkerboard.jpg",
+               1024, 1024,
+               62*2, 62,
+               248, 124);
     
     
+    Entity azores = loadSprite(re,
+                               "spriteID_2",
+                               "..\\assets\\azores.png",
+                               560, 144,
+                               0, 0,
+                               560, 144);
+    
+    addEntity(&azores);
+    addEntity(&checkerboard1);
     
     /*
     Entity juggler;
     unsigned char * jugglerSheet = stbi_load("..\\assets\\juggler\\spritesheet_juggler.png", &textureWidth, &textureHeight, &n, 4);
     int jugglerFrameCount = 10;
     for (int i =0;
-         i < jugglerFrameCount;
-         ++i)
+     i < jugglerFrameCount;
+     ++i)
     {
-        re->registerSprite(
-            &juggler.sprite,
-            jugglerSheet,
-            400, 65,
-            i*40, 0,
-            40,65);
+    re->registerSprite(
+        &juggler.sprite,
+        jugglerSheet,
+        400, 65,
+        i*40, 0,
+        40,65);
     }
     */
     /*
