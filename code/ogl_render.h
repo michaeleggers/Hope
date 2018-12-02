@@ -30,6 +30,7 @@ enum ShaderType
 {
     SPRITE,
     SPRITE_SHEET,
+    STANDARD_MESH,
     MAX_SHADERS
 };
 
@@ -58,6 +59,12 @@ struct Quad
     GLuint vao;
     GLfloat vertexPoints[18];
     GLfloat textureUVs[12];
+};
+
+struct GPUMeshData
+{
+    GLuint vao;
+    int vertexCount;
 };
 
 struct Spritesheet
@@ -127,7 +134,8 @@ Texture * createTexture(unsigned char * imageData, int width, int height);
 Texture create_texture(char const * texture_file);
 Texture create_texture(Background * bg);
 Quad create_quad();
-void set_ortho(int width, int height, Shader * shader);
+void set_ortho(int width, int height, Shader * shader, char * location);
+void set_model(GLfloat modelMatrix[], Shader * shader, char * location);
 
 Spritesheet create_spritesheet(Texture * texture,
                                int xOffset, int yOffset,
@@ -144,8 +152,10 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
 void gl_renderFrame(Sprite* sprites, int spriteCount);
+void gl_renderMesh(GPUMeshData* meshData);
 void createFallbackTexture(Texture * texture);
 void createWindow(int xOffset, int yOffset, int width, int height);
+void setUniformMat4fv(Shader * shader, char * location, GLfloat mat4data[]);
 
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
@@ -157,6 +167,7 @@ Sprite * glRegisterSprite(char * spriteID, char * filename, unsigned char * imag
                           int textureWidth, int textureHeight,
                           int xOffset, int yOffset,
                           int width, int height);
+Mesh gl_RegisterMesh(float * vertices, int count);
 void gl_renderFrame(Refdef * refdef);
 
 // exported functions

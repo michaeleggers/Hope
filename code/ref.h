@@ -9,19 +9,40 @@
 
 #define MAX_SPRITES 512
 #define MAX_TEXTURES 256
+#define MAX_MESHES 1
 
 struct Sprite;
 
+enum EntityType
+{
+    SPRITE_E,
+    MESH_E
+};
+
+
+struct Mesh
+{
+    void * meshHandle;
+};
+
 struct Entity
 {
+    EntityType entityType;
     float xPos, yPos, zPos;
-    Sprite * sprite;
+    // TODO(Michael): figure out what the difference between union name at beginning vs end is!
+    union
+    {
+        Sprite * sprite;
+        Mesh mesh;
+    } EntityDescriptor;
 };
 
 struct Refdef
 {
-    int numEntities;
-    Entity * entities;
+    int numSpriteEntities;
+    Entity * spriteEntities;
+    int numMeshEntities;
+    Entity * meshEntities;
 };
 
 struct refexport_t
@@ -35,6 +56,7 @@ struct refexport_t
                                int textureWidth, int textureHeight,
                                int xOffset, int yOffset,
                                int width, int height);
+    Mesh (*registerMesh)(float * vertices, int count);
     void (*renderFrame)(Refdef * refdef);
     void (*notify)(void);
 };

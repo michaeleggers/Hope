@@ -3,15 +3,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-//global_var Sprite sprite;
-//global_var Sprite sprite2;
-//global_var Spritesheet spriteSheet;
-//global_var Shader shaders[MAX_SHADERS]; 
-
-global_var Room gRoomList[MAX_SPRITES];
 global_var int gNumRooms;
-global_var Entity gEntitiesList[MAX_SPRITES];
-global_var int gNumEntities;
+global_var Entity gSpriteEntityList[MAX_SPRITES];
+global_var Entity gMeshEntityList[MAX_MESHES];
+global_var int gNumSpriteEntities;
+global_var int gNumMeshEntities;
 global_var Refdef gRefdef;
 
 Background loadBackground(char * file)
@@ -46,14 +42,6 @@ Object loadObject(char * file)
     return obj;
 }
 
-void drawRoom(Room* room, refexport_t* re)
-{
-    // TODO(Michael): actually only needs metadata of the scene/room ???
-    // eg get all the rendering related stuff out of the scene/room and
-    // only send that to the renderer?
-    //re->render(room);
-}
-
 Sprite * loadSprite(refexport_t* re,
                     char * spriteID,
                     char * texturename,
@@ -82,12 +70,13 @@ Sprite * loadSprite(refexport_t* re,
 void game_init(refexport_t* re)
 {
     Entity checkerboard1;
-    checkerboard1.sprite = loadSprite(re,
-                                      "spriteID_1",
-                                      "..\\assets\\uv_checkerboard.jpg",
-                                      1024, 1024,
-                                      0, 0,
-                                      124, 124);
+    checkerboard1.entityType = SPRITE_E;
+    checkerboard1.EntityDescriptor.sprite = loadSprite(re,
+                                                       "spriteID_1",
+                                                       "..\\assets\\uv_checkerboard.jpg",
+                                                       1024, 1024,
+                                                       0, 0,
+                                                       124, 124);
     
     loadSprite(re,
                "spriteID_1",
@@ -98,24 +87,37 @@ void game_init(refexport_t* re)
     
     
     Entity azores;
-    azores.sprite = loadSprite(re,
-                               "spriteID_2",
-                               "..\\assets\\azores.png",
-                               560, 144,
-                               0, 0,
-                               560, 144);
+    azores.entityType = SPRITE_E;
+    azores.EntityDescriptor.sprite = loadSprite(re,
+                                                "spriteID_2",
+                                                "..\\assets\\azores.png",
+                                                560, 144,
+                                                0, 0,
+                                                560, 144);
     Entity azores2;
-    azores2.sprite = loadSprite(re,
-                                "spriteID_3",
-                                "..\\assets\\azores.png",
-                                560, 144,
-                                0, 0,
-                                560, 144);
+    azores2.entityType = SPRITE_E;
+    azores2.EntityDescriptor.sprite = loadSprite(re,
+                                                 "spriteID_3",
+                                                 "..\\assets\\azores.png",
+                                                 560, 144,
+                                                 0, 0,
+                                                 560, 144);
     
     addEntity(&azores);
     checkerboard1.xPos = 10;
     checkerboard1.yPos = 9;
     addEntity(&checkerboard1);
+    
+    float vertices[] = {
+        -1, -1, 0,
+        0, 1, 0,
+        1, -1, 0
+    };
+    Mesh asteroidMesh = re->registerMesh(vertices, sizeof(vertices)/sizeof(vertices[0]));
+    Entity asteroid;
+    asteroid.entityType = MESH_E;
+    asteroid.EntityDescriptor.mesh = asteroidMesh;
+    addEntity(&asteroid);
     
     
     /*
@@ -123,37 +125,47 @@ void game_init(refexport_t* re)
     unsigned char * jugglerSheet = stbi_load("..\\assets\\juggler\\spritesheet_juggler.png", &textureWidth, &textureHeight, &n, 4);
     int jugglerFrameCount = 10;
     for (int i =0;
-     i < jugglerFrameCount;
-     ++i)
+    i < jugglerFrameCount;
+    ++i)
     {
     re->registerSprite(
-        &juggler.sprite,
-        jugglerSheet,
-        400, 65,
-        i*40, 0,
-        40,65);
+    &juggler.sprite,
+    jugglerSheet,
+    400, 65,
+    i*40, 0,
+    40,65);
     }
     */
 }
 
-void addRoom(Room * room)
-{
-    if (gNumRooms >= MAX_SPRITES) return;
-    gRoomList[gNumRooms] = *room;
-    gNumRooms++;
-}
-
 void addEntity(Entity * entity)
 {
-    if (gNumEntities >= MAX_SPRITES) return;
-    gEntitiesList[gNumEntities] = *entity;
-    gNumEntities++;
+    switch (entity->entityType)
+    {
+        case SPRITE_E:
+        {
+            if (gNumSpriteEntities >= MAX_SPRITES) return;
+            gSpriteEntityList[gNumSpriteEntities] = *entity;
+            gNumSpriteEntities++;
+        }
+        break;
+        
+        case MESH_E:
+        {
+            if (gNumMeshEntities >= MAX_MESHES) return;
+            gMeshEntityList[gNumMeshEntities] = *entity;
+            gNumMeshEntities++;
+        }
+        break;
+    }
 }
 
 void game_update_and_render(float dt, refexport_t* re)
 {
-    gRefdef.numEntities = gNumEntities;
-    gRefdef.entities = gEntitiesList;
+    gRefdef.numSpriteEntities = gNumSpriteEntities;
+    gRefdef.spriteEntities = gSpriteEntityList;
+    gRefdef.numMeshEntities = gNumMeshEntities;
+    gRefdef.meshEntities = gMeshEntityList;
     re->renderFrame(&gRefdef);
 }
 

@@ -12,7 +12,7 @@ global_var int gUnknownSpriteIndex;
 global_var Texture gTexturesKnown[MAX_TEXTURES];
 global_var int gUnknownTextureIndex;
 global_var Texture gFallbackTexture;
-
+global_var GPUMeshData gMeshList[MAX_MESHES];
 
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
@@ -95,6 +95,33 @@ int width, int height)
     return sprite;
 }
 
+Mesh gl_RegisterMesh(float * vertices, int count)
+{
+    Mesh mesh;
+    GPUMeshData gpuMeshData;
+    
+    GLuint vao = 0;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    
+    GLuint vbo = 0;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, count*sizeof(vertices[0]), vertices, GL_STATIC_DRAW);
+    
+    // first param is index
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    // enable, affects only the previously bound VBOs!
+    glEnableVertexAttribArray(0);
+    
+    gpuMeshData.vao = vao;
+    gpuMeshData.vertexCount = count;
+    gMeshList[0] = gpuMeshData;
+    mesh.meshHandle = (void *)&gMeshList[0];
+    
+    return mesh;
+}
+
 void initShaders()
 {
     char * shaderAttribs[] = {
@@ -107,6 +134,9 @@ void initShaders()
     gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite_sheet.frag",
                                            shaderAttribs,
                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh.vert", "..\\code\\standard_mesh.frag",
+                                            shaderAttribs,
+                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
 }
 
 void printGlErrMsg()
@@ -400,7 +430,7 @@ Quad create_quad()
     return mesh;
 }
 
-void set_ortho(int width, int height, Shader * shader)
+void set_ortho(int width, int height, Shader * shader, char * location)
 {
     int targetHeight = ((float)width * 9.0f) / 16.0f;
     float squeeze = (float)targetHeight / (float)height;
@@ -417,17 +447,21 @@ void set_ortho(int width, int height, Shader * shader)
     }
 #endif
     
-    glUseProgram(shader->shaderProgram);
-    GLuint ortho_loc = glGetUniformLocation(shader->shaderProgram, "ortho");
-    glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+    //GLuint ortho_loc = glGetUniformLocation(shader->shaderProgram, "ortho");
+    //glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
+    setUniformMat4fv(shader, location, orthoMatrix);
 }
 
-void set_model(GLfloat modelMatrix[])
+void set_model(GLfloat modelMatrix[], Shader * shader, char * location)
 {
-    GLint shaderID;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &shaderID);
-    GLuint model_loc = glGetUniformLocation(shaderID, "model");
-    glUniformMatrix4fv(model_loc, 1, GL_FALSE, modelMatrix);
+    setUniformMat4fv(shader, location, modelMatrix);
+}
+
+void setUniformMat4fv(Shader * shader, char * location, GLfloat mat4data[])
+{
+    glUseProgram(shader->shaderProgram);
+    GLuint uniformLocation = glGetUniformLocation(shader->shaderProgram, location);
+    glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, mat4data);
 }
 
 // NOTE(Michael): maybe instead of passing a shader, we could just
@@ -490,7 +524,7 @@ void draw_sprite(Sprite * sprite)
         0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f,
     };
-    set_model(modelMatrix);
+    set_model(modelMatrix, &sprite->shader, "model");
     glBindVertexArray(sprite->mesh.vao);
     glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -516,7 +550,7 @@ void draw_sprite(Sprite * sprite,
         0.0f, 0.0f, 1.0f, 0.0f,
         x, -y, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
     };
-    set_model(modelMatrix);
+    set_model(modelMatrix, &sprite->shader, "model");
     glBindVertexArray(sprite->mesh.vao);
     glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -564,7 +598,7 @@ void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
         0.0f, 0.0f, 1.0f, 0.0f,
         x, -y, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
     };
-    set_model(modelMatrix);
+    set_model(modelMatrix, &sprite->shader, "model");
     int window_loc = glGetUniformLocation(sprite->shader.shaderProgram, "window");
     glUniform4f(window_loc,
                 // offsets
@@ -596,7 +630,7 @@ void glSetProjection(Projection_t projType)
         {
             RECT rect;
             GetClientRect(*gRenderState.windowHandle, &rect);
-            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE]);
+            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE], "ortho");
         }
         break;
         
@@ -604,7 +638,7 @@ void glSetProjection(Projection_t projType)
         {
             RECT rect;
             GetClientRect(*gRenderState.windowHandle, &rect);
-            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE]);
+            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE], "ortho");
         }
         break;
     }
@@ -627,8 +661,9 @@ void gl_notify()
         *gRenderState.windowHandle,
         &windowDimension
         );
-    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE]);
-    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET]);
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
 
 void gl_renderFrame(Refdef * refdef)
@@ -642,23 +677,50 @@ void gl_renderFrame(Refdef * refdef)
         &windowDimension
         );
     
-    Entity * entity = refdef->entities;
-    int numEntities = refdef->numEntities;
+    Entity * spriteEntity = refdef->spriteEntities;
+    int numSpriteEntities = refdef->numSpriteEntities;
     for (int i = 0;
-         i < numEntities;
+         i < numSpriteEntities;
          i++)
     {
         
-        Sprite * sprite = entity->sprite;
-        sprite->x = entity->xPos;
-        sprite->y = entity->yPos;
-        sprite->z = entity->zPos;
+        Sprite * sprite = spriteEntity->EntityDescriptor.sprite;
+        sprite->x = spriteEntity->xPos;
+        sprite->y = spriteEntity->yPos;
+        sprite->z = spriteEntity->zPos;
         glUseProgram(sprite->shader.shaderProgram); // TODO(Michael): do this only once
         gl_renderFrame(sprite, 1);
-        entity++;
+        spriteEntity++;
+    }
+    
+    Entity * meshEntity = refdef->meshEntities;
+    int numMeshEntities = refdef->numMeshEntities;
+    for (int i = 0;
+         i < numMeshEntities;
+         ++i)
+    {
+        GPUMeshData * meshData = (GPUMeshData *)(meshEntity->EntityDescriptor.mesh.meshHandle);
+        glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+        gl_renderMesh(meshData);
+        meshEntity++;
     }
     
     SwapBuffers(gRenderState.deviceContext);
+}
+
+void gl_renderMesh(GPUMeshData* meshData)
+{
+    // TODO(Michael): model matrix has to be part of individual mesh!!!!!!!!!
+    GLfloat modelMatrix[] = { // only translate by x,y atm
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
+    };
+    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+    set_model(modelMatrix, &gShaders[STANDARD_MESH], "modelMat");
+    glBindVertexArray(meshData->vao);
+    glDrawArrays(GL_TRIANGLES, 0, meshData->vertexCount);
 }
 
 void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?
@@ -690,7 +752,7 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
                     //0.067f, 0.1f,
                     window.width, window.height
                     ); // use active texture
-        set_model(modelMatrix);
+        set_model(modelMatrix, &sprite.shader, "model");
         glBindVertexArray(sprite.mesh.vao);
         glBindTexture(GL_TEXTURE_2D, sprite.texture->texture_id);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -940,8 +1002,9 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     initShaders();
     
     // upload orthographic projection uniform
-    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE]);
-    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET]);
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
     
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
@@ -972,6 +1035,7 @@ refexport_t GetRefAPI()
     //re.render = glRender;
     re.setProjection = glSetProjection;
     re.registerSprite = glRegisterSprite;
+    re.registerMesh = gl_RegisterMesh;
     re.renderFrame = gl_renderFrame;
     re.notify = gl_notify;
     return re;

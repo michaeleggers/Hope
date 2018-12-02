@@ -7,8 +7,6 @@
 
 /* local to game.cpp */
 Background loadBackground(char * file);
-void drawRoom(Room* room, refexport_t* re);
-void addRoom(Room * room);
 void addEntity(Entity * entity);
 Sprite * loadSprite(refexport_t* re,
                     char * textureID,
