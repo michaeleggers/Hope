@@ -9,7 +9,7 @@
 
 #define MAX_SPRITES 512
 #define MAX_TEXTURES 256
-#define MAX_MESHES 1
+#define MAX_MESHES 1024
 
 struct Sprite;
 

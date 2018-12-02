@@ -114,10 +114,16 @@ void game_init(refexport_t* re)
         1, -1, 0
     };
     Mesh asteroidMesh = re->registerMesh(vertices, sizeof(vertices)/sizeof(vertices[0]));
-    Entity asteroid;
-    asteroid.entityType = MESH_E;
-    asteroid.EntityDescriptor.mesh = asteroidMesh;
-    addEntity(&asteroid);
+    for (int i = 0;
+         i < 100;
+         i++)
+    {
+        Entity asteroid;
+        asteroid.entityType = MESH_E;
+        asteroid.EntityDescriptor.mesh = asteroidMesh;
+        addEntity(&asteroid);
+    }
+    
     
     
     /*

@@ -13,7 +13,7 @@ global_var Texture gTexturesKnown[MAX_TEXTURES];
 global_var int gUnknownTextureIndex;
 global_var Texture gFallbackTexture;
 global_var GPUMeshData gMeshList[MAX_MESHES];
-
+global_var int gUnknownMeshIndex;
 
 // load all rooms (or later on scenes) onto GPU (for now just one room)
 // TODO(Michael): load data from asset file or some other resource handling stuff
@@ -95,6 +95,8 @@ int width, int height)
     return sprite;
 }
 
+// TODO(Michael): how to unregister meshes, like, how do we free
+// data on VRAM??
 Mesh gl_RegisterMesh(float * vertices, int count)
 {
     Mesh mesh;
@@ -116,8 +118,18 @@ Mesh gl_RegisterMesh(float * vertices, int count)
     
     gpuMeshData.vao = vao;
     gpuMeshData.vertexCount = count;
-    gMeshList[0] = gpuMeshData;
-    mesh.meshHandle = (void *)&gMeshList[0];
+    // TODO(Michael): better managing for this?!
+    if (gUnknownMeshIndex == MAX_MESHES)
+    {
+        gMeshList[gUnknownMeshIndex-1] = gpuMeshData;
+        mesh.meshHandle = (void *)&gMeshList[gUnknownMeshIndex-1];
+    }
+    else
+    {
+        gMeshList[gUnknownMeshIndex] = gpuMeshData;
+        mesh.meshHandle = (void *)&gMeshList[gUnknownMeshIndex];
+        gUnknownMeshIndex++;
+    }
     
     return mesh;
 }
