@@ -106,12 +106,16 @@ void game_init(refexport_t* re)
                                                  0, 0,
                                                  560, 144);
     
-    azores.transform.xPos = 0;
-    azores.transform.yPos = 0;
+    azores.transform.xPos = 5;
+    azores.transform.yPos = 5;
+    azores.transform.xScale = 3.0f;
+    azores.transform.yScale = 3.0f;
     checkerboard1.transform.xPos = 10;
     checkerboard1.transform.yPos = 9;
-    //addEntity(&checkerboard1);
+    checkerboard1.transform.xScale = 1.0f;
+    checkerboard1.transform.yScale = 12.0f;
     addEntity(&azores);
+    addEntity(&checkerboard1);
     
     float vertices[] = {
         -1, -1, 0,
@@ -126,6 +130,10 @@ void game_init(refexport_t* re)
         Entity asteroid;
         asteroid.entityType = MESH_E;
         asteroid.EntityDescriptor.mesh = asteroidMesh;
+        asteroid.transform.xPos = sin(i) * 10.0f;
+        asteroid.transform.yPos = cos(i) * 2.0f;
+        asteroid.transform.xScale = 1.0f;
+        asteroid.transform.yScale = 1.0f;
         memcpy(asteroid.transform.modelMat, gModelMatrix, 16*sizeof(float));
         addEntity(&asteroid);
     }

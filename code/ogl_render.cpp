@@ -678,6 +678,14 @@ void gl_notify()
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
 
+void updateModelMat(Entity * entity)
+{
+    entity->transform.modelMat[12] = entity->transform.xPos;
+    entity->transform.modelMat[13] = entity->transform.yPos;
+    entity->transform.modelMat[0] = entity->transform.xScale;
+    entity->transform.modelMat[5] = entity->transform.yScale;
+}
+
 void gl_renderFrame(Refdef * refdef)
 {
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
@@ -697,8 +705,9 @@ void gl_renderFrame(Refdef * refdef)
     {
         
         Sprite * sprite = spriteEntity->EntityDescriptor.sprite;
+        updateModelMat(spriteEntity);
         float ratio = (float)sprite->width / (float)sprite->height;
-        spriteEntity->transform.modelMat[0] = ratio;
+        spriteEntity->transform.modelMat[0] *= ratio;
         glUseProgram(sprite->shader.shaderProgram); // TODO(Michael): do this only once
         set_model(spriteEntity->transform.modelMat, &sprite->shader, "model");
         gl_renderFrame(sprite, 1);
@@ -712,6 +721,7 @@ void gl_renderFrame(Refdef * refdef)
          ++i)
     {
         GPUMeshData * meshData = (GPUMeshData *)(meshEntity->EntityDescriptor.mesh.meshHandle);
+        updateModelMat(meshEntity);
         glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
         set_model(meshEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
         gl_renderMesh(meshData);
