@@ -8,5 +8,13 @@ enum Projection_t
     PERSPECTIVE
 };
 
+
+float gModelMatrix[] = {
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
+};
+
 #endif
 

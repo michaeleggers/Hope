@@ -70,6 +70,7 @@ Sprite * loadSprite(refexport_t* re,
 void game_init(refexport_t* re)
 {
     Entity checkerboard1;
+    memcpy(checkerboard1.transform.modelMat, gModelMatrix, 16*sizeof(float));
     checkerboard1.entityType = SPRITE_E;
     checkerboard1.EntityDescriptor.sprite = loadSprite(re,
                                                        "spriteID_1",
@@ -87,6 +88,7 @@ void game_init(refexport_t* re)
     
     
     Entity azores;
+    memcpy(azores.transform.modelMat, gModelMatrix, 16*sizeof(float));
     azores.entityType = SPRITE_E;
     azores.EntityDescriptor.sprite = loadSprite(re,
                                                 "spriteID_2",
@@ -95,6 +97,7 @@ void game_init(refexport_t* re)
                                                 0, 0,
                                                 560, 144);
     Entity azores2;
+    memcpy(azores2.transform.modelMat, gModelMatrix, 16*sizeof(float));
     azores2.entityType = SPRITE_E;
     azores2.EntityDescriptor.sprite = loadSprite(re,
                                                  "spriteID_3",
@@ -103,10 +106,12 @@ void game_init(refexport_t* re)
                                                  0, 0,
                                                  560, 144);
     
+    azores.transform.xPos = 0;
+    azores.transform.yPos = 0;
+    checkerboard1.transform.xPos = 10;
+    checkerboard1.transform.yPos = 9;
+    //addEntity(&checkerboard1);
     addEntity(&azores);
-    checkerboard1.xPos = 10;
-    checkerboard1.yPos = 9;
-    addEntity(&checkerboard1);
     
     float vertices[] = {
         -1, -1, 0,
@@ -121,6 +126,7 @@ void game_init(refexport_t* re)
         Entity asteroid;
         asteroid.entityType = MESH_E;
         asteroid.EntityDescriptor.mesh = asteroidMesh;
+        memcpy(asteroid.transform.modelMat, gModelMatrix, 16*sizeof(float));
         addEntity(&asteroid);
     }
     

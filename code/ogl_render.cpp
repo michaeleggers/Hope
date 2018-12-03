@@ -436,8 +436,8 @@ Quad create_quad()
     
     mesh.vao = vao;
     // TODO(Michael): use pointers to a global mesh table
-    memcpy(mesh.vertexPoints, points, 18);
-    memcpy(mesh.textureUVs, texturePos, 12);
+    memcpy(mesh.vertexPoints, points, 18*sizeof(GLfloat));
+    memcpy(mesh.textureUVs, texturePos, 12*sizeof(GLfloat));
     
     return mesh;
 }
@@ -697,10 +697,10 @@ void gl_renderFrame(Refdef * refdef)
     {
         
         Sprite * sprite = spriteEntity->EntityDescriptor.sprite;
-        sprite->x = spriteEntity->xPos;
-        sprite->y = spriteEntity->yPos;
-        sprite->z = spriteEntity->zPos;
+        float ratio = (float)sprite->width / (float)sprite->height;
+        spriteEntity->transform.modelMat[0] = ratio;
         glUseProgram(sprite->shader.shaderProgram); // TODO(Michael): do this only once
+        set_model(spriteEntity->transform.modelMat, &sprite->shader, "model");
         gl_renderFrame(sprite, 1);
         spriteEntity++;
     }
@@ -713,6 +713,7 @@ void gl_renderFrame(Refdef * refdef)
     {
         GPUMeshData * meshData = (GPUMeshData *)(meshEntity->EntityDescriptor.mesh.meshHandle);
         glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+        set_model(meshEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
         gl_renderMesh(meshData);
         meshEntity++;
     }
@@ -722,15 +723,6 @@ void gl_renderFrame(Refdef * refdef)
 
 void gl_renderMesh(GPUMeshData* meshData)
 {
-    // TODO(Michael): model matrix has to be part of individual mesh!!!!!!!!!
-    GLfloat modelMatrix[] = { // only translate by x,y atm
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
-    };
-    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
-    set_model(modelMatrix, &gShaders[STANDARD_MESH], "modelMat");
     glBindVertexArray(meshData->vao);
     glDrawArrays(GL_TRIANGLES, 0, meshData->vertexCount);
 }
@@ -739,24 +731,12 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
 {
     if (spriteCount == 0) return;
     
-    GLfloat modelMatrix[] = { // only translate by x,y atm
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
-    };
     int i = 0;
     while (i < spriteCount)
     {
         Sprite sprite = sprites[i];
         Window window = sprite.windows[0];
-        float ratio = (float)sprite.width / (float)sprite.height;
-        modelMatrix[0] = ratio;
-        modelMatrix[5] = 1.0f; // TODO(Michael): precompute this
-        modelMatrix[12] = sprite.x;
-        modelMatrix[13] = sprite.y;
         // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-        glUseProgram(sprite.shader.shaderProgram); // has to active BEFORE call to glGetUniformLocation!
         int window_loc = glGetUniformLocation(sprite.shader.shaderProgram, "window");
         glUniform4f(window_loc,
                     // offsets
@@ -764,7 +744,6 @@ void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups,
                     //0.067f, 0.1f,
                     window.width, window.height
                     ); // use active texture
-        set_model(modelMatrix, &sprite.shader, "model");
         glBindVertexArray(sprite.mesh.vao);
         glBindTexture(GL_TEXTURE_2D, sprite.texture->texture_id);
         glDrawArrays(GL_TRIANGLES, 0, 6);

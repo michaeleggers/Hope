@@ -19,6 +19,13 @@ enum EntityType
     MESH_E
 };
 
+struct Transform
+{
+    float modelMat[16];
+    float xPos, yPos, zPos; // translate
+    float xScale, yScale, zScale;
+    float xRot, yRot, zRot;
+};
 
 struct Mesh
 {
@@ -28,7 +35,7 @@ struct Mesh
 struct Entity
 {
     EntityType entityType;
-    float xPos, yPos, zPos;
+    Transform transform;
     // TODO(Michael): figure out what the difference between union name at beginning vs end is!
     union
     {
