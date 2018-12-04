@@ -124,14 +124,14 @@ void game_init(refexport_t* re)
     };
     Mesh asteroidMesh = re->registerMesh(vertices, sizeof(vertices)/sizeof(vertices[0]));
     for (int i = 0;
-         i < 100;
+         i < 10;
          i++)
     {
         Entity asteroid;
         asteroid.entityType = MESH_E;
         asteroid.EntityDescriptor.mesh = asteroidMesh;
-        asteroid.transform.xPos = sin(i) * 10.0f;
-        asteroid.transform.yPos = cos(i) * 2.0f;
+        asteroid.transform.xPos = 0;
+        asteroid.transform.yPos = 0;
         asteroid.transform.xScale = 1.0f;
         asteroid.transform.yScale = 1.0f;
         memcpy(asteroid.transform.modelMat, gModelMatrix, 16*sizeof(float));
@@ -180,8 +180,23 @@ void addEntity(Entity * entity)
     }
 }
 
+float p = 0.0f;
 void game_update_and_render(float dt, refexport_t* re)
 {
+    printf("dt: %f \n", dt);
+    Entity * meshEntity = gMeshEntityList;
+    p += 0.01f;
+    for (int i = 0;
+         i < gNumMeshEntities;
+         ++i)
+    {
+        meshEntity->transform.xPos = sin(p*i) * 10.0f;
+        //meshEntity->transform.yPos = cos(i * dt / 1000.0f);
+        meshEntity->transform.xScale = cos(p*i) * 3.0f;
+        meshEntity->transform.yScale = sin(p*i) * 10.0f;
+        meshEntity++;
+    }
+    
     gRefdef.numSpriteEntities = gNumSpriteEntities;
     gRefdef.spriteEntities = gSpriteEntityList;
     gRefdef.numMeshEntities = gNumMeshEntities;
