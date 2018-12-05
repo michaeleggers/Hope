@@ -11,7 +11,6 @@
 #define MAX_TEXTURES 256
 #define MAX_MESHES 1024
 
-struct Sprite;
 
 enum EntityType
 {
@@ -27,6 +26,11 @@ struct Transform
     float xRot, yRot, zRot;
 };
 
+struct Sprite
+{
+    void * spriteHandle;
+};
+
 struct Mesh
 {
     void * meshHandle;
@@ -39,7 +43,7 @@ struct Entity
     // TODO(Michael): figure out what the difference between union name at beginning vs end is!
     union
     {
-        Sprite * sprite;
+        Sprite sprite;
         Mesh mesh;
     } EntityDescriptor;
 };
@@ -59,10 +63,10 @@ struct refexport_t
     //void (*render)(Room* room);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
-    Sprite * (*registerSprite)(char * spriteID, char * filename, unsigned char * imageData, 
-                               int textureWidth, int textureHeight,
-                               int xOffset, int yOffset,
-                               int width, int height);
+    Sprite (*registerSprite)(char * spriteID, char * filename, unsigned char * imageData,
+                             int textureWidth, int textureHeight,
+                             int xOffset, int yOffset,
+                             int width, int height);
     Mesh (*registerMesh)(float * vertices, int count);
     void (*renderFrame)(Refdef * refdef);
     void (*notify)(void);

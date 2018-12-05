@@ -7,7 +7,7 @@
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
 
-global_var Sprite gSpritesKnown[MAX_SPRITES]; 
+global_var GPUSprite gSpritesKnown[MAX_SPRITES]; 
 global_var int gUnknownSpriteIndex;
 global_var Texture gTexturesKnown[MAX_TEXTURES];
 global_var int gUnknownTextureIndex;
@@ -40,63 +40,66 @@ void glLoadRooms(Room* room)
 }
 */
 
-Sprite * glRegisterSprite(
+Sprite glRegisterSprite(
 char * spriteID,
 char * filename, 
-unsigned char * imageData, 
+unsigned char * imageData,
 int textureWidth, int textureHeight,
 int xOffset, int yOffset,
 int width, int height)
 {
-    Sprite * sprite = gSpritesKnown;
-    // search currently loaded sprites
-    for (int i = 0;
-         i < gUnknownSpriteIndex;
-         i++)
-    {
-        if (!strcmp(sprite->name, spriteID))
-        {
-            Window window;
-            Texture * texture = sprite->texture;
-            int textureWidth = texture->width;
-            int textureHeight = texture->height;
-            window.width  = (1.0f / (float)textureWidth) * (float)width;
-            window.height = (1.0f / (float)textureHeight) * (float)height;
-            window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
-            window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
-            sprite->windows[sprite->freeWindowIndex] = window;
-            sprite->freeWindowIndex++;
-            return sprite;
-        }
-        sprite++;
-    }
-    // find free slot for new sprite
-    for (int i = 0;
-         i < gUnknownSpriteIndex;
-         i++)
-    {
-        if (!sprite->name[0])
-            break; // free slot found
-        sprite++;
-    }
-    if (gUnknownSpriteIndex == MAX_SPRITES) // sprite slots full, overwriting last sprite!
-        printf("RegisterSprite error: gUnknownSprites == MAX_SPRITES\n");
-    else
-        gUnknownSpriteIndex++;
-    //strcpy(sprite->name, filename);
+    Sprite sprite;
+    GPUSprite gpuSpriteData;
     
-    // load the sprite
-    *sprite = create_sprite(spriteID, filename, imageData, 
-                            textureWidth, textureHeight,
-                            xOffset, yOffset,
-                            width, height, 
-                            &gShaders[SPRITE_SHEET]);
+    gpuSpriteData.shader = &gShaders[SPRITE_SHEET];
+    gpuSpriteData.mesh = create_quad();
+    gpuSpriteData.width = width;
+    gpuSpriteData.height = height;
+    strcpy(gpuSpriteData.name, spriteID);
+    Texture * texture = createTexture(filename, imageData, textureWidth, textureHeight);
+    gpuSpriteData.texture = texture;
+    
+    // TODO(Michael): this is shader specific, why is this here?!
+    // has to active BEFORE call to glGetUniformLocation!
+    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
+    int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
+    glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
+    
+    Window window;
+    window.width  = (1.0f / (float)textureWidth) * (float)width;
+    window.height = (1.0f / (float)textureHeight) * (float)height;
+    if (xOffset > 0)
+        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+    else
+        window.x = 0;
+    if (yOffset > 0)
+        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+    else
+        window.y = 0;
+    gpuSpriteData.windows[0] = window;
+    gpuSpriteData.freeWindowIndex++;
+    
+    if (gUnknownSpriteIndex == MAX_SPRITES)
+    {
+        gSpritesKnown[gUnknownSpriteIndex-1] = gpuSpriteData;
+        sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex-1];
+    }
+    else
+    {
+        gSpritesKnown[gUnknownSpriteIndex] = gpuSpriteData;
+        sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex];
+        gUnknownSpriteIndex++;
+    }
     
     return sprite;
 }
 
 // TODO(Michael): how to unregister meshes, like, how do we free
 // data on VRAM??
+// NOTE(Michael): registerMesh just pushes vertex data onto the GPU,
+// it does check if the same mesh has been loaded before. This has
+// to be done by a higher level system.
 Mesh gl_RegisterMesh(float * vertices, int count)
 {
     Mesh mesh;
@@ -476,98 +479,6 @@ void setUniformMat4fv(Shader * shader, char * location, GLfloat mat4data[])
     glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, mat4data);
 }
 
-// NOTE(Michael): maybe instead of passing a shader, we could just
-// a predefined one.
-Sprite create_sprite(char * spriteID, char * filename, unsigned char * imageData, 
-                     int textureWidth, int textureHeight,
-                     int xOffset, int yOffset,
-                     int width, int height,
-                     Shader * shader)
-{
-    Sprite result;
-    Quad quad = create_quad();
-    
-    // NOTE(Michael): is it OK to use the same texture-slot per model?
-    Texture * texture = createTexture(filename, imageData, textureWidth, textureHeight);
-    
-    // has to active BEFORE call to glGetUniformLocation!
-    glUseProgram(shader->shaderProgram);
-    
-    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int tex_loc = glGetUniformLocation(shader->shaderProgram, "tex");
-    glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
-    
-    //Spritesheet spritesheet = create_spritesheet(texture, xOffset, yOffset, width, height, 1);
-    // creating spritesheet window
-    Window window;
-    window.width  = (1.0f / (float)textureWidth) * (float)width;
-    window.height = (1.0f / (float)textureHeight) * (float)height;
-    if (xOffset > 0)
-        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
-    else
-        window.x = 0;
-    if (yOffset > 0)
-        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
-    else
-        window.y = 0;
-    
-    result.freeWindowIndex = 0; // first initialization of sprite requres this to be set!
-    result.windows[result.freeWindowIndex] = window;
-    result.freeWindowIndex++;
-    result.mesh = quad;
-    result.shader = *shader;
-    result.texture = texture;
-    result.width = width;
-    result.height = height;
-    result.x = 0;
-    result.y = 0;
-    //result.spritesheet = spritesheet;
-    strcpy(result.name, spriteID);
-    return result;
-}
-
-// TODO(Michael): do not genereate model matrix for each call
-void draw_sprite(Sprite * sprite)
-{
-    glUseProgram(sprite->shader.shaderProgram);
-    GLfloat modelMatrix[] = {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f,
-    };
-    set_model(modelMatrix, &sprite->shader, "model");
-    glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-// TODO(Michael): get window dimensions (from current
-// render context maybe?).
-// TODO(Michael): do not generate matrix new all the time?
-// rather create a transform in the sprite struct?
-// TODO(Michael): also get dimensions of projection matrix.
-// as at the moment it is set to the range -1 to 1 for both
-// axis.
-// TODO(Michael): THIS (ALLONE) IS BROKEN DUE TO DRAW_FRAME FUNCTION WHICH
-// USES ANOTHER SHADER...
-void draw_sprite(Sprite * sprite,
-                 float x,
-                 float y)
-{
-    glUseProgram(sprite->shader.shaderProgram);
-    GLfloat modelMatrix[] = { // only translate by x,y atm
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        x, -y, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
-    };
-    set_model(modelMatrix, &sprite->shader, "model");
-    glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
 Spritesheet create_spritesheet(Texture * texture,
                                int xOffset, int yOffset,
                                int width, int height, // framesize in pixel
@@ -595,32 +506,6 @@ Spritesheet create_spritesheet(Texture * texture,
     }
     
     return spritesheet;
-}
-
-// TODO(Michael): keep one model matrix rather than generating it all the time on the stack, duh!
-void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
-                float x, float y,
-                float scaleX, float scaleY)
-{
-    Window window = spritesheet->windows[frame];
-    glUseProgram(sprite->shader.shaderProgram);
-    GLfloat modelMatrix[] = {
-        scaleX * window.width * 1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, scaleY * window.height * 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        x, -y, 0.0f, 1.0f, // in OpenGL y's negative is bottom of screen
-    };
-    set_model(modelMatrix, &sprite->shader, "model");
-    int window_loc = glGetUniformLocation(sprite->shader.shaderProgram, "window");
-    glUniform4f(window_loc,
-                // offsets
-                window.x, window.y,
-                //0.067f, 0.1f,
-                window.width, window.height
-                ); // use active texture
-    glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 // for now
@@ -699,30 +584,30 @@ void gl_renderFrame(Refdef * refdef)
     
     Entity * spriteEntity = refdef->spriteEntities;
     int numSpriteEntities = refdef->numSpriteEntities;
+    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram); // TODO(Michael): do this only once
     for (int i = 0;
          i < numSpriteEntities;
          i++)
     {
         
-        Sprite * sprite = spriteEntity->EntityDescriptor.sprite;
+        GPUSprite * sprite = (GPUSprite *)(spriteEntity->EntityDescriptor.sprite.spriteHandle);
         updateModelMat(spriteEntity);
         float ratio = (float)sprite->width / (float)sprite->height;
         spriteEntity->transform.modelMat[0] *= ratio;
-        glUseProgram(sprite->shader.shaderProgram); // TODO(Michael): do this only once
-        set_model(spriteEntity->transform.modelMat, &sprite->shader, "model");
-        gl_renderFrame(sprite, 1);
+        set_model(spriteEntity->transform.modelMat, &gShaders[SPRITE_SHEET], "model");
+        gl_renderFrame(sprite);
         spriteEntity++;
     }
     
     Entity * meshEntity = refdef->meshEntities;
     int numMeshEntities = refdef->numMeshEntities;
+    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
     for (int i = 0;
          i < numMeshEntities;
          ++i)
     {
         GPUMeshData * meshData = (GPUMeshData *)(meshEntity->EntityDescriptor.mesh.meshHandle);
         updateModelMat(meshEntity);
-        glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
         set_model(meshEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
         gl_renderMesh(meshData);
         meshEntity++;
@@ -737,29 +622,22 @@ void gl_renderMesh(GPUMeshData* meshData)
     glDrawArrays(GL_TRIANGLES, 0, meshData->vertexCount);
 }
 
-void gl_renderFrame(Sprite* sprites, int spriteCount) // later on render-groups, so I can also render moving sprites?
+void gl_renderFrame(GPUSprite * sprite) // later on render-groups, so I can also render moving sprites?
 {
-    if (spriteCount == 0) return;
-    
-    int i = 0;
-    while (i < spriteCount)
-    {
-        Sprite sprite = sprites[i];
-        Window window = sprite.windows[0];
-        // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-        int window_loc = glGetUniformLocation(sprite.shader.shaderProgram, "window");
-        glUniform4f(window_loc,
-                    // offsets
-                    window.x, window.y,
-                    //0.067f, 0.1f,
-                    window.width, window.height
-                    ); // use active texture
-        glBindVertexArray(sprite.mesh.vao);
-        glBindTexture(GL_TEXTURE_2D, sprite.texture->texture_id);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        i++;
-    }
+    Window window = sprite->windows[0];
+    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
+    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
+    glUniform4f(window_loc,
+                // offsets
+                window.x, window.y,
+                //0.067f, 0.1f,
+                window.width, window.height
+                ); // use active texture
+    glBindVertexArray(sprite->mesh.vao);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
 
 /*
 GLfloat texturePos[] = {

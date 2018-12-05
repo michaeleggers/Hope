@@ -61,6 +61,18 @@ struct Quad
     GLfloat textureUVs[12];
 };
 
+struct GPUSprite
+{
+    Shader * shader;
+    Texture * texture;
+    Quad mesh;
+    int width, height; // width, height of sprite. init to image width, height
+    int x, y, z; // pos (where to draw, not necessarily logical pos of entity)
+    char name[64];
+    Window windows[MAX_SPRITESHEET_WINDOWS];
+    int freeWindowIndex;
+};
+
 struct GPUMeshData
 {
     GLuint vao;
@@ -71,18 +83,6 @@ struct Spritesheet
 {
     Window windows[MAX_SPRITESHEET_WINDOWS]; // max 256 frames
     int freeSlot;
-};
-
-struct Sprite
-{
-    Shader shader;
-    Texture * texture;
-    Quad mesh;
-    int width, height; // width, height of sprite. init to image width, height
-    int x, y, z; // pos (where to draw, not necessarily logical pos of entity)
-    char name[64];
-    Window windows[MAX_SPRITESHEET_WINDOWS];
-    int freeWindowIndex;
 };
 
 struct RenderState
@@ -130,7 +130,7 @@ void l_drawTriangle();
 Shader create_shader(char const * vs_file, char const * fs_file,
                      char ** attribLocations,
                      int numAttribs);
-Texture * createTexture(unsigned char * imageData, int width, int height);
+Texture * createTexture(char * filename, unsigned char * imageData, int width, int height);
 Texture create_texture(char const * texture_file);
 Texture create_texture(Background * bg);
 Quad create_quad();
@@ -151,7 +151,7 @@ Sprite create_sprite(char * spriteID, char * filename, unsigned char * imageData
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
-void gl_renderFrame(Sprite* sprites, int spriteCount);
+void gl_renderFrame(GPUSprite* sprite);
 void gl_renderMesh(GPUMeshData* meshData);
 void createFallbackTexture(Texture * texture);
 void createWindow(int xOffset, int yOffset, int width, int height);
@@ -163,10 +163,10 @@ void glLoadRooms(Room* room);
 void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
-Sprite * glRegisterSprite(char * spriteID, char * filename, unsigned char * imageData,
-                          int textureWidth, int textureHeight,
-                          int xOffset, int yOffset,
-                          int width, int height);
+Sprite glRegisterSprite(char * spriteID, char * filename, unsigned char * imageData,
+                        int textureWidth, int textureHeight,
+                        int xOffset, int yOffset,
+                        int width, int height);
 Mesh gl_RegisterMesh(float * vertices, int count);
 void gl_renderFrame(Refdef * refdef);
 
