@@ -38,6 +38,7 @@ struct Window
 {
     float x, y;
     float width, height;
+    int intWidth, intHeight;
 };
 
 struct Shader
@@ -151,12 +152,13 @@ Sprite create_sprite(char * spriteID, char * filename, unsigned char * imageData
 void draw_frame(Sprite * sprite, Spritesheet * spritesheet, int frame,
                 float x, float y, float scaleX, float scaleY);
 
-void gl_renderFrame(GPUSprite* sprite);
+void gl_renderFrame(GPUSprite* sprite, int frame);
 void gl_renderMesh(GPUMeshData* meshData);
 void createFallbackTexture(Texture * texture);
-void createWindow(int xOffset, int yOffset, int width, int height);
 void setUniformMat4fv(Shader * shader, char * location, GLfloat mat4data[]);
-
+Window gl_createWindow(int textureWidth, int textureHeight,
+                       int xOffset, int yOffset,
+                       int width, int height);
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
 void glLoadRooms(Room* room);
@@ -169,6 +171,7 @@ Sprite glRegisterSprite(char * spriteID, char * filename, unsigned char * imageD
                         int width, int height);
 Mesh gl_RegisterMesh(float * vertices, int count);
 void gl_renderFrame(Refdef * refdef);
+void gl_addWindow(Sprite * sprite, int xOffset, int yOffset, int width, int height);
 
 // exported functions
 extern "C"

@@ -40,6 +40,28 @@ void glLoadRooms(Room* room)
 }
 */
 
+Window gl_createWindow(int textureWidth, int textureHeight,
+                       int xOffset, int yOffset,
+                       int width, int height)
+{
+    
+    Window window;
+    window.width  = (1.0f / (float)textureWidth) * (float)width;
+    window.height = (1.0f / (float)textureHeight) * (float)height;
+    if (xOffset > 0)
+        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+    else
+        window.x = 0;
+    if (yOffset > 0)
+        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+    else
+        window.y = 0;
+    window.intWidth = width;
+    window.intHeight = height;
+    
+    return window;
+}
+
 Sprite glRegisterSprite(
 char * spriteID,
 char * filename, 
@@ -49,8 +71,11 @@ int xOffset, int yOffset,
 int width, int height)
 {
     Sprite sprite;
+    sprite.frame = 0;
+    sprite.frameCount = 1;
     GPUSprite gpuSpriteData;
     
+    gpuSpriteData.freeWindowIndex = 0;
     gpuSpriteData.shader = &gShaders[SPRITE_SHEET];
     gpuSpriteData.mesh = create_quad();
     gpuSpriteData.width = width;
@@ -66,17 +91,10 @@ int width, int height)
     int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
     glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
     
-    Window window;
-    window.width  = (1.0f / (float)textureWidth) * (float)width;
-    window.height = (1.0f / (float)textureHeight) * (float)height;
-    if (xOffset > 0)
-        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
-    else
-        window.x = 0;
-    if (yOffset > 0)
-        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
-    else
-        window.y = 0;
+    Window window = gl_createWindow(textureWidth, textureHeight,
+                                    xOffset, yOffset,
+                                    width, height);
+    
     gpuSpriteData.windows[0] = window;
     gpuSpriteData.freeWindowIndex++;
     
@@ -93,6 +111,20 @@ int width, int height)
     }
     
     return sprite;
+}
+
+void gl_addSpriteFrame(Sprite * sprite, int xOffset, int yOffset, int width, int height)
+{
+    GPUSprite * gpuSprite = (GPUSprite *)sprite->spriteHandle;
+    if (gpuSprite->freeWindowIndex == MAX_SPRITESHEET_WINDOWS) return;
+    
+    int textureWidth = gpuSprite->texture->width;
+    int textureHeight = gpuSprite->texture->height;
+    gpuSprite->windows[gpuSprite->freeWindowIndex] = gl_createWindow(textureWidth, textureHeight,
+                                                                     xOffset, yOffset,
+                                                                     width, height);
+    gpuSprite->freeWindowIndex++;
+    sprite->frameCount++;
 }
 
 // TODO(Michael): how to unregister meshes, like, how do we free
@@ -591,11 +623,14 @@ void gl_renderFrame(Refdef * refdef)
     {
         
         GPUSprite * sprite = (GPUSprite *)(spriteEntity->sprite.spriteHandle);
+        int frame = spriteEntity->sprite.frame;
+        int intWidth = sprite->windows[frame].intWidth;
+        int intHeight = sprite->windows[frame].intHeight;
         updateModelMat(spriteEntity);
-        float ratio = (float)sprite->width / (float)sprite->height;
+        float ratio = (float)intWidth / (float)intHeight;
         spriteEntity->transform.modelMat[0] *= ratio;
         set_model(spriteEntity->transform.modelMat, &gShaders[SPRITE_SHEET], "model");
-        gl_renderFrame(sprite);
+        gl_renderFrame(sprite, frame);
         spriteEntity++;
     }
     
@@ -622,9 +657,9 @@ void gl_renderMesh(GPUMeshData* meshData)
     glDrawArrays(GL_TRIANGLES, 0, meshData->vertexCount);
 }
 
-void gl_renderFrame(GPUSprite * sprite) // later on render-groups, so I can also render moving sprites?
+void gl_renderFrame(GPUSprite * sprite, int frame) // later on render-groups, so I can also render moving sprites?
 {
-    Window window = sprite->windows[0];
+    Window window = sprite->windows[frame];
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
     int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
     glUniform4f(window_loc,
@@ -917,5 +952,6 @@ refexport_t GetRefAPI()
     re.registerMesh = gl_RegisterMesh;
     re.renderFrame = gl_renderFrame;
     re.notify = gl_notify;
+    re.addSpriteFrame = gl_addSpriteFrame;
     return re;
 }

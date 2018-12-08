@@ -120,10 +120,11 @@ void game_init(refexport_t* re)
                                               560, 144);
     azores2.transform.xPos = 0;
     azores2.transform.yPos = 0;
-    azores2.transform.xScale = 2.0f;
-    azores2.transform.yScale = 2.0f;
+    azores2.transform.xScale = 7.0f;
+    azores2.transform.yScale = 7.0f;
     azores2.sprite = azoresSprite2;
-    
+    re->addSpriteFrame(&azores2.sprite, 50, 50, 50, 50);
+    azores2.sprite.frame = 1;
     
     /*
     Entity azores2;

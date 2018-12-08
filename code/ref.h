@@ -29,6 +29,8 @@ struct Transform
 struct Sprite
 {
     void * spriteHandle;
+    int frame;
+    int frameCount;
 };
 
 struct Mesh
@@ -70,6 +72,7 @@ struct refexport_t
     Mesh (*registerMesh)(float * vertices, int count);
     void (*renderFrame)(Refdef * refdef);
     void (*notify)(void);
+    void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);
 };
 
 typedef refexport_t (*GetRefAPI_t)();
