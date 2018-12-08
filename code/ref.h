@@ -45,7 +45,7 @@ struct Entity
     {
         Sprite sprite;
         Mesh mesh;
-    } EntityDescriptor;
+    };
 };
 
 struct Refdef

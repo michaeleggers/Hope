@@ -590,7 +590,7 @@ void gl_renderFrame(Refdef * refdef)
          i++)
     {
         
-        GPUSprite * sprite = (GPUSprite *)(spriteEntity->EntityDescriptor.sprite.spriteHandle);
+        GPUSprite * sprite = (GPUSprite *)(spriteEntity->sprite.spriteHandle);
         updateModelMat(spriteEntity);
         float ratio = (float)sprite->width / (float)sprite->height;
         spriteEntity->transform.modelMat[0] *= ratio;
@@ -606,7 +606,7 @@ void gl_renderFrame(Refdef * refdef)
          i < numMeshEntities;
          ++i)
     {
-        GPUMeshData * meshData = (GPUMeshData *)(meshEntity->EntityDescriptor.mesh.meshHandle);
+        GPUMeshData * meshData = (GPUMeshData *)(meshEntity->mesh.meshHandle);
         updateModelMat(meshEntity);
         set_model(meshEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
         gl_renderMesh(meshData);

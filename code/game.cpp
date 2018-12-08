@@ -106,7 +106,24 @@ void game_init(refexport_t* re)
     azores.transform.yPos = 5;
     azores.transform.xScale = 3.0f;
     azores.transform.yScale = 3.0f;
-    azores.EntityDescriptor.sprite = azoresSprite;
+    azores.sprite = azoresSprite;
+    
+    
+    Entity azores2;
+    memcpy(azores2.transform.modelMat, gModelMatrix, 16*sizeof(float));
+    azores2.entityType = SPRITE_E;
+    Sprite azoresSprite2 = re->registerSprite("spriteID_2",
+                                              "..\\assets\\azores.png",
+                                              azoresImageData,
+                                              560, 144,
+                                              0, 0,
+                                              560, 144);
+    azores2.transform.xPos = 0;
+    azores2.transform.yPos = 0;
+    azores2.transform.xScale = 2.0f;
+    azores2.transform.yScale = 2.0f;
+    azores2.sprite = azoresSprite2;
+    
     
     /*
     Entity azores2;
@@ -130,6 +147,7 @@ void game_init(refexport_t* re)
     addEntity(&checkerboard1);
     */
     addEntity(&azores);
+    addEntity(&azores2);
     
     float vertices[] = {
         -1, -1, 0,
@@ -143,7 +161,7 @@ void game_init(refexport_t* re)
     {
         Entity asteroid;
         asteroid.entityType = MESH_E;
-        asteroid.EntityDescriptor.mesh = asteroidMesh;
+        asteroid.mesh = asteroidMesh;
         asteroid.transform.xPos = 0;
         asteroid.transform.yPos = 0;
         asteroid.transform.xScale = 1.0f;
