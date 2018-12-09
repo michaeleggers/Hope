@@ -98,7 +98,7 @@ void game_init(refexport_t* re)
         azoresImageData = stbi_load("..\\assets\\azores.png", &x, &y, &n, 4);
     Sprite azoresSprite = re->registerSprite("spriteID_2",
                                              "..\\assets\\azores.png",
-                                             0,
+                                             azoresImageData,
                                              560, 144,
                                              0, 0,
                                              560, 144);
@@ -124,7 +124,7 @@ void game_init(refexport_t* re)
     azores2.transform.yScale = 7.0f;
     azores2.sprite = azoresSprite2;
     re->addSpriteFrame(&azores2.sprite, 50, 50, 50, 50);
-    re->addSpriteFrame(&azores2.sprite, 300, 50, 100, 50);
+    re->addSpriteFrame(&azores2.sprite, 300, 0, 10, 10);
     azores2.sprite.frame = 2;
     
     /*
@@ -232,17 +232,17 @@ void game_update_and_render(float dt, refexport_t* re)
     }
     Entity * spriteEntity = gSpriteEntityList;
     static float posX = 0.0f;
-    static float scaleY 1.0f;
+    static float scaleY = 1.0f;
     for (int i = 0;
          i < gNumSpriteEntities;
          ++i)
     {
-        spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
-        spriteEntity->transform.yScale = 10 *sin(scaleY);
+        //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
+        //spriteEntity->transform.yScale = 10 *sin(scaleY);
         spriteEntity++;
     }
     posX += dt * 0.00001f;
-    scaleY += dt * 0.1f;
+    scaleY += dt * 0.000001f;
     
     gRefdef.numSpriteEntities = gNumSpriteEntities;
     gRefdef.spriteEntities = gSpriteEntityList;
