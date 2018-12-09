@@ -127,7 +127,8 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         break;
         
         // TODO(Michael): What's the deal with WM_PAINT?
-        case WM_PAINT:
+        /*
+            case WM_PAINT:
         {
             PAINTSTRUCT pstr;
             HDC deviceContext = BeginPaint(windowHandle, &pstr);
@@ -135,8 +136,9 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             SwapBuffers(deviceContext); // same handle as global DC?
             EndPaint(windowHandle, &pstr);
             result = DefWindowProc(windowHandle, WM_ERASEBKGND, wParam, lParam);
-        }
+            }
         break;
+        */
         
         
         case WM_CLOSE:

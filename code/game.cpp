@@ -98,7 +98,7 @@ void game_init(refexport_t* re)
         azoresImageData = stbi_load("..\\assets\\azores.png", &x, &y, &n, 4);
     Sprite azoresSprite = re->registerSprite("spriteID_2",
                                              "..\\assets\\azores.png",
-                                             azoresImageData,
+                                             0,
                                              560, 144,
                                              0, 0,
                                              560, 144);
@@ -118,13 +118,14 @@ void game_init(refexport_t* re)
                                               560, 144,
                                               0, 0,
                                               560, 144);
-    azores2.transform.xPos = 0;
+    azores2.transform.xPos = -10;
     azores2.transform.yPos = 0;
     azores2.transform.xScale = 7.0f;
     azores2.transform.yScale = 7.0f;
     azores2.sprite = azoresSprite2;
     re->addSpriteFrame(&azores2.sprite, 50, 50, 50, 50);
-    azores2.sprite.frame = 1;
+    re->addSpriteFrame(&azores2.sprite, 300, 50, 100, 50);
+    azores2.sprite.frame = 2;
     
     /*
     Entity azores2;
@@ -212,11 +213,13 @@ void addEntity(Entity * entity)
 }
 
 float p = 0.0f;
+float velocity = 0.003f;
 void game_update_and_render(float dt, refexport_t* re)
 {
-    //printf("dt: %f \n", dt);
+    if (dt/1000.0f > 40.0f)
+        printf("dt: %f\n", dt/1000.0f);
     Entity * meshEntity = gMeshEntityList;
-    p += 0.01f;
+    p += 0.03f;
     for (int i = 0;
          i < gNumMeshEntities;
          ++i)
@@ -227,10 +230,23 @@ void game_update_and_render(float dt, refexport_t* re)
         meshEntity->transform.yScale = sin(p*i) * 10.0f;
         meshEntity++;
     }
+    Entity * spriteEntity = gSpriteEntityList;
+    static float posX = 0.0f;
+    static float scaleY 1.0f;
+    for (int i = 0;
+         i < gNumSpriteEntities;
+         ++i)
+    {
+        spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
+        spriteEntity->transform.yScale = 10 *sin(scaleY);
+        spriteEntity++;
+    }
+    posX += dt * 0.00001f;
+    scaleY += dt * 0.1f;
     
     gRefdef.numSpriteEntities = gNumSpriteEntities;
     gRefdef.spriteEntities = gSpriteEntityList;
-    gRefdef.numMeshEntities = gNumMeshEntities;
+    // gRefdef.numMeshEntities = gNumMeshEntities;
     gRefdef.meshEntities = gMeshEntityList;
     re->renderFrame(&gRefdef);
 }

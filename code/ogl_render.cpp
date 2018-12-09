@@ -649,6 +649,7 @@ void gl_renderFrame(Refdef * refdef)
     }
     
     SwapBuffers(gRenderState.deviceContext);
+    glFinish();
 }
 
 void gl_renderMesh(GPUMeshData* meshData)
@@ -882,8 +883,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     }
     
     int contextAttribs[] = {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 5,
         WGL_CONTEXT_FLAGS_ARB, 0,
         WGL_CONTEXT_PROFILE_MASK_ARB,// WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
         WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -900,6 +901,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     if (!wglMakeCurrent(gRenderState.deviceContext, gRenderState.renderContext))
     {
+        printf("wglMakeCurrent failed!\n\n"); // TODO(Michael): better error message
         return 1;
     }
 #endif
@@ -930,7 +932,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync
-    wglSwapIntervalEXT(1);
+    wglSwapIntervalEXT(0);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);
