@@ -25,6 +25,9 @@ int meg_strbuf_write(meg_strbuf* strbuf, char const * s)
     return strbuf->pos - s_length;
 }
 
+// TODO(Michael): check if fopen was successful.
+// TODO(Michael): we actually should be able to use
+// win32 api directly from the platform layer?!
 char* load_text(char const * filename)
 {
     FILE* f = fopen(filename, "r");

@@ -175,13 +175,13 @@ void initShaders()
         "vertex_pos",
         "texture_pos",
     };
-    gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
+    gShaders[SPRITE] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_f.glsl",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
-    gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite_sheet.frag",
+    gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_sheet_f.glsl",
                                            shaderAttribs,
                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
-    gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh.vert", "..\\code\\standard_mesh.frag",
+    gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh_v.glsl", "..\\code\\standard_mesh_f.glsl",
                                             shaderAttribs,
                                             sizeof(shaderAttribs) / sizeof(*shaderAttribs));
 }
