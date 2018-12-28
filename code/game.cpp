@@ -41,54 +41,9 @@ Object loadObject(char * file)
     }
     return obj;
 }
-/*
-Sprite * loadSprite(refexport_t* re,
-                    char * spriteID,
-                    char * texturename,
-                    int textureWidth, int textureHeight,
-                    int xOffset, int yOffset,
-                    int spriteWidth, int spriteHeight)
-{
-    Sprite * sprite;
-    int x, y, n;
-    unsigned char * textureData = 0;
-    if (fileExists(texturename))
-        textureData = stbi_load(texturename, &x, &y, &n, 4);
-    else
-    {
-    }
-    sprite = re->registerSprite(
-        spriteID,
-        texturename,
-        textureData,
-        textureWidth, textureHeight,
-        xOffset, yOffset,
-        spriteWidth, spriteHeight);
-    return sprite;
-}
-*/
 
 void game_init(refexport_t* re)
 {
-    /*
-    Entity checkerboard1;
-    memcpy(checkerboard1.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    checkerboard1.entityType = SPRITE_E;
-    checkerboard1.EntityDescriptor.sprite = loadSprite(re,
-                                                       "spriteID_1",
-                                                       "..\\assets\\uv_checkerboard.jpg",
-                                                       1024, 1024,
-                                                       0, 0,
-                                                       124, 124);
-                                                       
-    loadSprite(re,
-               "spriteID_1",
-               "..\\assets\\uv_checkerboard.jpg",
-               1024, 1024,
-               62*2, 62,
-               248, 124);
-    */
-    
     Entity azores;
     memcpy(azores.transform.modelMat, gModelMatrix, 16*sizeof(float));
     azores.entityType = SPRITE_E;
@@ -96,8 +51,7 @@ void game_init(refexport_t* re)
     unsigned char * azoresImageData = 0;
     if (fileExists("..\\assets\\azores.png"))
         azoresImageData = stbi_load("..\\assets\\azores.png", &x, &y, &n, 4);
-    Sprite azoresSprite = re->registerSprite("spriteID_2",
-                                             "..\\assets\\azores.png",
+    Sprite azoresSprite = re->registerSprite("..\\assets\\azores.png",
                                              azoresImageData,
                                              560, 144,
                                              0, 0,
@@ -112,8 +66,7 @@ void game_init(refexport_t* re)
     Entity azores2;
     memcpy(azores2.transform.modelMat, gModelMatrix, 16*sizeof(float));
     azores2.entityType = SPRITE_E;
-    Sprite azoresSprite2 = re->registerSprite("spriteID_2",
-                                              "..\\assets\\azores.png",
+    Sprite azoresSprite2 = re->registerSprite("..\\assets\\azores.png",
                                               azoresImageData,
                                               560, 144,
                                               0, 0,
@@ -125,29 +78,8 @@ void game_init(refexport_t* re)
     azores2.sprite = azoresSprite2;
     re->addSpriteFrame(&azores2.sprite, 50, 50, 50, 50);
     re->addSpriteFrame(&azores2.sprite, 300, 0, 10, 10);
-    azores2.sprite.frame = 2;
+    azores2.sprite.currentFrame = 2;
     
-    /*
-    Entity azores2;
-    memcpy(azores2.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    azores2.entityType = SPRITE_E;
-    azores2.EntityDescriptor.sprite = loadSprite(re,
-                                                 "spriteID_3",
-                                                 "..\\assets\\azores.png",
-                                                 560, 144,
-                                                 0, 0,
-                                                 560, 144);
-                                                 
-    azores.transform.xPos = 5;
-    azores.transform.yPos = 5;
-    azores.transform.xScale = 3.0f;
-    azores.transform.yScale = 3.0f;
-    checkerboard1.transform.xPos = 10;
-    checkerboard1.transform.yPos = 9;
-    checkerboard1.transform.xScale = 1.0f;
-    checkerboard1.transform.yScale = 12.0f;
-    addEntity(&checkerboard1);
-    */
     addEntity(&azores);
     addEntity(&azores2);
     
@@ -171,23 +103,6 @@ void game_init(refexport_t* re)
         memcpy(asteroid.transform.modelMat, gModelMatrix, 16*sizeof(float));
         addEntity(&asteroid);
     }
-    
-    /*
-    Entity juggler;
-    unsigned char * jugglerSheet = stbi_load("..\\assets\\juggler\\spritesheet_juggler.png", &textureWidth, &textureHeight, &n, 4);
-    int jugglerFrameCount = 10;
-    for (int i =0;
-    i < jugglerFrameCount;
-    ++i)
-    {
-    re->registerSprite(
-    &juggler.sprite,
-    jugglerSheet,
-    400, 65,
-    i*40, 0,
-    40,65);
-    }
-    */
 }
 
 void addEntity(Entity * entity)

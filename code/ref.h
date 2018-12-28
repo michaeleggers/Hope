@@ -29,7 +29,7 @@ struct Transform
 struct Sprite
 {
     void * spriteHandle;
-    int frame;
+    int currentFrame;
     int frameCount;
 };
 
@@ -65,7 +65,7 @@ struct refexport_t
     //void (*render)(Room* room);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
-    Sprite (*registerSprite)(char * spriteID, char * filename, unsigned char * imageData,
+    Sprite (*registerSprite)(char * filename, unsigned char * imageData,
                              int textureWidth, int textureHeight,
                              int xOffset, int yOffset,
                              int width, int height);

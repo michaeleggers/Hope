@@ -15,31 +15,6 @@ global_var Texture gFallbackTexture;
 global_var GPUMeshData gMeshList[MAX_MESHES];
 global_var int gUnknownMeshIndex;
 
-// load all rooms (or later on scenes) onto GPU (for now just one room)
-// TODO(Michael): load data from asset file or some other resource handling stuff
-/*
-void glLoadRooms(Room* room)
-{
-    char * shaderAttribs[] = {
-        "vertex_pos",
-        "texture_pos",
-    };
-    gShaders[SPRITE] = create_shader("..\\code\\sprite.vert", "..\\code\\sprite.frag",
-                                     shaderAttribs,
-                                     sizeof(shaderAttribs) / sizeof(*shaderAttribs));
-    gSpritesKnown[0] = create_sprite(room->background.imageFile, &gShaders[SPRITE]);
-    gSpritesKnown[0].x = room->background.x;
-    gSpritesKnown[0].y = room->background.y;
-    gSpritesKnown[1] = create_sprite(room->object.imageFile, &gShaders[SPRITE]);
-    gSpritesKnown[1].x = room->object.x;
-    gSpritesKnown[1].y = room->object.y;
-    
-    glUseProgram(gSpritesKnown[0].shader.shaderProgram);
-    
-    set_ortho(1000, 1000, &gSpritesKnown[0].shader);
-}
-*/
-
 Window gl_createWindow(int textureWidth, int textureHeight,
                        int xOffset, int yOffset,
                        int width, int height)
@@ -63,7 +38,6 @@ Window gl_createWindow(int textureWidth, int textureHeight,
 }
 
 Sprite glRegisterSprite(
-char * spriteID,
 char * filename, 
 unsigned char * imageData,
 int textureWidth, int textureHeight,
@@ -71,7 +45,7 @@ int xOffset, int yOffset,
 int width, int height)
 {
     Sprite sprite;
-    sprite.frame = 0;
+    sprite.currentFrame = 0;
     sprite.frameCount = 1;
     GPUSprite gpuSpriteData;
     
@@ -80,7 +54,6 @@ int width, int height)
     gpuSpriteData.mesh = create_quad();
     gpuSpriteData.width = width;
     gpuSpriteData.height = height;
-    strcpy(gpuSpriteData.name, spriteID);
     Texture * texture = createTexture(filename, imageData, textureWidth, textureHeight);
     gpuSpriteData.texture = texture;
     
@@ -395,38 +368,6 @@ Texture * createTexture(char * filename, unsigned char * imageData, int width, i
     return texture;
 }
 
-/*
-Texture create_texture_from_background(Background* bg)
-{
-unsigned char * image_data = bg->image;
-int x = bg->x;
-int y = bg->y;
-
-GLuint tex = 0;
-glGenTextures(1, &tex);
-glBindTexture(GL_TEXTURE_2D, tex);
-glTexImage2D(
-GL_TEXTURE_2D,
-0,
-GL_RGBA,
-x,
-y,
-0,
-GL_RGBA,
-GL_UNSIGNED_BYTE,
-image_data
-);
-// TODO(Michael): pull this out later, or is this per texture?
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-return Texture { tex, x, y };
-}
-*/
-
 Quad create_quad()
 {
     Quad mesh;
@@ -573,14 +514,6 @@ void glSetProjection(Projection_t projType)
     }
 }
 
-// determine from game logic what is to render and set it up here
-/*
-void glRender(Room * room)
-{
-    gl_renderFrame(gSpritesKnown, 2);
-}
-*/
-
 // stuff we have to update when the platform calls notify.
 // eg. update some uniforms in the shader so projection matrix is being adjusted.
 void gl_notify()
@@ -623,7 +556,7 @@ void gl_renderFrame(Refdef * refdef)
     {
         
         GPUSprite * sprite = (GPUSprite *)(spriteEntity->sprite.spriteHandle);
-        int frame = spriteEntity->sprite.frame;
+        int frame = spriteEntity->sprite.currentFrame;
         int intWidth = sprite->windows[frame].intWidth;
         int intHeight = sprite->windows[frame].intHeight;
         updateModelMat(spriteEntity);
@@ -673,19 +606,6 @@ void gl_renderFrame(GPUSprite * sprite, int frame) // later on render-groups, so
     glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
-
-
-/*
-GLfloat texturePos[] = {
-0.0f, 0.0f,
-1.0f, 0.0f,
-1.0f, 1.0f,
-
-1.0f, 1.0f,
-0.0f, 1.0f,
-0.0f, 0.0f
-};
-*/
 
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 {
