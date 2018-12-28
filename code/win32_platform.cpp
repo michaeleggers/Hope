@@ -90,25 +90,6 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             re.setViewport(rect.left, rect.top, rect.right, rect.bottom);
             //re.setProjection(ORTHO);
             re.notify();
-            /*
-            for (int i = 0;
-                 i < MAX_SHADERS;
-                 ++i)
-            {
-                set_ortho(rect.right, rect.bottom, &shaders[i]);
-            }
-            glViewport(0, 0, rect.right, rect.bottom);
-            
-            //game_update_and_render(100000000.0f);
-            //SwapBuffers(global_deviceContext);
-            
-            /*
-        // recompute orthographic projection matrix
-        float aspectRatio = (float)rect.right / (float)rect.bottom;
-        float orthoMatrix[16] = { };
-        ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f, orthoMatrix);
-        glUniformMatrix4fv(ortho_loc, 1, GL_FALSE, orthoMatrix);
-*/
         }
         break;
         
@@ -156,6 +137,12 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
     }
     return result;
 }
+
+struct XBoxControllerState
+{
+    DWORD packetNumber;
+    WORD digitalButtons;
+};
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
 {
@@ -230,6 +217,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     game_init(&re);
     
+    // XBox Controller state
+    XBoxControllerState controllerState = {};
+    
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);
     LARGE_INTEGER startingTime, endingTime, elapsedTime;
@@ -243,6 +233,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 #if _WIN32
     printf("ON WIN32 PLATFORM!\n");
 #endif
+    
     
     while (running)
     {
@@ -268,14 +259,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             if( dwResult == ERROR_SUCCESS )
             {
                 // Controller is connected 
-                printf("controller %d connected\n", i);
+                //printf("controller %d connected\n", i);
+                
+                // controller 0
+                if (i == 0)
+                {
+                    DWORD currentPacketNumber = state.dwPacketNumber;
+                    DWORD oldPacketNumber = controllerState.packetNumber;
+                    if (currentPacketNumber != oldPacketNumber)
+                    {
+                        printf("state of controller %d has changed\n", i);
+                    }
+                    controllerState.packetNumber = currentPacketNumber;
+                }
             }
             else
             {
-                // Controller is not connected 
-                //printf("controller %d not connected\n");
+                // Controller is not connected
+                if (i == 0)
+                    printf("controller not connected\n");
             }
         }
+        // end XBox Controller
         
         game_update_and_render((float)elapsedTime.QuadPart, &re); 
         //SwapBuffers(global_deviceContext);
