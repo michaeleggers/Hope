@@ -219,6 +219,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     // XBox Controller state
     XBoxControllerState controllerState = {};
+    Controller controller = {};
     
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);
@@ -247,6 +248,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         }
         
         // XBox Controller
+        
         DWORD dwResult;    
         for (DWORD i=0; i< XUSER_MAX_COUNT; i++ )
         {
@@ -268,20 +270,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
                     DWORD oldPacketNumber = controllerState.packetNumber;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
                     {
-                        printf("DPAD UP pressed\n");
+                        //printf("DPAD UP pressed\n");
+                        controller.dpadUp = 1;
                     }
+                    else
+                        controller.dpadUp = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
                     {
-                        printf("DPAD DOWN pressed\n");
+                        //printf("DPAD DOWN pressed\n");
+                        controller.dpadDown = 1;
                     }
+                    else
+                        controller.dpadDown = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
                     {
-                        printf("DPAD LEFT pressed\n");
+                        //printf("DPAD LEFT pressed\n");
+                        controller.dpadLeft = 1;
                     }
+                    else
+                        controller.dpadLeft = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
                     {
-                        printf("DPAD RIGHT pressed\n");
+                        //printf("DPAD RIGHT pressed\n");
+                        controller.dpadRight = 1;
                     }
+                    else
+                        controller.dpadRight = 0;
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A)
+                        controller.dpadA = 1;
+                    else
+                        controller.dpadA = 0;
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
+                        controller.dpadX = 1;
+                    else
+                        controller.dpadX = 0;
                     controllerState.packetNumber = currentPacketNumber;
                 }
             }
@@ -294,7 +316,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         }
         // end XBox Controller
         
-        game_update_and_render((float)elapsedTime.QuadPart, &re); 
+        game_update_and_render((float)elapsedTime.QuadPart, &controller, &re); 
         //SwapBuffers(global_deviceContext);
         
         QueryPerformanceCounter(&endingTime);

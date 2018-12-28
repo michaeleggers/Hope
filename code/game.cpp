@@ -129,31 +129,52 @@ void addEntity(Entity * entity)
 
 float p = 0.0f;
 float velocity = 0.003f;
-void game_update_and_render(float dt, refexport_t* re)
+void game_update_and_render(float dt, Controller* controller, refexport_t* re)
 {
-    if (dt/1000.0f > 40.0f)
-        printf("dt: %f\n", dt/1000.0f);
-    Entity * meshEntity = gMeshEntityList;
-    p += 0.03f;
-    for (int i = 0;
-         i < gNumMeshEntities;
-         ++i)
-    {
-        meshEntity->transform.xPos = sin(p*i) * 10.0f;
-        //meshEntity->transform.yPos = cos(i * dt / 1000.0f);
-        meshEntity->transform.xScale = cos(p*i) * 3.0f;
-        meshEntity->transform.yScale = sin(p*i) * 10.0f;
-        meshEntity++;
-    }
-    Entity * spriteEntity = gSpriteEntityList;
     static float posX = 0.0f;
     static float scaleY = 1.0f;
+    
+    Entity * spriteEntity = gSpriteEntityList;
     for (int i = 0;
          i < gNumSpriteEntities;
          ++i)
     {
         //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
-        //spriteEntity->transform.yScale = 10 *sin(scaleY);
+        
+        if (controller->dpadUp)
+        {
+            printf("DPAD UP pressed\n");
+            spriteEntity->transform.yPos += 0.07f * dt/1000;
+        }
+        
+        if (controller->dpadDown)
+        {
+            printf("DPAD DOWN pressed\n");
+            spriteEntity->transform.yPos -= 0.07f * dt/1000;
+        }
+        
+        if (controller->dpadLeft)
+        {
+            printf("DPAD LEFT pressed\n");
+            spriteEntity->transform.xPos -= 0.07f * dt/1000;
+        }
+        
+        if (controller->dpadRight)
+        {
+            printf("DPAD RIGHT pressed\n");
+            spriteEntity->transform.xPos += 0.07f * dt/1000;
+        }
+        if (controller->dpadA)
+        {
+            spriteEntity->transform.xScale += 0.04f * dt/1000;
+            spriteEntity->transform.yScale += 0.04f * dt/1000;
+        }
+        if (controller->dpadX)
+        {
+            spriteEntity->transform.xScale -= 0.04f * dt/1000;
+            spriteEntity->transform.yScale -= 0.04f * dt/1000;
+        }
+        
         spriteEntity++;
     }
     posX += dt * 0.00001f;
