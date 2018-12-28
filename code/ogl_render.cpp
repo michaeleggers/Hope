@@ -306,7 +306,7 @@ Texture * createTexture(char * filename, unsigned char * imageData, int width, i
 {
     Texture * texture = gTexturesKnown;
     
-    // search currently loaded sprites
+    // search currently loaded textures
     for (int i = 0;
          i < gUnknownTextureIndex;
          i++)
@@ -317,7 +317,7 @@ Texture * createTexture(char * filename, unsigned char * imageData, int width, i
         
     }
     
-    // find free slot for new sprite
+    // find free slot for new texture
     for (int i = 0;
          i < gUnknownTextureIndex;
          i++)
@@ -326,7 +326,7 @@ Texture * createTexture(char * filename, unsigned char * imageData, int width, i
             break; // free slot found
         texture++;
     }
-    if (gUnknownTextureIndex == MAX_TEXTURES) // sprite slots full, overwriting last sprite!
+    if (gUnknownTextureIndex == MAX_TEXTURES) // texture slots full, overwriting last sprite!
         printf("createTexture error: gUnknownTextureIndex == MAX_TEXTURES\n");
     else
         gUnknownTextureIndex++;

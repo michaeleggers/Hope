@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <wingdi.h>
 #include <dwmapi.h>
+#include <xinput.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -252,6 +253,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+        }
+        
+        // XBox Controller
+        DWORD dwResult;    
+        for (DWORD i=0; i< XUSER_MAX_COUNT; i++ )
+        {
+            XINPUT_STATE state;
+            ZeroMemory( &state, sizeof(XINPUT_STATE) );
+            
+            // Simply get the state of the controller from XInput.
+            dwResult = XInputGetState( i, &state );
+            
+            if( dwResult == ERROR_SUCCESS )
+            {
+                // Controller is connected 
+                printf("controller %d connected\n", i);
+            }
+            else
+            {
+                // Controller is not connected 
+                //printf("controller %d not connected\n");
+            }
         }
         
         game_update_and_render((float)elapsedTime.QuadPart, &re); 
