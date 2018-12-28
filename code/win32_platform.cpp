@@ -266,9 +266,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
                 {
                     DWORD currentPacketNumber = state.dwPacketNumber;
                     DWORD oldPacketNumber = controllerState.packetNumber;
-                    if (currentPacketNumber != oldPacketNumber)
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
                     {
-                        printf("state of controller %d has changed\n", i);
+                        printf("DPAD UP pressed\n");
+                    }
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+                    {
+                        printf("DPAD DOWN pressed\n");
+                    }
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
+                    {
+                        printf("DPAD LEFT pressed\n");
+                    }
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
+                    {
+                        printf("DPAD RIGHT pressed\n");
                     }
                     controllerState.packetNumber = currentPacketNumber;
                 }
