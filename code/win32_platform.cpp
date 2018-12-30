@@ -77,6 +77,8 @@ bool VID_LoadRefresh(char const * name)
     return true;
 }
 
+Keyboard keyboard = {};
+
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
@@ -121,12 +123,72 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             }
         break;
         */
-        
-        
         case WM_CLOSE:
         {
             running = false;
             PostQuitMessage(0);
+        }
+        break;
+        
+        case WM_KEYDOWN:
+        {
+            switch(wParam)
+            {
+                case VK_UP:
+                {
+                    keyboard.keycodes[ARROW_UP] = 1;
+                }
+                break;
+                
+                case VK_DOWN:
+                {
+                    keyboard.keycodes[ARROW_DOWN] = 1;
+                }
+                break;
+                
+                case VK_LEFT:
+                {
+                    keyboard.keycodes[ARROW_LEFT] = 1;
+                }
+                break;
+                
+                case VK_RIGHT:
+                {
+                    keyboard.keycodes[ARROW_RIGHT] = 1;
+                }
+                break;
+            }
+        }
+        break;
+        
+        case WM_KEYUP:
+        {
+            switch(wParam)
+            {
+                case VK_UP:
+                {
+                    keyboard.keycodes[ARROW_UP] = 0;
+                }
+                break;
+                
+                case VK_DOWN:
+                {
+                    keyboard.keycodes[ARROW_DOWN] = 0;
+                }
+                break;
+                
+                case VK_LEFT:
+                {
+                    keyboard.keycodes[ARROW_LEFT] = 0;
+                }
+                break;
+                
+                case VK_RIGHT:
+                {
+                    keyboard.keycodes[ARROW_RIGHT] = 0;
+                }
+                break;
+            }
         }
         break;
         
@@ -274,28 +336,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
                     DWORD oldPacketNumber = controllerState.packetNumber;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
                     {
-                        //printf("DPAD UP pressed\n");
                         controller.dpadUp = 1;
                     }
                     else
                         controller.dpadUp = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
                     {
-                        //printf("DPAD DOWN pressed\n");
                         controller.dpadDown = 1;
                     }
                     else
                         controller.dpadDown = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
                     {
-                        //printf("DPAD LEFT pressed\n");
                         controller.dpadLeft = 1;
                     }
                     else
                         controller.dpadLeft = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
                     {
-                        //printf("DPAD RIGHT pressed\n");
                         controller.dpadRight = 1;
                     }
                     else
@@ -304,10 +362,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
                         controller.dpadA = 1;
                     else
                         controller.dpadA = 0;
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
+                        controller.dpadB = 1;
+                    else
+                        controller.dpadB = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
                         controller.dpadX = 1;
                     else
                         controller.dpadX = 0;
+                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y)
+                        controller.dpadY = 1;
+                    else
+                        controller.dpadY = 0;
                     controllerState.packetNumber = currentPacketNumber;
                 }
             }
@@ -323,7 +389,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         }
         // end XBox Controller
         
-        game_update_and_render((float)elapsedTime.QuadPart, &controller, &re); 
+        game_update_and_render((float)elapsedTime.QuadPart, &controller, &keyboard, &re); 
         //SwapBuffers(global_deviceContext);
         
         QueryPerformanceCounter(&endingTime);

@@ -4,6 +4,15 @@
 #include "ref.h"
 #include "scene.h"
 
+enum Keycodes
+{
+    ARROW_LEFT,
+    ARROW_RIGHT,
+    ARROW_UP,
+    ARROW_DOWN,
+    MAX_KEYCODES = 255
+};
+
 struct Controller
 {
     int dpadUp;
@@ -17,6 +26,11 @@ struct Controller
     int dpadY;
     
     int connected;
+};
+
+struct Keyboard
+{
+    int keycodes[256];
 };
 
 /* local to game.cpp */
@@ -35,6 +49,6 @@ bool fileExists(char const * file);
 
 /* services to platform layer */
 void game_init(refexport_t* re);
-void game_update_and_render(float dt, Controller* controller, refexport_t* re);
+void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard, refexport_t* re);
 
 #endif GAME_H

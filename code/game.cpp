@@ -129,7 +129,7 @@ void addEntity(Entity * entity)
 
 float p = 0.0f;
 float velocity = 0.003f;
-void game_update_and_render(float dt, Controller* controller, refexport_t* re)
+void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard, refexport_t* re)
 {
     static float posX = 0.0f;
     static float scaleY = 1.0f;
@@ -141,38 +141,38 @@ void game_update_and_render(float dt, Controller* controller, refexport_t* re)
     {
         //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
         
-        if (controller->dpadUp)
+        if (controller->dpadUp || keyboard->keycodes[ARROW_UP])
         {
             printf("DPAD UP pressed\n");
             spriteEntity->transform.yPos += 0.07f * dt/1000;
         }
         
-        if (controller->dpadDown)
+        if (controller->dpadDown || keyboard->keycodes[ARROW_DOWN])
         {
             printf("DPAD DOWN pressed\n");
             spriteEntity->transform.yPos -= 0.07f * dt/1000;
         }
         
-        if (controller->dpadLeft)
+        if (controller->dpadLeft || keyboard->keycodes[ARROW_LEFT])
         {
             printf("DPAD LEFT pressed\n");
             spriteEntity->transform.xPos -= 0.07f * dt/1000;
         }
         
-        if (controller->dpadRight)
+        if (controller->dpadRight || keyboard->keycodes[ARROW_RIGHT])
         {
             printf("DPAD RIGHT pressed\n");
             spriteEntity->transform.xPos += 0.07f * dt/1000;
         }
         if (controller->dpadA)
         {
-            spriteEntity->transform.xScale += 0.04f * dt/1000;
-            spriteEntity->transform.yScale += 0.04f * dt/1000;
+            spriteEntity->transform.xScale += 0.01f * dt/1000;
+            spriteEntity->transform.yScale += 0.01f * dt/1000;
         }
         if (controller->dpadX)
         {
-            spriteEntity->transform.xScale -= 0.04f * dt/1000;
-            spriteEntity->transform.yScale -= 0.04f * dt/1000;
+            spriteEntity->transform.xScale -= 0.01f * dt/1000;
+            spriteEntity->transform.yScale -= 0.01f * dt/1000;
         }
         
         spriteEntity++;
