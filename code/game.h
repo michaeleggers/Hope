@@ -15,6 +15,8 @@ struct Controller
     int dpadB;
     int dpadX;
     int dpadY;
+    
+    int connected;
 };
 
 /* local to game.cpp */

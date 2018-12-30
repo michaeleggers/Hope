@@ -142,6 +142,7 @@ struct XBoxControllerState
 {
     DWORD packetNumber;
     WORD digitalButtons;
+    int connected;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
@@ -261,11 +262,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             if( dwResult == ERROR_SUCCESS )
             {
                 // Controller is connected 
-                //printf("controller %d connected\n", i);
                 
                 // controller 0
                 if (i == 0)
                 {
+                    if (!controller.connected)
+                        printf("controller connected\n");
+                    controller.connected = 1;
+                    
                     DWORD currentPacketNumber = state.dwPacketNumber;
                     DWORD oldPacketNumber = controllerState.packetNumber;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
@@ -310,8 +314,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             else
             {
                 // Controller is not connected
-                if (i == 0)
-                    printf("controller not connected\n");
+                if (i == 0 && controller.connected)
+                {
+                    printf("controller disconnected\n");
+                    controller.connected = 0;
+                }
             }
         }
         // end XBox Controller
