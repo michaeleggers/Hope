@@ -13,18 +13,29 @@ enum Keycode
     MAX_KEYCODES = 255
 };
 
+enum ControllerKeycode
+{
+    DPAD_LEFT,
+    DPAD_RIGHT,
+    DPAD_UP,
+    DPAD_DOWN,
+    DPAD_A,
+    DPAD_B,
+    DPAD_X,
+    DPAD_Y,
+    NONE
+};
+
+enum DeviceType
+{
+    KEYBOARD,
+    CONTROLLER
+};
+
 struct Controller
 {
-    int dpadUp;
-    int dpadDown;
-    int dpadLeft;
-    int dpadRight;
-    
-    int dpadA;
-    int dpadB;
-    int dpadX;
-    int dpadY;
-    
+    int keycodes[256];
+    int prevKeycodes[256];
     int connected;
 };
 
@@ -32,6 +43,13 @@ struct Keyboard
 {
     int keycodes[256];
     int prevKeycodes[256];
+};
+
+struct InputDevice
+{
+    DeviceType deviceType;
+    Keyboard * keyboard;
+    Controller * controller;
 };
 
 /* local to game.cpp */
@@ -50,6 +68,6 @@ bool fileExists(char const * file);
 
 /* services to platform layer */
 void game_init(refexport_t* re);
-void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard, refexport_t* re);
+void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re);
 
 #endif GAME_H

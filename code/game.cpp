@@ -127,19 +127,61 @@ void addEntity(Entity * entity)
     }
 }
 
-bool keyPressed(Keyboard* keyboard, Keycode keycode)
+bool keyPressed(InputDevice* device, Keycode keycode)
 {
-    if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
+    switch (device->deviceType)
     {
-        keyboard->prevKeycodes[keycode] = 1;
-        return true;
-    }
-    else if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
-    {
-        keyboard->prevKeycodes[keycode] = 0;
+        case KEYBOARD:
+        {
+            Keyboard* keyboard = device->keyboard;
+            if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
+            {
+                keyboard->prevKeycodes[keycode] = 1;
+                return true;
+            }
+            else if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
+            {
+                keyboard->prevKeycodes[keycode] = 0;
+                return false;
+            }
+            return false;
+        }
+        break;
+        
+        case CONTROLLER:
+        {
+            int keycodeToController;
+            switch (keycode)
+            {
+                case ARROW_LEFT: keycodeToController = DPAD_LEFT;
+                break;
+                case ARROW_RIGHT : keycodeToController = DPAD_RIGHT;
+                break;
+                case ARROW_UP : keycodeToController = DPAD_UP;
+                break;
+                case ARROW_DOWN : keycodeToController = DPAD_DOWN;
+                break;
+                default : keycodeToController = NONE;
+            }
+            if (keycodeToController == NONE) return false;
+            Controller* controller = device->controller;
+            if (controller->keycodes[keycodeToController] && !controller->prevKeycodes[keycodeToController])
+            {
+                controller->prevKeycodes[keycodeToController] = 1;
+                return true;
+            }
+            else if (!controller->keycodes[keycodeToController] && controller->prevKeycodes[keycodeToController])
+            {
+                controller->prevKeycodes[keycodeToController] = 0;
+                return false;
+            }
+            return false;
+        }
+        break;
+        
+        default:
         return false;
     }
-    return false;
 }
 
 bool keyDown(Keyboard* keyboard, Keycode keycode)
@@ -166,7 +208,7 @@ bool keyUp(Keyboard* keyboard, Keycode keycode)
 
 float p = 0.0f;
 float velocity = 0.003f;
-void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard, refexport_t* re)
+void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
     static float posX = 0.0f;
     static float scaleY = 1.0f;
@@ -178,38 +220,28 @@ void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard
     {
         //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
         
-        if (controller->dpadUp || keyPressed(keyboard, ARROW_UP))
+        if (keyPressed(inputDevice, ARROW_UP))
         {
             printf("DPAD UP pressed\n");
             spriteEntity->transform.yPos += 0.07f * dt/1000;
         }
         
-        if (controller->dpadDown || keyDown(keyboard, ARROW_DOWN))
+        if (keyPressed(inputDevice, ARROW_DOWN))
         {
             printf("DPAD DOWN pressed\n");
             spriteEntity->transform.yPos -= 0.07f * dt/1000;
         }
         
-        if (controller->dpadLeft || keyUp(keyboard, ARROW_LEFT))
+        if (keyPressed(inputDevice, ARROW_LEFT))
         {
             printf("DPAD LEFT pressed\n");
             spriteEntity->transform.xPos -= 0.07f * dt/1000;
         }
         
-        if (controller->dpadRight || keyboard->keycodes[ARROW_RIGHT])
+        if (keyPressed(inputDevice, ARROW_RIGHT))
         {
             printf("DPAD RIGHT pressed\n");
             spriteEntity->transform.xPos += 0.07f * dt/1000;
-        }
-        if (controller->dpadA)
-        {
-            spriteEntity->transform.xScale += 0.01f * dt/1000;
-            spriteEntity->transform.yScale += 0.01f * dt/1000;
-        }
-        if (controller->dpadX)
-        {
-            spriteEntity->transform.xScale -= 0.01f * dt/1000;
-            spriteEntity->transform.yScale -= 0.01f * dt/1000;
         }
         
         spriteEntity++;

@@ -24,6 +24,7 @@ global_var HWND  global_windowHandle;
 // global_var HDC   global_deviceContext;
 global_var bool running = true;
 global_var LARGE_INTEGER performanceFrequency;
+global_var InputDevice inputDevice;
 
 Rect get_window_dimensions()
 {
@@ -132,6 +133,11 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         
         case WM_KEYDOWN:
         {
+            if (inputDevice.deviceType != KEYBOARD)
+            {
+                inputDevice.deviceType = KEYBOARD;
+                printf("input device: KEYBOARD\n");
+            }
             switch(wParam)
             {
                 case VK_UP:
@@ -284,6 +290,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     XBoxControllerState controllerState = {};
     Controller controller = {};
     
+    // Generic input device. Holds pointer to a couple of input deivces such as
+    // keyboard, mouse, controller...
+    inputDevice.keyboard   = &keyboard;
+    inputDevice.controller = &controller;
+    inputDevice.deviceType = KEYBOARD;
+    
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);
     LARGE_INTEGER startingTime, endingTime, elapsedTime;
@@ -334,46 +346,51 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
                     
                     DWORD currentPacketNumber = state.dwPacketNumber;
                     DWORD oldPacketNumber = controllerState.packetNumber;
+                    if (oldPacketNumber != currentPacketNumber && inputDevice.deviceType != CONTROLLER)
+                    {
+                        printf("input device: CONTROLLER\n");
+                        inputDevice.deviceType = CONTROLLER;
+                    }
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
                     {
-                        controller.dpadUp = 1;
+                        controller.keycodes[DPAD_UP] = 1;
                     }
                     else
-                        controller.dpadUp = 0;
+                        controller.keycodes[DPAD_UP] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
                     {
-                        controller.dpadDown = 1;
+                        controller.keycodes[DPAD_DOWN] = 1;
                     }
                     else
-                        controller.dpadDown = 0;
+                        controller.keycodes[DPAD_DOWN] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
                     {
-                        controller.dpadLeft = 1;
+                        controller.keycodes[DPAD_LEFT] = 1;
                     }
                     else
-                        controller.dpadLeft = 0;
+                        controller.keycodes[DPAD_LEFT] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
                     {
-                        controller.dpadRight = 1;
+                        controller.keycodes[DPAD_RIGHT] = 1;
                     }
                     else
-                        controller.dpadRight = 0;
+                        controller.keycodes[DPAD_RIGHT] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A)
-                        controller.dpadA = 1;
+                        controller.keycodes[DPAD_A] = 1;
                     else
-                        controller.dpadA = 0;
+                        controller.keycodes[DPAD_A] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
-                        controller.dpadB = 1;
+                        controller.keycodes[DPAD_A] = 1;
                     else
-                        controller.dpadB = 0;
+                        controller.keycodes[DPAD_B] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
-                        controller.dpadX = 1;
+                        controller.keycodes[DPAD_X] = 1;
                     else
-                        controller.dpadX = 0;
+                        controller.keycodes[DPAD_X] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y)
-                        controller.dpadY = 1;
+                        controller.keycodes[DPAD_Y] = 1;
                     else
-                        controller.dpadY = 0;
+                        controller.keycodes[DPAD_Y] = 0;
                     controllerState.packetNumber = currentPacketNumber;
                 }
             }
@@ -389,7 +406,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         }
         // end XBox Controller
         
-        game_update_and_render((float)elapsedTime.QuadPart, &controller, &keyboard, &re); 
+        game_update_and_render((float)elapsedTime.QuadPart, &inputDevice, &re); 
         //SwapBuffers(global_deviceContext);
         
         QueryPerformanceCounter(&endingTime);
