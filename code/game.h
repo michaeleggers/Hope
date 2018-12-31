@@ -10,6 +10,7 @@ enum Keycode
     ARROW_RIGHT,
     ARROW_UP,
     ARROW_DOWN,
+    LETTER_A,
     MAX_KEYCODES = 255
 };
 

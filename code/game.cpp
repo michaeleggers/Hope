@@ -127,6 +127,18 @@ void addEntity(Entity * entity)
     }
 }
 
+ControllerKeycode toControllerKeycode(Keycode keycode)
+{
+    switch (keycode)
+    {
+        case ARROW_LEFT  : return DPAD_LEFT;
+        case ARROW_RIGHT : return DPAD_RIGHT;
+        case ARROW_UP    : return DPAD_UP;
+        case ARROW_DOWN  : return DPAD_DOWN;
+        default          : return NONE;
+    }
+}
+
 bool keyPressed(InputDevice* device, Keycode keycode)
 {
     switch (device->deviceType)
@@ -150,29 +162,17 @@ bool keyPressed(InputDevice* device, Keycode keycode)
         
         case CONTROLLER:
         {
-            int keycodeToController;
-            switch (keycode)
-            {
-                case ARROW_LEFT: keycodeToController = DPAD_LEFT;
-                break;
-                case ARROW_RIGHT : keycodeToController = DPAD_RIGHT;
-                break;
-                case ARROW_UP : keycodeToController = DPAD_UP;
-                break;
-                case ARROW_DOWN : keycodeToController = DPAD_DOWN;
-                break;
-                default : keycodeToController = NONE;
-            }
-            if (keycodeToController == NONE) return false;
+            ControllerKeycode controllerKeycode = toControllerKeycode(keycode);
+            if (controllerKeycode == NONE) return false;
             Controller* controller = device->controller;
-            if (controller->keycodes[keycodeToController] && !controller->prevKeycodes[keycodeToController])
+            if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
             {
-                controller->prevKeycodes[keycodeToController] = 1;
+                controller->prevKeycodes[controllerKeycode] = 1;
                 return true;
             }
-            else if (!controller->keycodes[keycodeToController] && controller->prevKeycodes[keycodeToController])
+            else if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
             {
-                controller->prevKeycodes[keycodeToController] = 0;
+                controller->prevKeycodes[controllerKeycode] = 0;
                 return false;
             }
             return false;
@@ -184,26 +184,77 @@ bool keyPressed(InputDevice* device, Keycode keycode)
     }
 }
 
-bool keyDown(Keyboard* keyboard, Keycode keycode)
+bool keyDown(InputDevice * device, Keycode keycode)
 {
-    if (keyboard->keycodes[keycode])
-        return true;
-    return false;
+    switch (device->deviceType)
+    {
+        case KEYBOARD:
+        {
+            Keyboard* keyboard = device->keyboard;
+            if (keyboard->keycodes[keycode])
+                return true;
+            return false;
+        }
+        break;
+        
+        case CONTROLLER:
+        {
+            ControllerKeycode controllerKeycode = toControllerKeycode(keycode);
+            if (controllerKeycode == NONE) return false;
+            Controller* controller = device->controller;
+            if (controller->keycodes[controllerKeycode])
+                return true;
+            return false;
+        }
+        break;
+        
+        default: return false;
+    }
 }
 
-bool keyUp(Keyboard* keyboard, Keycode keycode)
+bool keyUp(InputDevice * device, Keycode keycode)
 {
-    if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
+    switch (device->deviceType)
     {
-        keyboard->prevKeycodes[keycode] = 0;
-        return true;
-    }
-    else if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
-    {
-        keyboard->prevKeycodes[keycode] = 1;
+        case KEYBOARD:
+        {
+            Keyboard* keyboard = device->keyboard;
+            if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
+            {
+                keyboard->prevKeycodes[keycode] = 0;
+                return true;
+            }
+            else if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
+            {
+                keyboard->prevKeycodes[keycode] = 1;
+                return false;
+            }
+            return false;
+        }
+        break;
+        
+        case CONTROLLER:
+        {
+            ControllerKeycode controllerKeycode = toControllerKeycode(keycode);
+            if (controllerKeycode == NONE) return false;
+            Controller* controller = device->controller;
+            if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
+            {
+                controller->prevKeycodes[controllerKeycode] = 0;
+                return true;
+            }
+            else if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
+            {
+                controller->prevKeycodes[controllerKeycode] = 1;
+                return false;
+            }
+            return false;
+        }
+        break;
+        
+        default:
         return false;
     }
-    return false;
 }
 
 float p = 0.0f;
@@ -232,16 +283,22 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             spriteEntity->transform.yPos -= 0.07f * dt/1000;
         }
         
-        if (keyPressed(inputDevice, ARROW_LEFT))
+        if (keyDown(inputDevice, ARROW_LEFT))
         {
             printf("DPAD LEFT pressed\n");
             spriteEntity->transform.xPos -= 0.07f * dt/1000;
         }
         
-        if (keyPressed(inputDevice, ARROW_RIGHT))
+        if (keyUp(inputDevice, ARROW_RIGHT))
         {
             printf("DPAD RIGHT pressed\n");
             spriteEntity->transform.xPos += 0.07f * dt/1000;
+        }
+        
+        if (keyDown(inputDevice, LETTER_A))
+        {
+            printf("A pressed\n");
+            spriteEntity->transform.xScale += 0.02f * dt/1000;
         }
         
         spriteEntity++;

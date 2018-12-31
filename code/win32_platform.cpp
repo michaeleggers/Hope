@@ -163,6 +163,12 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
                     keyboard.keycodes[ARROW_RIGHT] = 1;
                 }
                 break;
+                
+                case 0x41: // A
+                {
+                    keyboard.keycodes[LETTER_A] = 1;
+                }
+                break;
             }
         }
         break;
@@ -192,6 +198,12 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
                 case VK_RIGHT:
                 {
                     keyboard.keycodes[ARROW_RIGHT] = 0;
+                }
+                break;
+                
+                case 0x41: // A
+                {
+                    keyboard.keycodes[LETTER_A] = 0;
                 }
                 break;
             }
