@@ -127,6 +127,43 @@ void addEntity(Entity * entity)
     }
 }
 
+bool keyPressed(Keyboard* keyboard, Keycode keycode)
+{
+    if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
+    {
+        keyboard->prevKeycodes[keycode] = 1;
+        return true;
+    }
+    else if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
+    {
+        keyboard->prevKeycodes[keycode] = 0;
+        return false;
+    }
+    return false;
+}
+
+bool keyDown(Keyboard* keyboard, Keycode keycode)
+{
+    if (keyboard->keycodes[keycode])
+        return true;
+    return false;
+}
+
+bool keyUp(Keyboard* keyboard, Keycode keycode)
+{
+    if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
+    {
+        keyboard->prevKeycodes[keycode] = 0;
+        return true;
+    }
+    else if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
+    {
+        keyboard->prevKeycodes[keycode] = 1;
+        return false;
+    }
+    return false;
+}
+
 float p = 0.0f;
 float velocity = 0.003f;
 void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard, refexport_t* re)
@@ -141,19 +178,19 @@ void game_update_and_render(float dt, Controller* controller, Keyboard* keyboard
     {
         //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
         
-        if (controller->dpadUp || keyboard->keycodes[ARROW_UP])
+        if (controller->dpadUp || keyPressed(keyboard, ARROW_UP))
         {
             printf("DPAD UP pressed\n");
             spriteEntity->transform.yPos += 0.07f * dt/1000;
         }
         
-        if (controller->dpadDown || keyboard->keycodes[ARROW_DOWN])
+        if (controller->dpadDown || keyDown(keyboard, ARROW_DOWN))
         {
             printf("DPAD DOWN pressed\n");
             spriteEntity->transform.yPos -= 0.07f * dt/1000;
         }
         
-        if (controller->dpadLeft || keyboard->keycodes[ARROW_LEFT])
+        if (controller->dpadLeft || keyUp(keyboard, ARROW_LEFT))
         {
             printf("DPAD LEFT pressed\n");
             spriteEntity->transform.xPos -= 0.07f * dt/1000;

@@ -4,7 +4,7 @@
 #include "ref.h"
 #include "scene.h"
 
-enum Keycodes
+enum Keycode
 {
     ARROW_LEFT,
     ARROW_RIGHT,
@@ -31,6 +31,7 @@ struct Controller
 struct Keyboard
 {
     int keycodes[256];
+    int prevKeycodes[256];
 };
 
 /* local to game.cpp */
