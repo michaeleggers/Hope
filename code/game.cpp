@@ -43,6 +43,20 @@ Object loadObject(char * file)
     return obj;
 }
 
+void nextLine(char* input, char *buffer, int *length)
+{
+    int l = 0;
+    while (*input != '\0' && *input != '\n')
+    {
+        *buffer = *input;
+        input++;
+        buffer++;
+        l++;
+    }
+    *buffer = '\0';
+    *length = l;
+}
+
 Mesh loadMeshFromOBJ(char * objfile)
 {
     Mesh mesh = {};
@@ -51,41 +65,17 @@ Mesh loadMeshFromOBJ(char * objfile)
     int vCount = 0;
     int nCount = 0;
     int stCount = 0;
-    char buffer[256];
     while (*c != '\0')
     {
-        if (*c == '#') // comment
-        {
-            while (*c != '\n')
-            {
-                c++;
-            }
-        }
-        else
-        {
-            if (*c == 'v') // vertex or normal
-            {
-                c++;
-                if (*c == 'n') // normal
-                {
-                }
-                else // vertex
-                {
-                    printf ("\n");
-                    while (*c != '\n')
-                    {
-                        while (*c == ' ') c++;
-                        printf("%c", *c);
-                        c++;
-                    }
-                }
-            }
-        }
-        c++;
+        char buffer[256];
+        int length;
+        nextLine(c, buffer, &length);
+        
+        c += length+1; // +1 linebreak
     }
-    
     return mesh;
-};
+}
+
 
 void game_init(refexport_t* re)
 {
