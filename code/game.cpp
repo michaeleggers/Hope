@@ -46,6 +46,43 @@ Object loadObject(char * file)
 Mesh loadMeshFromOBJ(char * objfile)
 {
     Mesh mesh = {};
+    char * objData = readTextFile(objfile);
+    char* c = objData;
+    int vCount = 0;
+    int nCount = 0;
+    int stCount = 0;
+    char buffer[256];
+    while (*c != '\0')
+    {
+        if (*c == '#') // comment
+        {
+            while (*c != '\n')
+            {
+                c++;
+            }
+        }
+        else
+        {
+            if (*c == 'v') // vertex or normal
+            {
+                c++;
+                if (*c == 'n') // normal
+                {
+                }
+                else // vertex
+                {
+                    printf ("\n");
+                    while (*c != '\n')
+                    {
+                        while (*c == ' ') c++;
+                        printf("%c", *c);
+                        c++;
+                    }
+                }
+            }
+        }
+        c++;
+    }
     
     return mesh;
 };
@@ -96,7 +133,7 @@ void game_init(refexport_t* re)
         0, 1, 0,
         1, -1, 0
     };
-    Mesh mesh = loadMeshFromOBJ("..\\code\\cube.obj");
+    Mesh mesh = loadMeshFromOBJ("..\\assets\\cube.obj");
     //asteroidMesh.meshHandle = re->registerMesh(asteroidMesh.VVVNNNST, asteroidMesh.vertexCount);
 }
 
