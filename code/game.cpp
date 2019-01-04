@@ -57,6 +57,31 @@ void nextLine(char* input, char *buffer, int *length)
     *length = l;
 }
 
+void getValue(char *input, char *buffer, int *length)
+{
+    int l = 0;
+    while (*input != '\0' && *input != ' ')
+    {
+        *buffer = *input;
+        input++;
+        buffer++;
+        l++;
+    }
+    *buffer = '\0';
+    *length = l;
+}
+
+int skipWhitespaces(char* buffer)
+{
+    int skipped = 0;
+    while (*buffer != '\0' && *buffer == ' ')
+    {
+        buffer++;
+        skipped++;
+    }
+    return skipped;
+}
+
 Mesh loadMeshFromOBJ(char * objfile)
 {
     Mesh mesh = {};
@@ -70,7 +95,41 @@ Mesh loadMeshFromOBJ(char * objfile)
         char buffer[256];
         int length;
         nextLine(c, buffer, &length);
-        
+        int pos = 0;
+        pos += skipWhitespaces(&buffer[pos]);
+        // TODO(Michael): trim whitespaces
+        if (pos < length)
+        {
+            if (buffer[pos] == '#') // comment
+            {}
+            else
+            {
+                if (buffer[pos] == 'v')
+                {
+                    pos++; // advance over 'v' char
+                    if (pos < length && buffer[pos] == 'n') // normal
+                    {
+                        printf("normal data: "); 
+                        pos++; // advance over 'n' char
+                    }
+                    else
+                        printf("vertex data: ");
+                    while (pos < length)
+                    {
+                        int skipped = skipWhitespaces(&buffer[pos]);
+                        char valueBuffer[256];
+                        int valueLength;
+                        pos += skipped;
+                        getValue(&buffer[pos], valueBuffer, &valueLength);
+                        printf ("%s ", valueBuffer);
+                        pos += valueLength;
+                    }
+                    printf("\n");
+                }
+                else
+                    pos += length;
+            }
+        }
         c += length+1; // +1 linebreak
     }
     return mesh;
