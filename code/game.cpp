@@ -1,5 +1,5 @@
 #include "game.h"
-#include "common_os.cpp"
+#include "win32_common_os.cpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
