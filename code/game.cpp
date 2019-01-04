@@ -1,4 +1,5 @@
 #include "game.h"
+#include "common_os.cpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -41,6 +42,13 @@ Object loadObject(char * file)
     }
     return obj;
 }
+
+Mesh loadMeshFromOBJ(char * objfile)
+{
+    Mesh mesh = {};
+    
+    return mesh;
+};
 
 void game_init(refexport_t* re)
 {
@@ -88,21 +96,8 @@ void game_init(refexport_t* re)
         0, 1, 0,
         1, -1, 0
     };
-    Mesh asteroidMesh = re->registerMesh(vertices, sizeof(vertices)/sizeof(vertices[0]));
-    for (int i = 0;
-         i < 10;
-         i++)
-    {
-        Entity asteroid;
-        asteroid.entityType = MESH_E;
-        asteroid.mesh = asteroidMesh;
-        asteroid.transform.xPos = 0;
-        asteroid.transform.yPos = 0;
-        asteroid.transform.xScale = 1.0f;
-        asteroid.transform.yScale = 1.0f;
-        memcpy(asteroid.transform.modelMat, gModelMatrix, 16*sizeof(float));
-        addEntity(&asteroid);
-    }
+    Mesh mesh = loadMeshFromOBJ("..\\code\\cube.obj");
+    //asteroidMesh.meshHandle = re->registerMesh(asteroidMesh.VVVNNNST, asteroidMesh.vertexCount);
 }
 
 void addEntity(Entity * entity)

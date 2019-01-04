@@ -27,6 +27,15 @@ enum ControllerKeycode
     NONE
 };
 
+struct GenericKeycode
+{
+    union
+    {
+        Keycode keyboardKeycode;
+        ControllerKeycode controllerKeycode;
+    };
+};
+
 enum DeviceType
 {
     KEYBOARD,
@@ -62,6 +71,7 @@ Sprite * loadSprite(refexport_t* re,
                     int textureWidth, int textureHeight,
                     int xOffset, int yOffset,
                     int spriteWidth, int spriteHeight);
+Mesh loadMeshFromOBJ(char * objfile);
 
 /* services from platform layer */
 void update_messages();

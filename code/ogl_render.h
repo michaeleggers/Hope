@@ -159,6 +159,7 @@ void setUniformMat4fv(Shader * shader, char * location, GLfloat mat4data[]);
 Window gl_createWindow(int textureWidth, int textureHeight,
                        int xOffset, int yOffset,
                        int width, int height);
+
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
 void glLoadRooms(Room* room);

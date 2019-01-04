@@ -36,6 +36,8 @@ struct Sprite
 struct Mesh
 {
     void * meshHandle;
+    int vertexCount;
+    float VVVNNNST[1024];
 };
 
 struct Entity

@@ -1,5 +1,5 @@
 #include "ogl_render.h"
-
+#include "common_os.h"
 
 // TODO(Michael): separate sprite size = the size of the sprite on screen
 // from texture size = size of the texture data on GPU
@@ -213,8 +213,8 @@ Shader create_shader(char const * vs_file,
     Shader result = {};
     
     // load shader text from files
-    char * vertCode = load_text(vs_file);
-    char * fragCode = load_text(fs_file);
+    char * vertCode = readTextFile(vs_file);
+    char * fragCode = readTextFile(fs_file);
     
     // compile shader program
     result.vertexShader = glCreateShader (GL_VERTEX_SHADER);
@@ -856,6 +856,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     // multisampling
     glEnable(GL_MULTISAMPLE);
+    
     
     return 0;
 }
