@@ -1,4 +1,5 @@
-#include "ogl_render.h"
+#include "win32_opengl.h"
+#include "opengl_renderer.cpp"
 #include "common_os.h"
 
 // TODO(Michael): separate sprite size = the size of the sprite on screen
@@ -876,5 +877,6 @@ refexport_t GetRefAPI()
     re.renderFrame = gl_renderFrame;
     re.notify = gl_notify;
     re.addSpriteFrame = gl_addSpriteFrame;
+    re.addTwoNumbers = commonAddTwoNumbers;
     return re;
 }

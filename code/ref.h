@@ -75,6 +75,7 @@ struct refexport_t
     void (*renderFrame)(Refdef * refdef);
     void (*notify)(void);
     void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);
+    int (*addTwoNumbers)(int a, int b); // dummy
 };
 
 typedef refexport_t (*GetRefAPI_t)();

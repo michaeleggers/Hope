@@ -1,6 +1,5 @@
-#ifndef RENDER_H
-#define RENDER_H
-
+#ifndef WIN32_OPENGL_H
+#define WIN32_OPENGL_H
 
 #include <stdio.h>
 

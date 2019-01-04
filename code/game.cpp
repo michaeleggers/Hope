@@ -1,5 +1,5 @@
 #include "game.h"
-#include "win32_common_os.cpp"
+#include "common_os.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -138,6 +138,8 @@ Mesh loadMeshFromOBJ(char * objfile)
 
 void game_init(refexport_t* re)
 {
+    int res = re->addTwoNumbers(1, 11);
+    printf("addTwoNumbers: %d\n", res);
     Entity azores;
     memcpy(azores.transform.modelMat, gModelMatrix, 16*sizeof(float));
     azores.entityType = SPRITE_E;
