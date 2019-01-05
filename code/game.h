@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "platform.h"
 #include "ref.h"
 #include "scene.h"
 
@@ -78,7 +79,7 @@ void update_messages();
 bool fileExists(char const * file);
 
 /* services to platform layer */
-void game_init(refexport_t* re);
+void game_init(PlatformAPI* platform_api, refexport_t* re);
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re);
 
 #endif GAME_H

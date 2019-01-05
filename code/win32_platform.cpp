@@ -9,6 +9,7 @@
 #include "Mathx.h"
 
 
+#include "platform.h"
 #include "helper.h"
 #include "ref.h"
 
@@ -45,6 +46,55 @@ void update_messages()
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+}
+
+
+// NOTE(Michael): whats the deal with overlapped file IO?
+PLATFORM_READ_TEXT_FILE(win32ReadTextFile)
+{
+    char* result = 0;
+    HANDLE fileHandle;
+    fileHandle = CreateFile(file,
+                            GENERIC_READ,
+                            FILE_SHARE_READ,
+                            NULL,
+                            OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL
+                            );
+    if (fileHandle == INVALID_HANDLE_VALUE)
+        printf("unable to open file!\n");
+    
+    DWORD filesize = GetFileSize(fileHandle, NULL);
+    
+    // VirtualAlloc actually allocates a whole page (buffer will be 4k)
+    char* buffer = (char*)VirtualAlloc(
+        NULL,
+        filesize * sizeof(char),
+        MEM_COMMIT,
+        PAGE_READWRITE
+        );
+    
+    _OVERLAPPED ov = {0};
+    LPDWORD numBytesRead = 0;
+    DWORD error;
+    if (ReadFile(fileHandle, buffer, filesize, numBytesRead, NULL) == 0)
+    {
+        error = GetLastError();
+        char errorMsgBuf[256];
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                      NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+                      errorMsgBuf, (sizeof(errorMsgBuf) / sizeof(char)), NULL);
+        printf("%s\n", errorMsgBuf);
+    }
+    else
+    {
+        //buffer[filesize] = '\0';
+        result = buffer;
+    }
+    CloseHandle(fileHandle);
+    
+    return result;
 }
 
 bool fileExists(char const * file)
@@ -267,6 +317,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     freopen_s(&pCout, "conout$", "w", stdout);
     freopen_s(&pCerr, "conout$", "w", stderr);
     
+    // init platform API
+    PlatformAPI platformAPI;
+    platformAPI.readTextFile = win32ReadTextFile;
+    
     // init GL
     VID_LoadRefresh("win32_opengl.dll");
     re.init(&global_windowHandle, &windowClass);
@@ -296,7 +350,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     GetClientRect(global_windowHandle, &rect);
     //glViewport(0, 0, rect.right, rect.bottom); // TODO(Michael): do in renderer
     
-    game_init(&re);
+    game_init(&platformAPI, &re);
     
     // XBox Controller state
     XBoxControllerState controllerState = {};

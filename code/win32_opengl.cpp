@@ -214,8 +214,8 @@ Shader create_shader(char const * vs_file,
     Shader result = {};
     
     // load shader text from files
-    char * vertCode = readTextFile(vs_file);
-    char * fragCode = readTextFile(fs_file);
+    char * vertCode = 0; //win32ReadTextFile(vs_file);
+    char * fragCode = 0; //win32ReadTextFile(fs_file);
     
     // compile shader program
     result.vertexShader = glCreateShader (GL_VERTEX_SHADER);
