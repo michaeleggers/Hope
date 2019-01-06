@@ -61,7 +61,7 @@ void nextLine(char* input, char *buffer, int *length)
 void getValue(char *input, char *buffer, int *length)
 {
     int l = 0;
-    while (*input != '\0' && *input != ' ')
+    while (*input != '\0' && (*input != ' ' && *input != '\t'))
     {
         *buffer = *input;
         input++;
@@ -75,7 +75,7 @@ void getValue(char *input, char *buffer, int *length)
 int skipWhitespaces(char* buffer)
 {
     int skipped = 0;
-    while (*buffer != '\0' && *buffer == ' ')
+    while (*buffer != '\0' && (*buffer == ' ' || *buffer == '\t'))
     {
         buffer++;
         skipped++;
@@ -110,11 +110,15 @@ Mesh loadMeshFromOBJ(char * objfile)
                     pos++; // advance over 'v' char
                     if (pos < length && buffer[pos] == 'n') // normal
                     {
-                        printf("normal data: "); 
+                        nCount++;
+                        printf("normal data (%d): ", nCount); 
                         pos++; // advance over 'n' char
                     }
-                    else
-                        printf("vertex data: ");
+                    else // vertex
+                    {
+                        vCount++;
+                        printf("vertex data (%d): ", vCount);
+                    }
                     while (pos < length)
                     {
                         int skipped = skipWhitespaces(&buffer[pos]);
