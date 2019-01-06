@@ -16,6 +16,9 @@ global_var Texture gFallbackTexture;
 global_var GPUMeshData gMeshList[MAX_MESHES];
 global_var int gUnknownMeshIndex;
 
+// TODO(Michael): we might want to NOT have platform stuff in here (but also I might be wrong).
+global_var PlatformAPI* gPlatformAPI;
+
 Window gl_createWindow(int textureWidth, int textureHeight,
                        int xOffset, int yOffset,
                        int width, int height)
@@ -214,8 +217,8 @@ Shader create_shader(char const * vs_file,
     Shader result = {};
     
     // load shader text from files
-    char * vertCode = 0; //win32ReadTextFile(vs_file);
-    char * fragCode = 0; //win32ReadTextFile(fs_file);
+    char * vertCode = gPlatformAPI->readTextFile(vs_file);
+    char * fragCode = gPlatformAPI->readTextFile(fs_file);
     
     // compile shader program
     result.vertexShader = glCreateShader (GL_VERTEX_SHADER);
@@ -864,8 +867,9 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 
 
 // init the struct
-refexport_t GetRefAPI()
+refexport_t GetRefAPI(PlatformAPI* platform_api)
 {
+    gPlatformAPI = platform_api;
     refexport_t re;
     re.init = win32_initGL;
     //re.loadRooms = glLoadRooms;

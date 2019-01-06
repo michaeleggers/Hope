@@ -10,7 +10,7 @@ global_var Entity gMeshEntityList[MAX_MESHES];
 global_var int gNumSpriteEntities;
 global_var int gNumMeshEntities;
 global_var Refdef gRefdef;
-global_var PlatformAPI* platformAPI;
+global_var PlatformAPI* gPlatformAPI;
 
 Background loadBackground(char * file)
 {
@@ -86,7 +86,7 @@ int skipWhitespaces(char* buffer)
 Mesh loadMeshFromOBJ(char * objfile)
 {
     Mesh mesh = {};
-    char * objData = platformAPI->readTextFile(objfile);
+    char * objData = gPlatformAPI->readTextFile(objfile);
     char* c = objData;
     int vCount = 0;
     int nCount = 0;
@@ -139,7 +139,7 @@ Mesh loadMeshFromOBJ(char * objfile)
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
-    platformAPI = platform_api;
+    gPlatformAPI = platform_api;
     int res = re->addTwoNumbers(1, 11);
     printf("addTwoNumbers: %d\n", res);
     Entity azores;

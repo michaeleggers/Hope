@@ -4,6 +4,7 @@
 // interface for renderer. To be implemented in DLL (OpenGL, DirectX, ...)
 // for the moment not platform independent
 
+#include "platform.h"
 #include "common_render.h"
 
 
@@ -78,6 +79,6 @@ struct refexport_t
     int (*addTwoNumbers)(int a, int b); // dummy
 };
 
-typedef refexport_t (*GetRefAPI_t)();
+typedef refexport_t (*GetRefAPI_t)(PlatformAPI* platform_api);
 
 #endif

@@ -116,14 +116,14 @@ bool fileExists(char const * file)
 global_var HINSTANCE reflib_library;
 global_var refexport_t re;
 
-bool VID_LoadRefresh(char const * name)
+bool VID_LoadRefresh(char const * name, PlatformAPI* platform_api)
 {
     GetRefAPI_t GetRefAPI;
     
     reflib_library = LoadLibrary(name);
     GetRefAPI = (GetRefAPI_t)GetProcAddress(reflib_library, "GetRefAPI");
     
-    re = GetRefAPI();
+    re = GetRefAPI(platform_api);
     
     return true;
 }
@@ -322,7 +322,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     platformAPI.readTextFile = win32ReadTextFile;
     
     // init GL
-    VID_LoadRefresh("win32_opengl.dll");
+    VID_LoadRefresh("win32_opengl.dll", &platformAPI);
     re.init(&global_windowHandle, &windowClass);
     // initGL(&global_windowHandle, &windowClass);
     

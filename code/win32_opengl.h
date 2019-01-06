@@ -8,6 +8,8 @@
 #include <gl/gl.h>
 #include <gl/glu.h>
 
+
+#include "platform.h"
 #include "openglext/glext.h"
 #include "openglext/wglext.h"
 
