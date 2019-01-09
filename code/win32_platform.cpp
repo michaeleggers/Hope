@@ -330,8 +330,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             global_windowHandle,
             "Failed to initialize render-context.",
             "init error",
-            MB_OK
-            ) == IDOK)
+            MB_OK) == IDOK)
         {
             return 1;
         }

@@ -47,7 +47,7 @@ Object loadObject(char * file)
 void nextLine(char* input, char *buffer, int *length)
 {
     int l = 0;
-    while (*input != '\0' && *input != '\n')
+    while (*input != '\0' && *input != '\r' && *input != '\n')
     {
         *buffer = *input;
         input++;
@@ -128,6 +128,8 @@ Mesh loadMeshFromOBJ(char * objfile)
                         getValue(&buffer[pos], valueBuffer, &valueLength);
                         printf ("%s ", valueBuffer);
                         pos += valueLength;
+                        float value = atof(valueBuffer);
+                        //printf("( %f ), ", value);
                     }
                     printf("\n");
                 }
@@ -135,7 +137,7 @@ Mesh loadMeshFromOBJ(char * objfile)
                     pos += length;
             }
         }
-        c += length+1; // +1 linebreak
+        c += length+2; // +1 linebreak
     }
     return mesh;
 }
