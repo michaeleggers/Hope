@@ -323,7 +323,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     // init GL
     VID_LoadRefresh("win32_opengl.dll", &platformAPI);
-    re.init(&global_windowHandle, &windowClass);
+    if (re.init(&global_windowHandle, &windowClass) != 0)
+    {
+        printf("failed to initialize render-context.\n");
+        if (MessageBox(
+            global_windowHandle,
+            "Failed to initialize render-context.",
+            "init error",
+            MB_OK
+            ) == IDOK)
+        {
+            return 1;
+        }
+    }
     // initGL(&global_windowHandle, &windowClass);
     
     ShowWindow(global_windowHandle, nCmdShow);
