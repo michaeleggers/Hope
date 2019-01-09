@@ -44,11 +44,30 @@ Object loadObject(char * file)
     return obj;
 }
 
-void nextLine(char* input, char *buffer, int *length)
+int nextLine(char* input, char *buffer, int *length)
 {
     int l = 0;
-    while (*input != '\0' && *input != '\r' && *input != '\n')
+    int lineFeedLength = 0;
+    while (*input != '\0')
     {
+        if (*input == '\r')
+        {
+            lineFeedLength++;
+            input++;
+            if (*input == '\0')
+            {
+            }
+            else if (*input == '\n')
+            {
+                lineFeedLength++;
+            }
+            break;
+        }
+        else if (*input == '\n')
+        {
+            lineFeedLength++;
+            break;
+        }
         *buffer = *input;
         input++;
         buffer++;
@@ -56,6 +75,8 @@ void nextLine(char* input, char *buffer, int *length)
     }
     *buffer = '\0';
     *length = l;
+    
+    return lineFeedLength;
 }
 
 void getValue(char *input, char *buffer, int *length)
@@ -95,7 +116,7 @@ Mesh loadMeshFromOBJ(char * objfile)
     {
         char buffer[256];
         int length;
-        nextLine(c, buffer, &length);
+        int lineFeedLength = nextLine(c, buffer, &length);
         int pos = 0;
         pos += skipWhitespaces(&buffer[pos]);
         // TODO(Michael): trim whitespaces
@@ -137,7 +158,7 @@ Mesh loadMeshFromOBJ(char * objfile)
                     pos += length;
             }
         }
-        c += length+2; // +1 linebreak
+        c += length+lineFeedLength;
     }
     return mesh;
 }
