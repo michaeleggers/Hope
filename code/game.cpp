@@ -146,7 +146,7 @@ Mesh loadMeshFromOBJ(char * objfile)
             {}
             else
             {
-                if (buffer[pos] == 'v')
+                if (buffer[pos] == 'v') // vertex or normal
                 {
                     int v3Count = 0;
                     float floatValue[3];
@@ -189,6 +189,27 @@ Mesh loadMeshFromOBJ(char * objfile)
                         normals[nCount].y = floatValue[1];
                         normals[nCount].z = floatValue[2];
                         nCount++;
+                    }
+                    printf("\n");
+                }
+                else if (buffer[pos] == 'f') // indices
+                {
+                    while (pos < length)
+                    {
+                        pos++; // advance over 'f' char
+                        int skipped = skipWhitespaces(&buffer[pos]);
+                        char valueBuffer[256];
+                        int valueLength;
+                        pos += skipped;
+                        getValue(&buffer[pos], valueBuffer, &valueLength);
+                        pos += valueLength;
+                        
+                        printf("%s ", valueBuffer);
+                        
+                        // TODO(Michael): check multiple versions of this shit
+                        // for now just vertexPos // vertexNormal version
+                        
+                        
                     }
                     printf("\n");
                 }
