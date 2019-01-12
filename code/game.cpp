@@ -104,6 +104,23 @@ int skipWhitespaces(char* buffer)
     return skipped;
 }
 
+struct v3
+{
+    float x, y, z;
+};
+
+struct v2
+{
+    float x, y;
+};
+
+struct Vertex
+{
+    v3 position;
+    v3 normal;
+    v2 UVs;
+};
+
 Mesh loadMeshFromOBJ(char * objfile)
 {
     Mesh mesh = {};
@@ -112,6 +129,9 @@ Mesh loadMeshFromOBJ(char * objfile)
     int vCount = 0;
     int nCount = 0;
     int stCount = 0;
+    v3 positions[256];
+    v3 normals[256];
+    v2 UVs[256];
     while (*c != '\0')
     {
         char buffer[256];
@@ -128,16 +148,18 @@ Mesh loadMeshFromOBJ(char * objfile)
             {
                 if (buffer[pos] == 'v')
                 {
+                    int v3Count = 0;
+                    float floatValue[3];
+                    bool isVertex = false;
                     pos++; // advance over 'v' char
                     if (pos < length && buffer[pos] == 'n') // normal
                     {
-                        nCount++;
                         printf("normal data (%d): ", nCount); 
                         pos++; // advance over 'n' char
                     }
-                    else // vertex
+                    else // vertex (position)
                     {
-                        vCount++;
+                        isVertex = true;
                         printf("vertex data (%d): ", vCount);
                     }
                     while (pos < length)
@@ -150,7 +172,23 @@ Mesh loadMeshFromOBJ(char * objfile)
                         printf ("%s ", valueBuffer);
                         pos += valueLength;
                         float value = atof(valueBuffer);
+                        floatValue[v3Count] = value;
+                        v3Count++;
                         //printf("( %f ), ", value);
+                    }
+                    if (isVertex)
+                    {
+                        positions[vCount].x = floatValue[0];
+                        positions[vCount].y = floatValue[1];
+                        positions[vCount].z = floatValue[2];
+                        vCount++;
+                    }
+                    else
+                    {
+                        normals[nCount].x = floatValue[0];
+                        normals[nCount].y = floatValue[1];
+                        normals[nCount].z = floatValue[2];
+                        nCount++;
                     }
                     printf("\n");
                 }
