@@ -73,6 +73,7 @@ Sprite * loadSprite(refexport_t* re,
                     int xOffset, int yOffset,
                     int spriteWidth, int spriteHeight);
 Mesh loadMeshFromOBJ(char * objfile);
+int extractIndex(char * input, int length, int * outLength);
 
 /* services from platform layer */
 void update_messages();

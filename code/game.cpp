@@ -206,10 +206,15 @@ Mesh loadMeshFromOBJ(char * objfile)
                         
                         printf("%s ", valueBuffer);
                         
+                        // extract index from value buffer, twice.
+                        int lengthOfNumber;
+                        int posIndex = extractIndex(valueBuffer, valueLength, &lengthOfNumber);
+                        valueLength -= lengthOfNumber;
+                        int normalIndex  = extractIndex(&valueBuffer[lengthOfNumber], valueLength, &lengthOfNumber); 
                         // TODO(Michael): check multiple versions of this shit
                         // for now just vertexPos // vertexNormal version
-                        
-                        
+                        printf("(%d, ", posIndex);
+                        printf("%d) ", normalIndex);
                     }
                     printf("\n");
                 }
@@ -222,6 +227,35 @@ Mesh loadMeshFromOBJ(char * objfile)
     return mesh;
 }
 
+int extractIndex(char * input, int length, int * outLength)
+{
+    int result = 0;
+    char * c = input;
+    char buffer[256];
+    char * b = buffer;
+    int ol = 0;
+    // skip all the non numerical chars first
+    while (*c != '\0' &&
+           *c < '0' || *c > '9')
+        c++;
+    // then try to get the number
+    while (*c != '\0')
+    {
+        if (*c >= '0' && *c <= '9')
+        {
+            *b = *c;
+            b++;
+            ol++;
+        }
+        else
+            break;
+        c++;
+    }
+    *b = '\0';
+    result = atoi(buffer);
+    *outLength = ol;
+    return result;
+}
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
