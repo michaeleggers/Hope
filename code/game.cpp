@@ -104,23 +104,6 @@ int skipWhitespaces(char* buffer)
     return skipped;
 }
 
-struct v3
-{
-    float x, y, z;
-};
-
-struct v2
-{
-    float x, y;
-};
-
-struct Vertex
-{
-    v3 position;
-    v3 normal;
-    v2 UVs;
-};
-
 Mesh loadMeshFromOBJ(char * objfile)
 {
     Mesh mesh = {};
@@ -129,9 +112,11 @@ Mesh loadMeshFromOBJ(char * objfile)
     int vCount = 0;
     int nCount = 0;
     int stCount = 0;
+    int iCount = 0;
     v3 positions[256];
     v3 normals[256];
     v2 UVs[256];
+    v2 indices[256];
     while (*c != '\0')
     {
         char buffer[256];
@@ -194,6 +179,8 @@ Mesh loadMeshFromOBJ(char * objfile)
                 }
                 else if (buffer[pos] == 'f') // indices
                 {
+                    int posIndex = 0;
+                    int normalIndex = 0;
                     while (pos < length)
                     {
                         pos++; // advance over 'f' char
@@ -208,15 +195,21 @@ Mesh loadMeshFromOBJ(char * objfile)
                         
                         // extract index from value buffer, twice.
                         int lengthOfNumber;
-                        int posIndex = extractIndex(valueBuffer, valueLength, &lengthOfNumber);
+                        posIndex = extractIndex(valueBuffer, valueLength, &lengthOfNumber);
                         valueLength -= lengthOfNumber;
-                        int normalIndex  = extractIndex(&valueBuffer[lengthOfNumber], valueLength, &lengthOfNumber); 
+                        normalIndex  = extractIndex(&valueBuffer[lengthOfNumber], valueLength, &lengthOfNumber); 
                         // TODO(Michael): check multiple versions of this shit
                         // for now just vertexPos // vertexNormal version
-                        printf("(%d, ", posIndex);
-                        printf("%d) ", normalIndex);
+                        
+                        // obj starts counting at 1
+                        printf("(%d, ", posIndex-1);
+                        printf("%d) ", normalIndex-1);
+                        indices[iCount].x = posIndex-1; 
+                        indices[iCount].y = normalIndex-1;
+                        iCount++;
                     }
                     printf("\n");
+                    
                 }
                 else
                     pos += length;
@@ -224,6 +217,22 @@ Mesh loadMeshFromOBJ(char * objfile)
         }
         c += length+lineFeedLength;
     }
+    // done parsing
+    
+    // create buffer, that can be drawn by opengl.
+    for (int i = 0; i < iCount; ++i)
+    {
+        int vertexIndex = indices[i].x;
+        int normalIndex = indices[i].y;
+        mesh.VVVNNNST[i] = 
+        { 
+            { positions[vertexIndex] },
+            { normals[normalIndex] },
+            { 0.f, 0.f }
+        };
+    }
+    mesh.vertexCount = iCount;
+    
     return mesh;
 }
 

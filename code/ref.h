@@ -34,11 +34,28 @@ struct Sprite
     int frameCount;
 };
 
+struct v3
+{
+    float x, y, z;
+};
+
+struct v2
+{
+    float x, y;
+};
+
+struct Vertex
+{
+    v3 position;
+    v3 normal;
+    v2 UVs;
+};
+
 struct Mesh
 {
     void * meshHandle;
     int vertexCount;
-    float VVVNNNST[1024];
+    Vertex VVVNNNST[1024];
 };
 
 struct Entity
