@@ -89,7 +89,7 @@ struct refexport_t
                              int textureWidth, int textureHeight,
                              int xOffset, int yOffset,
                              int width, int height);
-    Mesh (*registerMesh)(float * vertices, int count);
+    void* (*registerMesh)(Vertex * vertices, int count);
     void (*renderFrame)(Refdef * refdef);
     void (*notify)(void);
     void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);

@@ -307,16 +307,29 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     re->addSpriteFrame(&azores2.sprite, 300, 0, 10, 10);
     azores2.sprite.currentFrame = 2;
     
-    addEntity(&azores);
-    addEntity(&azores2);
+    //addEntity(&azores);
+    //addEntity(&azores2);
     
+    /*
     float vertices[] = {
         -1, -1, 0,
         0, 1, 0,
         1, -1, 0
     };
-    Mesh mesh = loadMeshFromOBJ("..\\assets\\cube.obj");
-    //asteroidMesh.meshHandle = re->registerMesh(asteroidMesh.VVVNNNST, asteroidMesh.vertexCount);
+    asteroidMesh.meshHandle = re->registerMesh(asteroidMesh.VVVNNNST, asteroidMesh.vertexCount);
+    */
+    
+    Mesh cubeMesh = loadMeshFromOBJ("..\\assets\\cube.obj");
+    cubeMesh.meshHandle = re->registerMesh(cubeMesh.VVVNNNST, cubeMesh.vertexCount);
+    Entity cubeEntity;
+    memcpy(cubeEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
+    cubeEntity.mesh = cubeMesh;
+    cubeEntity.entityType = MESH_E;
+    cubeEntity.transform.xPos = 0;
+    cubeEntity.transform.yPos = 0;
+    cubeEntity.transform.xScale = 1.f;
+    cubeEntity.transform.yScale = 1.f;
+    addEntity(&cubeEntity);
 }
 
 void addEntity(Entity * entity)
@@ -522,7 +535,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     gRefdef.numSpriteEntities = gNumSpriteEntities;
     gRefdef.spriteEntities = gSpriteEntityList;
-    // gRefdef.numMeshEntities = gNumMeshEntities;
+    gRefdef.numMeshEntities = gNumMeshEntities;
     gRefdef.meshEntities = gMeshEntityList;
     re->renderFrame(&gRefdef);
 }

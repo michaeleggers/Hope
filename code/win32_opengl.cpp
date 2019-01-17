@@ -107,11 +107,11 @@ void gl_addSpriteFrame(Sprite * sprite, int xOffset, int yOffset, int width, int
 // TODO(Michael): how to unregister meshes, like, how do we free
 // data on VRAM??
 // NOTE(Michael): registerMesh just pushes vertex data onto the GPU,
-// it does check if the same mesh has been loaded before. This has
+// it does _not_ check if the same mesh has been loaded before. This has
 // to be done by a higher level system.
-Mesh gl_RegisterMesh(float * vertices, int count)
+void * gl_RegisterMesh(Vertex * vertices, int count)
 {
-    Mesh mesh;
+    void* handle;
     GPUMeshData gpuMeshData;
     
     GLuint vao = 0;
@@ -121,12 +121,33 @@ Mesh gl_RegisterMesh(float * vertices, int count)
     GLuint vbo = 0;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, count*sizeof(vertices[0]), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, count*sizeof(vertices[0]), &vertices[0], GL_STATIC_DRAW);
     
-    // first param is index
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    // 0 1 2 | 3 4 5 | 6  7
+    // v v v | n n n | uv uv
+    // positions
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
     // enable, affects only the previously bound VBOs!
     glEnableVertexAttribArray(0);
+    //normals
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)sizeof(v3));
+    // enable, affects only the previously bound VBOs!
+    glEnableVertexAttribArray(1);
+    // UVs
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
+    // enable, affects only the previously bound VBOs!
+    glEnableVertexAttribArray(2);
+    
+    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
+    /*
+    int vertexPos  = glGetUniformLocation(gShaders[STANDARD_MESH].shaderProgram, "vertex_pos");
+    glUniform1i(vertexPos, 0);
+    int normalPos  = glGetUniformLocation(gShaders[STANDARD_MESH].shaderProgram, "normals");
+    glUniform1i(normalPos, 1);
+    int uvPos      = glGetUniformLocation(gShaders[STANDARD_MESH].shaderProgram, "UVs");
+    glUniform1i(uvPos, 2);
+    */
     
     gpuMeshData.vao = vao;
     gpuMeshData.vertexCount = count;
@@ -134,16 +155,16 @@ Mesh gl_RegisterMesh(float * vertices, int count)
     if (gUnknownMeshIndex == MAX_MESHES)
     {
         gMeshList[gUnknownMeshIndex-1] = gpuMeshData;
-        mesh.meshHandle = (void *)&gMeshList[gUnknownMeshIndex-1];
+        handle = (void *)&gMeshList[gUnknownMeshIndex-1];
     }
     else
     {
         gMeshList[gUnknownMeshIndex] = gpuMeshData;
-        mesh.meshHandle = (void *)&gMeshList[gUnknownMeshIndex];
+        handle = (void *)&gMeshList[gUnknownMeshIndex];
         gUnknownMeshIndex++;
     }
     
-    return mesh;
+    return handle;
 }
 
 void initShaders()
@@ -152,6 +173,11 @@ void initShaders()
         "vertex_pos",
         "texture_pos",
     };
+    char * shaderAttribsMesh[] = {
+        "vertex_pos",
+        "normals",
+        "UVs"
+    };
     gShaders[SPRITE] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_f.glsl",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
@@ -159,8 +185,8 @@ void initShaders()
                                            shaderAttribs,
                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
     gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh_v.glsl", "..\\code\\standard_mesh_f.glsl",
-                                            shaderAttribs,
-                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+                                            shaderAttribsMesh,
+                                            sizeof(shaderAttribsMesh) / sizeof(*shaderAttribsMesh));
 }
 
 void printGlErrMsg()
@@ -551,9 +577,10 @@ void gl_renderFrame(Refdef * refdef)
         &windowDimension
         );
     
+    // render sprite entities
     Entity * spriteEntity = refdef->spriteEntities;
     int numSpriteEntities = refdef->numSpriteEntities;
-    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram); // TODO(Michael): do this only once
+    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
     for (int i = 0;
          i < numSpriteEntities;
          i++)
@@ -571,6 +598,7 @@ void gl_renderFrame(Refdef * refdef)
         spriteEntity++;
     }
     
+    // render mesh entities
     Entity * meshEntity = refdef->meshEntities;
     int numMeshEntities = refdef->numMeshEntities;
     glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
