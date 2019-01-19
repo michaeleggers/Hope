@@ -68,6 +68,7 @@ struct Entity
         Sprite sprite;
         Mesh mesh;
     };
+    v3 velocity;
 };
 
 struct Refdef

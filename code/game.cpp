@@ -266,6 +266,13 @@ int extractIndex(char * input, int length, int * outLength)
     return result;
 }
 
+inline float randBetween(float lowerBound, float upperBound)
+{
+    float offset = lowerBound - 0.0f;
+    float range = upperBound - lowerBound;
+    return range/1.0f * (rand()/(float)RAND_MAX) + lowerBound;
+}
+
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
@@ -321,15 +328,22 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     Mesh cubeMesh = loadMeshFromOBJ("..\\assets\\cube.obj");
     cubeMesh.meshHandle = re->registerMesh(cubeMesh.VVVNNNST, cubeMesh.vertexCount);
-    Entity cubeEntity;
-    memcpy(cubeEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    cubeEntity.mesh = cubeMesh;
-    cubeEntity.entityType = MESH_E;
-    cubeEntity.transform.xPos = 0;
-    cubeEntity.transform.yPos = 0;
-    cubeEntity.transform.xScale = 1.f;
-    cubeEntity.transform.yScale = 1.f;
-    addEntity(&cubeEntity);
+    
+    for (int i = 0; i < MAX_MESHES; ++i)
+    {
+        Entity cubeEntity;
+        memcpy(cubeEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
+        cubeEntity.mesh = cubeMesh;
+        cubeEntity.entityType = MESH_E;
+        cubeEntity.transform.xPos = randBetween(-10.f, 10.f);
+        cubeEntity.transform.yPos = randBetween(-10.f, 10.f);
+        float randScale = randBetween(.2f, 1.f);
+        cubeEntity.transform.xScale = randScale;
+        cubeEntity.transform.yScale = randScale;
+        cubeEntity.velocity = { randBetween(.003f, .007f), randBetween(.003f, .007f), 0.f };
+        addEntity(&cubeEntity);
+    }
+    
 }
 
 void addEntity(Entity * entity)
@@ -484,8 +498,6 @@ bool keyUp(InputDevice * device, Keycode keycode)
     }
 }
 
-float p = 0.0f;
-float velocity = 0.003f;
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
     static float posX = 0.0f;
@@ -532,6 +544,31 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     }
     posX += dt * 0.00001f;
     scaleY += dt * 0.000001f;
+    
+    Entity* meshEntity = gMeshEntityList;
+    for (int i = 0; i < gNumMeshEntities; ++i)
+    {
+        if (meshEntity->transform.xPos > 10.f)  {
+            meshEntity->transform.xPos = 10;
+            meshEntity->velocity.x *= -1;
+        }
+        if (meshEntity->transform.xPos < -10.f)  {
+            meshEntity->transform.xPos = -10;
+            meshEntity->velocity.x *= -1;
+        }
+        if (meshEntity->transform.yPos > 10.f)  {
+            meshEntity->transform.yPos = 10;
+            meshEntity->velocity.y *= -1;
+        }
+        if (meshEntity->transform.yPos < -10.f)  {
+            meshEntity->transform.yPos = -10;
+            meshEntity->velocity.y *= -1;
+        }
+        
+        meshEntity->transform.xPos += meshEntity->velocity.x * (dt/(float)1000);
+        meshEntity->transform.yPos += meshEntity->velocity.y * (dt/(float)1000);
+        meshEntity++;
+    }
     
     gRefdef.numSpriteEntities = gNumSpriteEntities;
     gRefdef.spriteEntities = gSpriteEntityList;
