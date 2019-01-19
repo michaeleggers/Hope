@@ -7,6 +7,7 @@
 global_var int gNumRooms;
 global_var Entity gSpriteEntityList[MAX_SPRITES];
 global_var Entity gMeshEntityList[MAX_MESHES];
+global_var Entity gPlayerEntity;
 global_var int gNumSpriteEntities;
 global_var int gNumMeshEntities;
 global_var Refdef gRefdef;
@@ -329,7 +330,8 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     Mesh cubeMesh = loadMeshFromOBJ("..\\assets\\cube.obj");
     cubeMesh.meshHandle = re->registerMesh(cubeMesh.VVVNNNST, cubeMesh.vertexCount);
     
-    for (int i = 0; i < MAX_MESHES; ++i)
+    // init asteroids
+    for (int i = 0; i < 50; ++i)
     {
         Entity cubeEntity;
         memcpy(cubeEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
@@ -341,9 +343,19 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
         cubeEntity.transform.xScale = randScale;
         cubeEntity.transform.yScale = randScale;
         cubeEntity.velocity = { randBetween(.003f, .007f), randBetween(.003f, .007f), 0.f };
-        addEntity(&cubeEntity);
+        //addEntity(&cubeEntity);
     }
     
+    // init player entity
+    Entity playerEntity;
+    memcpy(playerEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
+    playerEntity.mesh = cubeMesh;
+    playerEntity.entityType = PLAYER_E;
+    playerEntity.transform.xPos = 0;
+    playerEntity.transform.yPos = 0;
+    playerEntity.transform.xScale = 1;
+    playerEntity.transform.yScale = 1;
+    addEntity(&playerEntity);
 }
 
 void addEntity(Entity * entity)
@@ -363,6 +375,11 @@ void addEntity(Entity * entity)
             if (gNumMeshEntities >= MAX_MESHES) return;
             gMeshEntityList[gNumMeshEntities] = *entity;
             gNumMeshEntities++;
+        }
+        
+        case PLAYER_E:
+        {
+            gPlayerEntity = *entity;
         }
         break;
     }
@@ -545,6 +562,38 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     posX += dt * 0.00001f;
     scaleY += dt * 0.000001f;
     
+    // control player
+    if (keyDown(inputDevice, ARROW_UP))
+    {
+        printf("DPAD UP pressed\n");
+        gPlayerEntity.transform.yPos += 0.07f * dt/1000;
+    }
+    
+    if (keyDown(inputDevice, ARROW_DOWN))
+    {
+        printf("DPAD DOWN pressed\n");
+        gPlayerEntity.transform.yPos -= 0.07f * dt/1000;
+    }
+    
+    if (keyDown(inputDevice, ARROW_LEFT))
+    {
+        printf("DPAD LEFT pressed\n");
+        gPlayerEntity.transform.xPos -= 0.07f * dt/1000;
+    }
+    
+    if (keyDown(inputDevice, ARROW_RIGHT))
+    {
+        printf("DPAD RIGHT pressed\n");
+        gPlayerEntity.transform.xPos += 0.07f * dt/1000;
+    }
+    
+    if (keyDown(inputDevice, LETTER_A))
+    {
+        printf("A pressed\n");
+        gPlayerEntity.transform.xScale += 0.02f * dt/1000;
+    }
+    
+    // simulate asteroids
     Entity* meshEntity = gMeshEntityList;
     for (int i = 0; i < gNumMeshEntities; ++i)
     {
@@ -574,6 +623,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     gRefdef.spriteEntities = gSpriteEntityList;
     gRefdef.numMeshEntities = gNumMeshEntities;
     gRefdef.meshEntities = gMeshEntityList;
+    gRefdef.playerEntity = &gPlayerEntity;
     re->renderFrame(&gRefdef);
 }
 

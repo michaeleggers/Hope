@@ -613,6 +613,14 @@ void gl_renderFrame(Refdef * refdef)
         meshEntity++;
     }
     
+    // render player entity
+    Entity* playerEntity = refdef->playerEntity;
+    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+    GPUMeshData * meshData = (GPUMeshData *)(playerEntity->mesh.meshHandle);
+    updateModelMat(playerEntity);
+    set_model(playerEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
+    gl_renderMesh(meshData);
+    
     SwapBuffers(gRenderState.deviceContext);
     glFinish();
 }
@@ -884,7 +892,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync
-    wglSwapIntervalEXT(1);
+    wglSwapIntervalEXT(0);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);

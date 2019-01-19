@@ -16,7 +16,8 @@
 enum EntityType
 {
     SPRITE_E,
-    MESH_E
+    MESH_E,
+    PLAYER_E
 };
 
 struct Transform
@@ -77,6 +78,7 @@ struct Refdef
     Entity * spriteEntities;
     int numMeshEntities;
     Entity * meshEntities;
+    Entity * playerEntity;
 };
 
 struct refexport_t

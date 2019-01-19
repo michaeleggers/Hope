@@ -11,5 +11,5 @@ out vec3 color;
 void main ()
 {
     gl_Position = projectionMat * modelMat * vec4(vertex_pos, 1.0);
-    color = normals;
+    color = vertex_pos;
 }

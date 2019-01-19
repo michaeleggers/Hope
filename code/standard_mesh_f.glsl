@@ -5,7 +5,7 @@ in vec3 color;
 
 void main () 
 {
-  frag_colour = vec4(0.5f*vec3(color)+0.5f, 1.0f);
+    frag_colour = vec4(0.5f*vec3(color)+0.5f, 1.0f);
 }
 
 
