@@ -1,6 +1,8 @@
 #include "win32_opengl.h"
 #include "opengl_renderer.cpp"
 #include "common_os.h"
+#include <math.h>
+#define PI 3.141592f
 
 // TODO(Michael): separate sprite size = the size of the sprite on screen
 // from texture size = size of the texture data on GPU
@@ -558,12 +560,33 @@ void gl_notify()
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
 
-void updateModelMat(Entity * entity)
+struct mat4
 {
-    entity->transform.modelMat[12] = entity->transform.xPos;
-    entity->transform.modelMat[13] = entity->transform.yPos;
-    entity->transform.modelMat[0] = entity->transform.xScale;
-    entity->transform.modelMat[5] = entity->transform.yScale;
+    float c[16];
+};
+
+mat4 updateModelMat(Entity * entity)
+{
+    mat4 modelMatrix = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    
+    modelMatrix.c[0] = entity->transform.xScale;
+    modelMatrix.c[5] = entity->transform.yScale;
+    float angleInRad = (PI*entity->transform.angle) / 180;
+#if 1
+    modelMatrix.c[0] *= cos(angleInRad);
+    modelMatrix.c[1]  = sin(angleInRad);
+    modelMatrix.c[4]  = -sin(angleInRad);
+    modelMatrix.c[5] *= cos(angleInRad);
+#endif
+    modelMatrix.c[12] = entity->transform.xPos;
+    modelMatrix.c[13] = entity->transform.yPos;
+    
+    return modelMatrix;
 }
 
 void gl_renderFrame(Refdef * refdef)
@@ -590,10 +613,10 @@ void gl_renderFrame(Refdef * refdef)
         int frame = spriteEntity->sprite.currentFrame;
         int intWidth = sprite->windows[frame].intWidth;
         int intHeight = sprite->windows[frame].intHeight;
-        updateModelMat(spriteEntity);
+        mat4 modelMatrix = updateModelMat(spriteEntity);
         float ratio = (float)intWidth / (float)intHeight;
         spriteEntity->transform.modelMat[0] *= ratio;
-        set_model(spriteEntity->transform.modelMat, &gShaders[SPRITE_SHEET], "model");
+        set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
         gl_renderFrame(sprite, frame);
         spriteEntity++;
     }
@@ -607,8 +630,8 @@ void gl_renderFrame(Refdef * refdef)
          ++i)
     {
         GPUMeshData * meshData = (GPUMeshData *)(meshEntity->mesh.meshHandle);
-        updateModelMat(meshEntity);
-        set_model(meshEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
+        mat4 modelMatrix = updateModelMat(meshEntity);
+        set_model(modelMatrix.c, &gShaders[STANDARD_MESH], "modelMat");
         gl_renderMesh(meshData);
         meshEntity++;
     }
@@ -617,8 +640,8 @@ void gl_renderFrame(Refdef * refdef)
     Entity* playerEntity = refdef->playerEntity;
     glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
     GPUMeshData * meshData = (GPUMeshData *)(playerEntity->mesh.meshHandle);
-    updateModelMat(playerEntity);
-    set_model(playerEntity->transform.modelMat, &gShaders[STANDARD_MESH], "modelMat");
+    mat4 modelMatrix = updateModelMat(playerEntity);
+    set_model(modelMatrix.c, &gShaders[STANDARD_MESH], "modelMat");
     gl_renderMesh(meshData);
     
     SwapBuffers(gRenderState.deviceContext);

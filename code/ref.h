@@ -26,6 +26,7 @@ struct Transform
     float xPos, yPos, zPos; // translate
     float xScale, yScale, zScale;
     float xRot, yRot, zRot;
+    float angle; // in degrees
 };
 
 struct Sprite
@@ -45,6 +46,16 @@ struct v2
     float x, y;
 };
 
+v3 normalize(v3 in)
+{
+    float length = sqrt(in.x*in.x + in.y*in.y + in.z*in.z);
+    return {
+        in.x / length,
+        in.y / length,
+        in.z / length
+    };
+}
+
 struct Vertex
 {
     v3 position;
@@ -63,7 +74,6 @@ struct Entity
 {
     EntityType entityType;
     Transform transform;
-    // TODO(Michael): figure out what the difference between union name at beginning vs end is!
     union
     {
         Sprite sprite;
