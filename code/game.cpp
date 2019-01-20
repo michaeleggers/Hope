@@ -573,49 +573,35 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, ARROW_UP))
     {
         printf("DPAD UP pressed\n");
+        v3 direction = {0, 1, 0}; 
         gPlayerEntity.speed.x += 0.00001f; 
         gPlayerEntity.speed.y += 0.00001f;
+        float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
+        gPlayerEntity.velocity.x = direction.x*cos(angleInRad) - direction.y*sin(angleInRad);
+        gPlayerEntity.velocity.y = direction.x*sin(angleInRad) + direction.y*cos(angleInRad);
     }
     
     if (keyDown(inputDevice, ARROW_DOWN))
     {
         printf("DPAD DOWN pressed\n");
+        v3 direction = {0, 1, 0};
         gPlayerEntity.speed.x -= 0.00001f;
         gPlayerEntity.speed.y -= 0.00001f;
+        float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
+        gPlayerEntity.velocity.x = direction.x*cos(angleInRad) - direction.y*sin(angleInRad);
+        gPlayerEntity.velocity.y = direction.x*sin(angleInRad) + direction.y*cos(angleInRad);
     }
     
     if (keyDown(inputDevice, ARROW_LEFT))
     {
-        v3 direction = {0, 1, 0};
         printf("DPAD LEFT pressed\n");
-#if 0
-        if (gPlayerEntity.transform.angle >= 360.f)
-        {
-            gPlayerEntity.transform.angle = 0.f;
-        }
-        else
-#endif
-            gPlayerEntity.transform.angle += .2f;
-        float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
-        gPlayerEntity.velocity.x = direction.x*cos(angleInRad) - direction.y*sin(angleInRad);
-        gPlayerEntity.velocity.y = direction.x*sin(angleInRad) + direction.y*cos(angleInRad);
+        gPlayerEntity.transform.angle += .2f;
     }
     
     if (keyDown(inputDevice, ARROW_RIGHT))
     {
-        v3 direction = {0, 1, 0}; 
         printf("DPAD RIGHT pressed\n");
-#if 0
-        if (gPlayerEntity.transform.angle <= 0.f)
-        {
-            gPlayerEntity.transform.angle = 360.f;
-        }
-        else
-#endif
-            gPlayerEntity.transform.angle -= .2f;
-        float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
-        gPlayerEntity.velocity.x = direction.x*cos(angleInRad) - direction.y*sin(angleInRad);
-        gPlayerEntity.velocity.y = direction.x*sin(angleInRad) + direction.y*cos(angleInRad);
+        gPlayerEntity.transform.angle -= .2f;
     }
     
     if (keyDown(inputDevice, LETTER_A))
@@ -625,8 +611,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         gPlayerEntity.speed.x += 0.00001f;
         gPlayerEntity.speed.y += 0.00001f;
     }
-    // update velocity vector
-    
     gPlayerEntity.velocity = normalize(gPlayerEntity.velocity);
     gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.x * dt/1000;
