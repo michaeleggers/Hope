@@ -70,6 +70,7 @@ struct Entity
         Mesh mesh;
     };
     v3 velocity;
+    v2 speed;
 };
 
 struct Refdef

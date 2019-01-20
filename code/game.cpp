@@ -347,14 +347,18 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     }
     
     // init player entity
+    Mesh cubeMeshMaya = loadMeshFromOBJ("..\\assets\\cube.obj");
+    cubeMeshMaya.meshHandle = re->registerMesh(cubeMeshMaya.VVVNNNST, cubeMeshMaya.vertexCount);
+    
     Entity playerEntity;
     memcpy(playerEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    playerEntity.mesh = cubeMesh;
+    playerEntity.mesh = cubeMeshMaya;
     playerEntity.entityType = PLAYER_E;
     playerEntity.transform.xPos = 0;
     playerEntity.transform.yPos = 0;
     playerEntity.transform.xScale = 1;
     playerEntity.transform.yScale = 1;
+    playerEntity.speed = { 0.001f, 0.001f };
     addEntity(&playerEntity);
 }
 
@@ -566,32 +570,36 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, ARROW_UP))
     {
         printf("DPAD UP pressed\n");
-        gPlayerEntity.transform.yPos += 0.07f * dt/1000;
+        gPlayerEntity.velocity = { 0, 1, 0 };
     }
     
     if (keyDown(inputDevice, ARROW_DOWN))
     {
         printf("DPAD DOWN pressed\n");
-        gPlayerEntity.transform.yPos -= 0.07f * dt/1000;
+        gPlayerEntity.velocity = { 0, -1, 0 };
     }
     
     if (keyDown(inputDevice, ARROW_LEFT))
     {
         printf("DPAD LEFT pressed\n");
-        gPlayerEntity.transform.xPos -= 0.07f * dt/1000;
+        gPlayerEntity.velocity = { -1, 0, 0 };
     }
     
     if (keyDown(inputDevice, ARROW_RIGHT))
     {
         printf("DPAD RIGHT pressed\n");
-        gPlayerEntity.transform.xPos += 0.07f * dt/1000;
+        gPlayerEntity.velocity = { 1, 0, 0 };
     }
     
     if (keyDown(inputDevice, LETTER_A))
     {
         printf("A pressed\n");
-        gPlayerEntity.transform.xScale += 0.02f * dt/1000;
+        //gPlayerEntity.transform.xScale += 0.02f * dt/1000;
+        gPlayerEntity.speed.x += 0.00001f;
+        gPlayerEntity.speed.y += 0.00001f;
     }
+    gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
+    gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.x * dt/1000;
     
     // simulate asteroids
     Entity* meshEntity = gMeshEntityList;
