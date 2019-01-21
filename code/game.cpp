@@ -585,8 +585,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         newVelocity.x *= gPlayerEntity.speed.x;
         newVelocity.y *= gPlayerEntity.speed.y;
         newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
-        gPlayerEntity.velocity = newVelocity;
-        printf("velocity: %f\n", v3length(newVelocity));
+        if (v3length(newVelocity) >= 1.5f)
+        {}
+        else
+            gPlayerEntity.velocity = newVelocity;
+        printf("velocity: %f\n", v3length(gPlayerEntity.velocity));
     }
     
     if (keyDown(inputDevice, ARROW_DOWN))

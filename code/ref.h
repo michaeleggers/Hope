@@ -60,6 +60,11 @@ float v3length(v3 v)
     return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
 
+float v2length(v2 v)
+{
+    return sqrt(v.x*v.x + v.y*v.y);
+}
+
 v3 normalize(v3 in)
 {
     float length = v3length(in);
