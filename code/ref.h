@@ -46,9 +46,23 @@ struct v2
     float x, y;
 };
 
+v3 v3add(v3 lhs, v3 rhs)
+{
+    return {
+        lhs.x + rhs.x,
+        lhs.y + rhs.y,
+        lhs.z + rhs.z
+    };
+};
+
+float v3length(v3 v)
+{
+    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
 v3 normalize(v3 in)
 {
-    float length = sqrt(in.x*in.x + in.y*in.y + in.z*in.z);
+    float length = v3length(in);
     return {
         in.x / length,
         in.y / length,
