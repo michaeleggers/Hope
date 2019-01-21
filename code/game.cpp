@@ -360,7 +360,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.transform.xScale = 1;
     playerEntity.transform.yScale = 1;
     playerEntity.transform.angle = 0;
-    playerEntity.speed = { 0.001f, 0.001f };
+    playerEntity.speed = { 0.005f, 0.005f };
     playerEntity.velocity = {0.f, -1.f, 0.f};
     addEntity(&playerEntity);
 }
@@ -574,8 +574,14 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     {
         //printf("DPAD UP pressed\n");
         v3 direction = {0, 1, 0}; 
+#if 0
         gPlayerEntity.speed.x += 0.000001f; 
         gPlayerEntity.speed.y += 0.000001f;
+        if (gPlayerEntity.speed.x >= 0.01f)
+            gPlayerEntity.speed.x = 0.01f;
+        if (gPlayerEntity.speed.y >= 0.01f)
+            gPlayerEntity.speed.y = 0.01f;
+#endif
         float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
         v3 newVelocity = {
             direction.x*cos(angleInRad) - direction.y*sin(angleInRad),
@@ -585,10 +591,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         newVelocity.x *= gPlayerEntity.speed.x;
         newVelocity.y *= gPlayerEntity.speed.y;
         newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
-        if (v3length(newVelocity) >= 1.5f)
+        if (v3length(newVelocity) >= 2.0f)
         {}
         else
             gPlayerEntity.velocity = newVelocity;
+        printf("speed: (%f, %f), ", gPlayerEntity.speed.x, gPlayerEntity.speed.y);
         printf("velocity: %f\n", v3length(gPlayerEntity.velocity));
     }
     
