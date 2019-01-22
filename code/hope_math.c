@@ -91,12 +91,13 @@ mat4 hope_translate(float x, float y, float z)
     return result;
 }
 
+// NOTE(Michael): http://www.kwon3d.com/theory/transform/rot.html
 mat4 hope_rotate_around_z(float angle)
 {
     float angleInRad  = (PI*angle) / 180.f;
     mat4 result = {
-        cosf(angleInRad), -sinf(angleInRad), 0, 0,
-        sin(angleInRad), cosf(angleInRad), 0, 0,
+        cosf(angleInRad), sinf(angleInRad), 0, 0,
+        -sin(angleInRad), cosf(angleInRad), 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
     };

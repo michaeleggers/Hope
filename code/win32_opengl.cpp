@@ -560,25 +560,6 @@ void gl_notify()
 
 mat4 updateModelMat(Entity * entity)
 {
-#if 0
-    mat4 modelMatrix = {
-        1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-    };
-#endif
-    
-#if 0
-    modelMatrix.c[12] = entity->transform.xPos;
-    modelMatrix.c[13] = entity->transform.yPos;
-    modelMatrix.c[0] *= cosf(angleInRad);
-    modelMatrix.c[1] *= sinf(angleInRad);
-    modelMatrix.c[4] *= -sinf(angleInRad);
-    modelMatrix.c[5] *= cosf(angleInRad);
-    modelMatrix.c[0] *= entity->transform.xScale;
-    modelMatrix.c[5] *= entity->transform.yScale;
-#endif
     mat4 translationMatrix = hope_translate(
         entity->transform.xPos,
         entity->transform.yPos,

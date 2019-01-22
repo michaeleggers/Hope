@@ -360,7 +360,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.transform.yScale = 5;
     playerEntity.transform.angle = 0;
     playerEntity.speed = { 0.005f, 0.005f };
-    playerEntity.velocity = {0.f, -1.f, 0.f};
+    playerEntity.velocity = {0.f, 1.f, 0.f};
     addEntity(&playerEntity);
 }
 
@@ -572,8 +572,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, ARROW_UP))
     {
         //printf("DPAD UP pressed\n");
-        v3 direction = {0, 1, 0}; 
-#if 0
+#if 1
+        v3 direction = {0,1,0};
         gPlayerEntity.speed.x += 0.000001f; 
         gPlayerEntity.speed.y += 0.000001f;
         if (gPlayerEntity.speed.x >= 0.01f)
@@ -586,36 +586,41 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             direction.x*sinf(angleInRad) + direction.y*cosf(angleInRad),
             0
         };
-        newVelocity.x *= gPlayerEntity.speed.x;
-        newVelocity.y *= gPlayerEntity.speed.y;
-        newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
-        if (v3length(newVelocity) >= 2.0f)
-        {}
-        else
-            gPlayerEntity.velocity = newVelocity;
+        //newVelocity.x *= gPlayerEntity.speed.x;
+        //newVelocity.y *= gPlayerEntity.speed.y;
+        //newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
+        gPlayerEntity.velocity = v3normalize(newVelocity);
         printf("speed: (%f, %f), ", gPlayerEntity.speed.x, gPlayerEntity.speed.y);
         printf("velocity: %f\n", v3length(gPlayerEntity.velocity));
 #endif
-        gPlayerEntity.velocity = {0,1,0};
+        //gPlayerEntity.velocity = {0,1,0};
     }
     
     if (keyDown(inputDevice, ARROW_DOWN))
     {
-        gPlayerEntity.velocity = {0,-1,0};
+        //gPlayerEntity.velocity = {0,-1,0};
     }
     
     if (keyDown(inputDevice, ARROW_LEFT))
     {
         printf("DPAD LEFT pressed\n");
-        //gPlayerEntity.transform.angle += .2f;
-        gPlayerEntity.velocity = {-1,0,0};
+        gPlayerEntity.transform.angle += .2f;
+#if 1
+        if (gPlayerEntity.transform.angle >= 360.f)
+            gPlayerEntity.transform.angle = 0.f;
+#endif
+        //gPlayerEntity.velocity = {-1,0,0};
     }
     
     if (keyDown(inputDevice, ARROW_RIGHT))
     {
         printf("DPAD RIGHT pressed\n");
-        //gPlayerEntity.transform.angle -= .2f;
-        gPlayerEntity.velocity = {+1,0,0};
+        gPlayerEntity.transform.angle -= .2f;
+#if 1
+        if (gPlayerEntity.transform.angle <= 0.f)
+            gPlayerEntity.transform.angle = 360.f;
+#endif
+        //gPlayerEntity.velocity = {+1,0,0};
     }
     
     if (keyDown(inputDevice, LETTER_A))
@@ -626,7 +631,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         gPlayerEntity.speed.y += 0.00001f;
     }
     gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
-    gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.x * dt/1000;
+    gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
     
     // simulate asteroids
     Entity* meshEntity = gMeshEntityList;
