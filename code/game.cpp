@@ -391,24 +391,34 @@ void addEntity(Entity * entity)
     }
 }
 
-ControllerKeycode toControllerKeycode(Keycode keycode)
+ControllerKeycode toControllerKeycode(GameInput gameInput)
 {
-    switch (keycode)
+    switch (gameInput)
     {
-        case ARROW_LEFT  : return DPAD_LEFT;
-        case ARROW_RIGHT : return DPAD_RIGHT;
-        case ARROW_UP    : return DPAD_UP;
-        case ARROW_DOWN  : return DPAD_DOWN;
+        case TURN_LEFT  : return DPAD_LEFT;
+        case TURN_RIGHT : return DPAD_RIGHT;
+        case ACCELERATE    : return DPAD_A;
         default          : return NONE;
     }
 }
 
-bool keyPressed(InputDevice* device, Keycode keycode)
+Keycode toKeyboardKeycode(GameInput gameInput)
+{
+    switch (gameInput)
+    {
+        case TURN_LEFT:  return ARROW_LEFT; break;
+        case TURN_RIGHT: return ARROW_RIGHT; break;
+        case ACCELERATE: return ARROW_UP; break;
+    }
+}
+
+bool keyPressed(InputDevice* device, GameInput gameInput)
 {
     switch (device->deviceType)
     {
         case KEYBOARD:
         {
+            Keycode keycode = toKeyboardKeycode(gameInput);
             Keyboard* keyboard = device->keyboard;
             if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
             {
@@ -426,7 +436,7 @@ bool keyPressed(InputDevice* device, Keycode keycode)
         
         case CONTROLLER:
         {
-            ControllerKeycode controllerKeycode = toControllerKeycode(keycode);
+            ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
             if (controllerKeycode == NONE) return false;
             Controller* controller = device->controller;
             if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
@@ -448,12 +458,13 @@ bool keyPressed(InputDevice* device, Keycode keycode)
     }
 }
 
-bool keyDown(InputDevice * device, Keycode keycode)
+bool keyDown(InputDevice * device, GameInput gameInput)
 {
     switch (device->deviceType)
     {
         case KEYBOARD:
         {
+            Keycode keycode = toKeyboardKeycode(gameInput);
             Keyboard* keyboard = device->keyboard;
             if (keyboard->keycodes[keycode])
                 return true;
@@ -463,7 +474,7 @@ bool keyDown(InputDevice * device, Keycode keycode)
         
         case CONTROLLER:
         {
-            ControllerKeycode controllerKeycode = toControllerKeycode(keycode);
+            ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
             if (controllerKeycode == NONE) return false;
             Controller* controller = device->controller;
             if (controller->keycodes[controllerKeycode])
@@ -476,12 +487,13 @@ bool keyDown(InputDevice * device, Keycode keycode)
     }
 }
 
-bool keyUp(InputDevice * device, Keycode keycode)
+bool keyUp(InputDevice * device, GameInput gameInput)
 {
     switch (device->deviceType)
     {
         case KEYBOARD:
         {
+            Keycode keycode = toKeyboardKeycode(gameInput);
             Keyboard* keyboard = device->keyboard;
             if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
             {
@@ -499,7 +511,7 @@ bool keyUp(InputDevice * device, Keycode keycode)
         
         case CONTROLLER:
         {
-            ControllerKeycode controllerKeycode = toControllerKeycode(keycode);
+            ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
             if (controllerKeycode == NONE) return false;
             Controller* controller = device->controller;
             if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
@@ -533,78 +545,50 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     {
         //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
         
-        if (keyPressed(inputDevice, ARROW_UP))
-        {
-            printf("DPAD UP pressed\n");
-            spriteEntity->transform.yPos += 0.07f * dt/1000;
-        }
-        
-        if (keyPressed(inputDevice, ARROW_DOWN))
-        {
-            printf("DPAD DOWN pressed\n");
-            spriteEntity->transform.yPos -= 0.07f * dt/1000;
-        }
-        
-        if (keyDown(inputDevice, ARROW_LEFT))
-        {
-            printf("DPAD LEFT pressed\n");
-            spriteEntity->transform.xPos -= 0.07f * dt/1000;
-        }
-        
-        if (keyUp(inputDevice, ARROW_RIGHT))
-        {
-            printf("DPAD RIGHT pressed\n");
-            spriteEntity->transform.xPos += 0.07f * dt/1000;
-        }
-        
-        if (keyDown(inputDevice, LETTER_A))
-        {
-            printf("A pressed\n");
-            spriteEntity->transform.xScale += 0.02f * dt/1000;
-        }
-        
         spriteEntity++;
     }
     posX += dt * 0.00001f;
     scaleY += dt * 0.000001f;
     
     // control player
-    if (keyDown(inputDevice, ARROW_UP))
+    if (keyDown(inputDevice, ACCELERATE))
     {
         //printf("DPAD UP pressed\n");
-#if 1
         v3 direction = {0,1,0};
+#if 1
         gPlayerEntity.speed.x += 0.000001f; 
         gPlayerEntity.speed.y += 0.000001f;
         if (gPlayerEntity.speed.x >= 0.01f)
             gPlayerEntity.speed.x = 0.01f;
         if (gPlayerEntity.speed.y >= 0.01f)
             gPlayerEntity.speed.y = 0.01f;
+#endif
         float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
         v3 newVelocity = {
             direction.x*cosf(angleInRad) - direction.y*sinf(angleInRad),
             direction.x*sinf(angleInRad) + direction.y*cosf(angleInRad),
             0
         };
-        //newVelocity.x *= gPlayerEntity.speed.x;
-        //newVelocity.y *= gPlayerEntity.speed.y;
-        //newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
-        gPlayerEntity.velocity = v3normalize(newVelocity);
+        newVelocity.x *= gPlayerEntity.speed.x;
+        newVelocity.y *= gPlayerEntity.speed.y;
+        newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
+        gPlayerEntity.velocity = newVelocity;
         printf("speed: (%f, %f), ", gPlayerEntity.speed.x, gPlayerEntity.speed.y);
         printf("velocity: %f\n", v3length(gPlayerEntity.velocity));
-#endif
         //gPlayerEntity.velocity = {0,1,0};
     }
     
+#if 0    
     if (keyDown(inputDevice, ARROW_DOWN))
     {
         //gPlayerEntity.velocity = {0,-1,0};
     }
+#endif
     
-    if (keyDown(inputDevice, ARROW_LEFT))
+    if (keyDown(inputDevice, TURN_LEFT))
     {
         printf("DPAD LEFT pressed\n");
-        gPlayerEntity.transform.angle += .2f;
+        gPlayerEntity.transform.angle += .3f;
 #if 1
         if (gPlayerEntity.transform.angle >= 360.f)
             gPlayerEntity.transform.angle = 0.f;
@@ -612,10 +596,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         //gPlayerEntity.velocity = {-1,0,0};
     }
     
-    if (keyDown(inputDevice, ARROW_RIGHT))
+    if (keyDown(inputDevice, TURN_RIGHT))
     {
         printf("DPAD RIGHT pressed\n");
-        gPlayerEntity.transform.angle -= .2f;
+        gPlayerEntity.transform.angle -= .3f;
 #if 1
         if (gPlayerEntity.transform.angle <= 0.f)
             gPlayerEntity.transform.angle = 360.f;
@@ -623,6 +607,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         //gPlayerEntity.velocity = {+1,0,0};
     }
     
+#if 0    
     if (keyDown(inputDevice, LETTER_A))
     {
         printf("A pressed\n");
@@ -630,6 +615,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         gPlayerEntity.speed.x += 0.00001f;
         gPlayerEntity.speed.y += 0.00001f;
     }
+#endif
     gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
     

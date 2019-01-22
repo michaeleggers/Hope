@@ -30,6 +30,13 @@ enum ControllerKeycode
     NONE
 };
 
+enum GameInput
+{
+    TURN_LEFT,
+    TURN_RIGHT,
+    ACCELERATE
+};
+
 struct GenericKeycode
 {
     union
@@ -76,6 +83,7 @@ Sprite * loadSprite(refexport_t* re,
                     int spriteWidth, int spriteHeight);
 Mesh loadMeshFromOBJ(char * objfile);
 int extractIndex(char * input, int length, int * outLength);
+Keycode toKeyboardKeycode(GameInput gameInput);
 
 /* services from platform layer */
 void update_messages();
