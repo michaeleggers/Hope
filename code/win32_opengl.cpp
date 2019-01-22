@@ -456,8 +456,8 @@ void set_ortho(int width, int height, Shader * shader, char * location)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(-10.0f * aspectRatio, 10.0f * aspectRatio,
-          -10.0f, 10.0f,
+    ortho(-100.0f * aspectRatio, 100.0f * aspectRatio,
+          -100.0f, 100.0f,
           -1.0f, 1.0f,
           orthoMatrix
           );
@@ -568,23 +568,22 @@ struct mat4
 mat4 updateModelMat(Entity * entity)
 {
     mat4 modelMatrix = {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
-    
-    modelMatrix.c[0] = entity->transform.xScale;
-    modelMatrix.c[5] = entity->transform.yScale;
-    float angleInRad = (PI*entity->transform.angle) / 180;
-#if 1
-    modelMatrix.c[0] *= cos(angleInRad);
-    modelMatrix.c[1]  = sin(angleInRad);
-    modelMatrix.c[4]  = -sin(angleInRad);
-    modelMatrix.c[5] *= cos(angleInRad);
-#endif
     modelMatrix.c[12] = entity->transform.xPos;
     modelMatrix.c[13] = entity->transform.yPos;
+    float angleInRad  = (PI*entity->transform.angle) / 180;
+#if 1
+    modelMatrix.c[0] *= cosf(angleInRad);
+    modelMatrix.c[1] *= sinf(angleInRad);
+    modelMatrix.c[4] *= -sinf(angleInRad);
+    modelMatrix.c[5] *= cosf(angleInRad);
+#endif
+    modelMatrix.c[0] *= entity->transform.xScale;
+    modelMatrix.c[5] *= entity->transform.yScale;
     
     return modelMatrix;
 }

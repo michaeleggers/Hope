@@ -357,8 +357,8 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.entityType = PLAYER_E;
     playerEntity.transform.xPos = 0;
     playerEntity.transform.yPos = 0;
-    playerEntity.transform.xScale = 1;
-    playerEntity.transform.yScale = 1;
+    playerEntity.transform.xScale = 10;
+    playerEntity.transform.yScale = 10;
     playerEntity.transform.angle = 0;
     playerEntity.speed = { 0.005f, 0.005f };
     playerEntity.velocity = {0.f, -1.f, 0.f};
@@ -584,8 +584,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #endif
         float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
         v3 newVelocity = {
-            direction.x*cos(angleInRad) - direction.y*sin(angleInRad),
-            direction.x*sin(angleInRad) + direction.y*cos(angleInRad),
+            direction.x*cosf(angleInRad) - direction.y*sinf(angleInRad),
+            direction.x*sinf(angleInRad) + direction.y*cosf(angleInRad),
             0
         };
         newVelocity.x *= gPlayerEntity.speed.x;
@@ -601,22 +601,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     if (keyDown(inputDevice, ARROW_DOWN))
     {
-        printf("DPAD DOWN pressed\n");
-#if 0
-        v3 direction = {0, 1, 0};
-        gPlayerEntity.speed.x -= 0.00001f;
-        gPlayerEntity.speed.y -= 0.00001f;
-        float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
-        v3 newVelocity = {
-            direction.x*cos(angleInRad) - direction.y*sin(angleInRad),
-            direction.x*sin(angleInRad) + direction.y*cos(angleInRad),
-            0
-        };
-        newVelocity.x *= gPlayerEntity.speed.x;
-        newVelocity.y *= gPlayerEntity.speed.y;
-        newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
-        gPlayerEntity.velocity = newVelocity;
-#endif
+        
     }
     
     if (keyDown(inputDevice, ARROW_LEFT))
