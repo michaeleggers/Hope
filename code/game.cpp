@@ -409,6 +409,7 @@ Keycode toKeyboardKeycode(GameInput gameInput)
         case TURN_LEFT:  return ARROW_LEFT; break;
         case TURN_RIGHT: return ARROW_RIGHT; break;
         case ACCELERATE: return ARROW_UP; break;
+        default: return ARROW_UP;
     }
 }
 
@@ -587,9 +588,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     if (keyDown(inputDevice, TURN_LEFT))
     {
-        printf("DPAD LEFT pressed\n");
+        //printf("DPAD LEFT pressed\n");
         gPlayerEntity.transform.angle += .3f;
-#if 1
+#if 0
         if (gPlayerEntity.transform.angle >= 360.f)
             gPlayerEntity.transform.angle = 0.f;
 #endif
@@ -598,9 +599,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     if (keyDown(inputDevice, TURN_RIGHT))
     {
-        printf("DPAD RIGHT pressed\n");
+        //printf("DPAD RIGHT pressed\n");
         gPlayerEntity.transform.angle -= .3f;
-#if 1
+#if 0
         if (gPlayerEntity.transform.angle <= 0.f)
             gPlayerEntity.transform.angle = 360.f;
 #endif
@@ -610,7 +611,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #if 0    
     if (keyDown(inputDevice, LETTER_A))
     {
-        printf("A pressed\n");
+        //printf("A pressed\n");
         //gPlayerEntity.transform.xScale += 0.02f * dt/1000;
         gPlayerEntity.speed.x += 0.00001f;
         gPlayerEntity.speed.y += 0.00001f;
@@ -618,6 +619,16 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #endif
     gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
+    printf("angle: %f\n", gPlayerEntity.transform.angle);
+    
+    if (gPlayerEntity.transform.xPos > 20.0f) 
+        gPlayerEntity.transform.xPos = -20.0f;
+    if (gPlayerEntity.transform.xPos < -20.0f) 
+        gPlayerEntity.transform.xPos = 20.0f;
+    if (gPlayerEntity.transform.yPos > 20.0f) 
+        gPlayerEntity.transform.yPos = -20.0f;
+    if (gPlayerEntity.transform.yPos < -20.0f) 
+        gPlayerEntity.transform.yPos = 20.0f;
     
     // simulate asteroids
     Entity* meshEntity = gMeshEntityList;
