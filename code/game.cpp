@@ -1,6 +1,5 @@
 #include "game.h"
 #include "common_os.h"
-#define PI 3.141592f
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -338,13 +337,13 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
         memcpy(cubeEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
         cubeEntity.mesh = cubeMesh;
         cubeEntity.entityType = MESH_E;
-        cubeEntity.transform.xPos = randBetween(-10.f, 10.f);
-        cubeEntity.transform.yPos = randBetween(-10.f, 10.f);
+        cubeEntity.transform.xPos = randBetween(-100.f, 100.f);
+        cubeEntity.transform.yPos = randBetween(-100.f, 100.f);
         float randScale = randBetween(.2f, 1.f);
         cubeEntity.transform.xScale = randScale;
         cubeEntity.transform.yScale = randScale;
         cubeEntity.velocity = { randBetween(.003f, .007f), randBetween(.003f, .007f), 0.f };
-        //addEntity(&cubeEntity);
+        addEntity(&cubeEntity);
     }
     
     // init player entity
@@ -357,8 +356,8 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.entityType = PLAYER_E;
     playerEntity.transform.xPos = 0;
     playerEntity.transform.yPos = 0;
-    playerEntity.transform.xScale = 10;
-    playerEntity.transform.yScale = 10;
+    playerEntity.transform.xScale = 5;
+    playerEntity.transform.yScale = 5;
     playerEntity.transform.angle = 0;
     playerEntity.speed = { 0.005f, 0.005f };
     playerEntity.velocity = {0.f, -1.f, 0.f};
@@ -581,7 +580,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             gPlayerEntity.speed.x = 0.01f;
         if (gPlayerEntity.speed.y >= 0.01f)
             gPlayerEntity.speed.y = 0.01f;
-#endif
         float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
         v3 newVelocity = {
             direction.x*cosf(angleInRad) - direction.y*sinf(angleInRad),
@@ -597,23 +595,27 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             gPlayerEntity.velocity = newVelocity;
         printf("speed: (%f, %f), ", gPlayerEntity.speed.x, gPlayerEntity.speed.y);
         printf("velocity: %f\n", v3length(gPlayerEntity.velocity));
+#endif
+        gPlayerEntity.velocity = {0,1,0};
     }
     
     if (keyDown(inputDevice, ARROW_DOWN))
     {
-        
+        gPlayerEntity.velocity = {0,-1,0};
     }
     
     if (keyDown(inputDevice, ARROW_LEFT))
     {
         printf("DPAD LEFT pressed\n");
-        gPlayerEntity.transform.angle += .2f;
+        //gPlayerEntity.transform.angle += .2f;
+        gPlayerEntity.velocity = {-1,0,0};
     }
     
     if (keyDown(inputDevice, ARROW_RIGHT))
     {
         printf("DPAD RIGHT pressed\n");
-        gPlayerEntity.transform.angle -= .2f;
+        //gPlayerEntity.transform.angle -= .2f;
+        gPlayerEntity.velocity = {+1,0,0};
     }
     
     if (keyDown(inputDevice, LETTER_A))
@@ -630,20 +632,20 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     Entity* meshEntity = gMeshEntityList;
     for (int i = 0; i < gNumMeshEntities; ++i)
     {
-        if (meshEntity->transform.xPos > 10.f)  {
-            meshEntity->transform.xPos = 10;
+        if (meshEntity->transform.xPos > 100.f)  {
+            meshEntity->transform.xPos = 100;
             meshEntity->velocity.x *= -1;
         }
-        if (meshEntity->transform.xPos < -10.f)  {
-            meshEntity->transform.xPos = -10;
+        if (meshEntity->transform.xPos < -100.f)  {
+            meshEntity->transform.xPos = -100;
             meshEntity->velocity.x *= -1;
         }
-        if (meshEntity->transform.yPos > 10.f)  {
-            meshEntity->transform.yPos = 10;
+        if (meshEntity->transform.yPos > 100.f)  {
+            meshEntity->transform.yPos = 100;
             meshEntity->velocity.y *= -1;
         }
-        if (meshEntity->transform.yPos < -10.f)  {
-            meshEntity->transform.yPos = -10;
+        if (meshEntity->transform.yPos < -100.f)  {
+            meshEntity->transform.yPos = -100;
             meshEntity->velocity.y *= -1;
         }
         

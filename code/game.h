@@ -1,9 +1,11 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "hope_math.h"
 #include "platform.h"
 #include "ref.h"
 #include "scene.h"
+
 
 enum Keycode
 {

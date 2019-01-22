@@ -1,8 +1,6 @@
 #include "win32_opengl.h"
 #include "opengl_renderer.cpp"
 #include "common_os.h"
-#include <math.h>
-#define PI 3.141592f
 
 // TODO(Michael): separate sprite size = the size of the sprite on screen
 // from texture size = size of the texture data on GPU
@@ -560,30 +558,39 @@ void gl_notify()
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
 
-struct mat4
-{
-    float c[16];
-};
-
 mat4 updateModelMat(Entity * entity)
 {
+#if 0
     mat4 modelMatrix = {
         1.0f, 1.0f, 0.0f, 0.0f,
         1.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
+#endif
+    
+#if 0
     modelMatrix.c[12] = entity->transform.xPos;
     modelMatrix.c[13] = entity->transform.yPos;
-    float angleInRad  = (PI*entity->transform.angle) / 180;
-#if 1
     modelMatrix.c[0] *= cosf(angleInRad);
     modelMatrix.c[1] *= sinf(angleInRad);
     modelMatrix.c[4] *= -sinf(angleInRad);
     modelMatrix.c[5] *= cosf(angleInRad);
-#endif
     modelMatrix.c[0] *= entity->transform.xScale;
     modelMatrix.c[5] *= entity->transform.yScale;
+#endif
+    mat4 translationMatrix = hope_translate(
+        entity->transform.xPos,
+        entity->transform.yPos,
+        entity->transform.zPos);
+    mat4 scaleMatrix = hope_scale(
+        entity->transform.xScale,
+        entity->transform.yScale,
+        entity->transform.zScale);
+    mat4 rotationMatrix = hope_rotate_around_z(entity->transform.angle);
+    
+    mat4 modelMatrix = mat4xmat4(translationMatrix, rotationMatrix);
+    modelMatrix = mat4xmat4(modelMatrix, scaleMatrix);
     
     return modelMatrix;
 }

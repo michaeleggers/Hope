@@ -4,6 +4,8 @@
 // interface for renderer. To be implemented in DLL (OpenGL, DirectX, ...)
 // for the moment not platform independent
 
+#include "hope_math.h"
+#include "hope_math.c"
 #include "platform.h"
 #include "common_render.h"
 
@@ -35,45 +37,6 @@ struct Sprite
     int currentFrame;
     int frameCount;
 };
-
-struct v3
-{
-    float x, y, z;
-};
-
-struct v2
-{
-    float x, y;
-};
-
-v3 v3add(v3 lhs, v3 rhs)
-{
-    return {
-        lhs.x + rhs.x,
-        lhs.y + rhs.y,
-        lhs.z + rhs.z
-    };
-};
-
-float v3length(v3 v)
-{
-    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
-}
-
-float v2length(v2 v)
-{
-    return sqrt(v.x*v.x + v.y*v.y);
-}
-
-v3 normalize(v3 in)
-{
-    float length = v3length(in);
-    return {
-        in.x / length,
-        in.y / length,
-        in.z / length
-    };
-}
 
 struct Vertex
 {
