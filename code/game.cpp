@@ -419,6 +419,22 @@ bool keyUp(InputDevice * device, GameInput gameInput)
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
+    // some tests with math lib
+    mat4 mat = {
+        1,1,1,1,
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0
+    };
+    mat4 mat2 = {
+        1,1,1,1,
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0
+    };
+    mat4 mult = mat4xmat4(mat, mat2);
+    printMat4(mult);
+    
     gPlatformAPI = platform_api;
     int res = re->addTwoNumbers(1, 11);
     printf("addTwoNumbers: %d\n", res);
@@ -436,8 +452,8 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
                                              560, 144);
     azores.transform.xPos = 0;
     azores.transform.yPos = 0;
-    azores.transform.xScale = 20.0f;
-    azores.transform.yScale = 20.0f;
+    azores.transform.xScale = 1.0f;
+    azores.transform.yScale = 1.0f;
     azores.sprite = azoresSprite;
     
     
@@ -495,8 +511,8 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.entityType = PLAYER_E;
     playerEntity.transform.xPos = 0;
     playerEntity.transform.yPos = 0;
-    playerEntity.transform.xScale = 1;
-    playerEntity.transform.yScale = 1;
+    playerEntity.transform.xScale = 2;
+    playerEntity.transform.yScale = 2;
     playerEntity.transform.angle = 0;
     playerEntity.speed = { 0.005f, 0.005f };
     playerEntity.velocity = {0.f, 1.f, 0.f};
@@ -509,7 +525,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
                                              0, 0,
                                              240, 160);
     playerEntity.sprite = playerSprite;
-    re->addSpriteFrame(&playerEntity.sprite, 0, 0, 16, 16);
+    re->addSpriteFrame(&playerEntity.sprite, 32, 32, 16, 16);
     playerEntity.sprite.currentFrame = 1;
     addEntity(&playerEntity);
 }
@@ -626,7 +642,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #endif
     gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
-    printf("angle: %f\n", gPlayerEntity.transform.angle);
+    //printf("angle: %f\n", gPlayerEntity.transform.angle);
+    printf ("pos player (x: %f, y: %f)\n", gPlayerEntity.transform.xPos, gPlayerEntity.transform.yPos);
     
     if (gPlayerEntity.transform.xPos > 20.0f) 
         gPlayerEntity.transform.xPos = -20.0f;

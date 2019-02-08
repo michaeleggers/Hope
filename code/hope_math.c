@@ -50,7 +50,7 @@ mat4 mat4xmat4(mat4 lhs, mat4 rhs)
         {
             for (int inner = 0; inner < 4; inner++)
             {
-                result.c[4*col+row] += lhs.c[4*inner+col] * rhs.c[4*row+inner];
+                result.c[4*row+col] += lhs.c[4*inner+col] * rhs.c[4*row+inner];
             }
         }
     }
