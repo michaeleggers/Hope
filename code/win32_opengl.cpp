@@ -454,8 +454,8 @@ void set_ortho(int width, int height, Shader * shader, char * location)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(-100.0f, 100.0f,
-          -100.0f, 100.0f,
+    ortho(-10.0f * aspectRatio, 10.0f * aspectRatio,
+          -10.0f, 10.0f,
           -1.0f, 1.0f,
           orthoMatrix
           );

@@ -628,10 +628,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
     printf("angle: %f\n", gPlayerEntity.transform.angle);
     
-    if (gPlayerEntity.transform.xPos > 10.0f) 
-        gPlayerEntity.transform.xPos = -10.0f;
-    if (gPlayerEntity.transform.xPos < -10.0f) 
-        gPlayerEntity.transform.xPos = 10.0f;
+    if (gPlayerEntity.transform.xPos > 20.0f) 
+        gPlayerEntity.transform.xPos = -20.0f;
+    if (gPlayerEntity.transform.xPos < -20.0f) 
+        gPlayerEntity.transform.xPos = 20.0f;
     if (gPlayerEntity.transform.yPos > 10.0f) 
         gPlayerEntity.transform.yPos = -10.0f;
     if (gPlayerEntity.transform.yPos < -10.0f) 
