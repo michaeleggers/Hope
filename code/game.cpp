@@ -495,8 +495,8 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.entityType = PLAYER_E;
     playerEntity.transform.xPos = 0;
     playerEntity.transform.yPos = 0;
-    playerEntity.transform.xScale = 20;
-    playerEntity.transform.yScale = 20;
+    playerEntity.transform.xScale = 1;
+    playerEntity.transform.yScale = 1;
     playerEntity.transform.angle = 0;
     playerEntity.speed = { 0.005f, 0.005f };
     playerEntity.velocity = {0.f, 1.f, 0.f};
@@ -628,14 +628,14 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
     printf("angle: %f\n", gPlayerEntity.transform.angle);
     
-    if (gPlayerEntity.transform.xPos > 20.0f) 
-        gPlayerEntity.transform.xPos = -20.0f;
-    if (gPlayerEntity.transform.xPos < -20.0f) 
-        gPlayerEntity.transform.xPos = 20.0f;
-    if (gPlayerEntity.transform.yPos > 20.0f) 
-        gPlayerEntity.transform.yPos = -20.0f;
-    if (gPlayerEntity.transform.yPos < -20.0f) 
-        gPlayerEntity.transform.yPos = 20.0f;
+    if (gPlayerEntity.transform.xPos > 10.0f) 
+        gPlayerEntity.transform.xPos = -10.0f;
+    if (gPlayerEntity.transform.xPos < -10.0f) 
+        gPlayerEntity.transform.xPos = 10.0f;
+    if (gPlayerEntity.transform.yPos > 10.0f) 
+        gPlayerEntity.transform.yPos = -10.0f;
+    if (gPlayerEntity.transform.yPos < -10.0f) 
+        gPlayerEntity.transform.yPos = 10.0f;
     
     // simulate asteroids
     Entity* meshEntity = gMeshEntityList;

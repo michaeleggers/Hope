@@ -454,7 +454,7 @@ void set_ortho(int width, int height, Shader * shader, char * location)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(-100.0f * aspectRatio, 100.0f * aspectRatio,
+    ortho(-100.0f, 100.0f,
           -100.0f, 100.0f,
           -1.0f, 1.0f,
           orthoMatrix
@@ -531,6 +531,8 @@ void glSetProjection(Projection_t projType)
             RECT rect;
             GetClientRect(*gRenderState.windowHandle, &rect);
             set_ortho(rect.right, rect. bottom, &gShaders[SPRITE], "ortho");
+            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE_SHEET], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[STANDARD_MESH], "projectionMat");
         }
         break;
         

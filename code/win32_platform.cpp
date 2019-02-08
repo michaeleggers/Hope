@@ -140,7 +140,16 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         {
             RECT rect;
             GetClientRect(windowHandle, &rect);
-            re.setViewport(rect.left, rect.top, rect.right, rect.bottom);
+            float aspectRatio = (float)rect.right/(float)rect.bottom;
+            float right = aspectRatio;
+            float bottom = 1.0f;
+            if (rect.bottom > rect.right)
+            {
+                aspectRatio = (float)rect.bottom/(float)rect.right;
+                right = 1.0f;
+                bottom = aspectRatio;
+            }
+            re.setViewport(rect.left, rect.top, rect.right*bottom, rect.bottom*right);
             //re.setProjection(ORTHO);
             re.notify();
         }
