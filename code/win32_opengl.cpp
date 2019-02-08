@@ -602,7 +602,7 @@ void gl_renderFrame(Refdef * refdef)
         int intHeight = sprite->windows[frame].intHeight;
         mat4 modelMatrix = updateModelMat(spriteEntity);
         float ratio = (float)intWidth / (float)intHeight;
-        spriteEntity->transform.modelMat[0] *= ratio;
+        modelMatrix.c[0] *= ratio;
         set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
         gl_renderFrame(sprite, frame);
         spriteEntity++;
@@ -625,11 +625,16 @@ void gl_renderFrame(Refdef * refdef)
     
     // render player entity
     Entity* playerEntity = refdef->playerEntity;
-    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
-    GPUMeshData * meshData = (GPUMeshData *)(playerEntity->mesh.meshHandle);
+    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    GPUSprite * sprite = (GPUSprite *)(playerEntity->sprite.spriteHandle);
+    int frame = playerEntity->sprite.currentFrame;
+    int intWidth = sprite->windows[frame].intWidth;
+    int intHeight = sprite->windows[frame].intHeight;
     mat4 modelMatrix = updateModelMat(playerEntity);
-    set_model(modelMatrix.c, &gShaders[STANDARD_MESH], "modelMat");
-    gl_renderMesh(meshData);
+    float ratio = (float)intWidth / (float)intHeight;
+    modelMatrix.c[0] *= ratio;
+    set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
+    gl_renderFrame(sprite, frame);
     
     SwapBuffers(gRenderState.deviceContext);
     glFinish();
