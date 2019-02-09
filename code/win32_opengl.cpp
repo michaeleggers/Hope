@@ -664,6 +664,58 @@ void gl_renderFrame(GPUSprite * sprite, int frame) // later on render-groups, so
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite)
+{
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    GPUSprite * gpuSprite = (GPUSprite *)(sprite->spriteHandle);
+    glBindVertexArray(gpuSprite->mesh.vao);
+    glBindTexture(GL_TEXTURE_2D, gpuSprite->texture->texture_id);
+    char * c = text;
+    for (int i = 0;
+         *c != '\0';
+         i++)
+    {
+        int asciiValue = *c;
+		if (asciiValue >= 97 && asciiValue <= 122) // lower case letters
+        {
+            asciiValue -= 32;
+        }
+        int frame = asciiValue - 31; // glyph texture starts with <SPACE> (dec=32)
+        // TODO(Michael): I think there is a bug in how the windows of a spritesheet are
+        // indexed. The space character is probably starting at 1 and not at 0.
+        Window window = gpuSprite->windows[frame];
+        int intWidth = window.intWidth;
+        int intHeight = window.intHeight;
+        int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
+        glUniform4f(window_loc,
+                    // offsets
+                    window.x, window.y,
+                    //0.067f, 0.1f,
+                    window.width, window.height
+                    );
+        mat4 translationMatrix = hope_translate(
+            xPos + i*2*xScale,
+            yPos,
+            0.0f);
+        mat4 scaleMatrix = hope_scale(
+            xScale,
+            yScale,
+            0.0f);
+        mat4 rotationMatrix = hope_rotate_around_z(0.0f);
+        mat4 modelMatrix = mat4xmat4(translationMatrix, rotationMatrix);
+        modelMatrix = mat4xmat4(modelMatrix, scaleMatrix);
+        //float ratio = (float)intWidth / (float)intHeight;
+        //modelMatrix.c[0] *= ratio;
+        set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        c++;
+    }
+    SwapBuffers(gRenderState.deviceContext);
+}
+
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 {
     gRenderState.windowHandle = windowHandle;
@@ -934,6 +986,7 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.renderFrame = gl_renderFrame;
     re.notify = gl_notify;
     re.addSpriteFrame = gl_addSpriteFrame;
+    re.renderText = gl_renderText;
     re.addTwoNumbers = commonAddTwoNumbers;
     return re;
 }

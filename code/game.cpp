@@ -10,6 +10,7 @@ global_var Entity gMeshEntityList[MAX_MESHES];
 global_var Entity gPlayerEntity;
 global_var int gNumSpriteEntities;
 global_var int gNumMeshEntities;
+global_var Sprite gBitmapFontSprite;
 global_var Refdef gRefdef;
 global_var PlatformAPI* gPlatformAPI;
 
@@ -419,29 +420,32 @@ bool keyUp(InputDevice * device, GameInput gameInput)
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
-    // some tests with math lib
-    mat4 mat = {
-        1,1,1,1,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0
-    };
-    mat4 mat2 = {
-        1,1,1,1,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0
-    };
-    mat4 mult = mat4xmat4(mat, mat2);
-    printMat4(mult);
-    
     gPlatformAPI = platform_api;
     int res = re->addTwoNumbers(1, 11);
     printf("addTwoNumbers: %d\n", res);
+    
+    // init bitmap font
+    int x, y, n;
+    unsigned char * bitmapFontData = 0;
+    if (fileExists("..\\assets\\kromagrad_16x16.png"))
+        bitmapFontData = stbi_load("..\\assets\\kromagrad_16x16.png", &x, &y, &n, 4);
+    gBitmapFontSprite = re->registerSprite("..\\assets\\kromagrad_16x16.png",
+                                           bitmapFontData,
+                                           944, 16,
+                                           0, 0,
+                                           944, 16);
+    
+    for (int i = 0;
+         i < 944/16; // number of glyphs
+         i++)
+    {
+        re->addSpriteFrame(&gBitmapFontSprite, 0 + i*16, 0, 16, 16); // glyphs are arranged in one horizontal line.
+    }
+    
+    
     Entity azores;
     memcpy(azores.transform.modelMat, gModelMatrix, 16*sizeof(float));
     azores.entityType = SPRITE_E;
-    int x, y, n;
     unsigned char * azoresImageData = 0;
     if (fileExists("..\\assets\\azores.png"))
         azoresImageData = stbi_load("..\\assets\\azores.png", &x, &y, &n, 4);
@@ -479,9 +483,9 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     /*
     float vertices[] = {
-        -1, -1, 0,
-        0, 1, 0,
-        1, -1, 0
+    -1, -1, 0,
+    0, 1, 0,
+    1, -1, 0
     };
     asteroidMesh.meshHandle = re->registerMesh(asteroidMesh.VVVNNNST, asteroidMesh.vertexCount);
     */
@@ -685,7 +689,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     gRefdef.numMeshEntities = gNumMeshEntities;
     gRefdef.meshEntities = gMeshEntityList;
     gRefdef.playerEntity = &gPlayerEntity;
-    re->renderFrame(&gRefdef);
+    re->renderText("hiThisissomecooltext(<>)!?", -19, 9, .2f, .2f, &gBitmapFontSprite);
+    //re->renderFrame(&gRefdef);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that
