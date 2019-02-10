@@ -597,8 +597,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             direction.x*sinf(angleInRad) + direction.y*cosf(angleInRad),
             0
         };
-        newVelocity.x *= gPlayerEntity.speed.x;
-        newVelocity.y *= gPlayerEntity.speed.y;
+        newVelocity.x *= gPlayerEntity.speed.x*dt/1000;
+        newVelocity.y *= gPlayerEntity.speed.y*dt/1000;
         newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
         gPlayerEntity.velocity = newVelocity;
         printf("speed: (%f, %f), ", gPlayerEntity.speed.x, gPlayerEntity.speed.y);
@@ -616,7 +616,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, TURN_LEFT))
     {
         //printf("DPAD LEFT pressed\n");
-        gPlayerEntity.transform.angle += .3f;
+        gPlayerEntity.transform.angle += .3f*dt/1000;
 #if 0
         if (gPlayerEntity.transform.angle >= 360.f)
             gPlayerEntity.transform.angle = 0.f;
@@ -627,7 +627,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, TURN_RIGHT))
     {
         //printf("DPAD RIGHT pressed\n");
-        gPlayerEntity.transform.angle -= .3f;
+        gPlayerEntity.transform.angle -= .3f*dt/1000;
 #if 0
         if (gPlayerEntity.transform.angle <= 0.f)
             gPlayerEntity.transform.angle = 360.f;
@@ -647,7 +647,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
     gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
     //printf("angle: %f\n", gPlayerEntity.transform.angle);
-    printf ("pos player (x: %f, y: %f)\n", gPlayerEntity.transform.xPos, gPlayerEntity.transform.yPos);
+    //printf ("pos player (x: %f, y: %f)\n", gPlayerEntity.transform.xPos, gPlayerEntity.transform.yPos);
     
     if (gPlayerEntity.transform.xPos > 20.0f) 
         gPlayerEntity.transform.xPos = -20.0f;
@@ -689,8 +689,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     gRefdef.numMeshEntities = gNumMeshEntities;
     gRefdef.meshEntities = gMeshEntityList;
     gRefdef.playerEntity = &gPlayerEntity;
-    re->renderText("hiThisissomecooltext(<>)!?", -19, 9, .2f, .2f, &gBitmapFontSprite);
-    //re->renderFrame(&gRefdef);
+    //re->renderText("Hi, this is some (<>)!? text.", -16, 0, .5f, 1.f, &gBitmapFontSprite);
+    re->renderFrame(&gRefdef);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

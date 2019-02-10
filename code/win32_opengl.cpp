@@ -669,8 +669,9 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
     glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
     GPUSprite * gpuSprite = (GPUSprite *)(sprite->spriteHandle);
+    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
     glBindVertexArray(gpuSprite->mesh.vao);
     glBindTexture(GL_TEXTURE_2D, gpuSprite->texture->texture_id);
     char * c = text;
@@ -689,7 +690,6 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
         Window window = gpuSprite->windows[frame];
         int intWidth = window.intWidth;
         int intHeight = window.intHeight;
-        int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
         glUniform4f(window_loc,
                     // offsets
                     window.x, window.y,
