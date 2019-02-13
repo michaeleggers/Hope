@@ -73,7 +73,10 @@ int width, int height)
                                     width, height);
     
     gpuSpriteData.windows[0] = window;
-    gpuSpriteData.freeWindowIndex++;
+    //gpuSpriteData.freeWindowIndex++; // NOTE(Michael): we are not incrementing here,
+    // because it conflicts with text rendering, eg. if the character bitmap font
+    // starts with ' ' the offset value won't be 32 (dec for space) but rather 31,
+    // which is confusing.
     
     if (gUnknownSpriteIndex == MAX_SPRITES)
     {
@@ -684,7 +687,7 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
         {
             asciiValue -= 32;
         }
-        int frame = asciiValue - 31; // glyph texture starts with <SPACE> (dec=32)
+        int frame = asciiValue - ' '; // glyph texture starts with <SPACE> (dec=32)
         // TODO(Michael): I think there is a bug in how the windows of a spritesheet are
         // indexed. The space character is probably starting at 1 and not at 0.
         Window window = gpuSprite->windows[frame];

@@ -530,7 +530,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
                                              240, 160);
     playerEntity.sprite = playerSprite;
     re->addSpriteFrame(&playerEntity.sprite, 32, 32, 16, 16);
-    playerEntity.sprite.currentFrame = 1;
+    playerEntity.sprite.currentFrame = 0;
     addEntity(&playerEntity);
 }
 
