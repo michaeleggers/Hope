@@ -15,6 +15,8 @@ global_var int gUnknownTextureIndex;
 global_var Texture gFallbackTexture;
 global_var GPUMeshData gMeshList[MAX_MESHES];
 global_var int gUnknownMeshIndex;
+global_var GLuint gvtxHandle;
+global_var GLuint gidxHandle;
 
 // TODO(Michael): we might want to NOT have platform stuff in here (but also I might be wrong).
 global_var PlatformAPI* gPlatformAPI;
@@ -174,6 +176,7 @@ void initShaders()
 {
     char * shaderAttribs[] = {
         "vertex_pos",
+        "normal",
         "texture_pos",
     };
     char * shaderAttribsMesh[] = {
@@ -514,12 +517,6 @@ Spritesheet create_spritesheet(Texture * texture,
     return spritesheet;
 }
 
-// for now
-static char * shaderAttribs[] = {
-    "vertex_pos",
-    "texture_pos",
-};
-
 void glSetViewport(int xLeft, int yBottom, int width, int height)
 {
     glViewport((GLint)xLeft, (GLint)yBottom, (GLsizei)width, (GLsizei)height);
@@ -707,7 +704,7 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
             xScale,
             yScale,
             0.0f);
-        mat4 rotationMatrix = hope_rotate_around_z(0.0f);
+        mat4 rotationMatrix = hope_rotate_around_z(15.0f);
         mat4 modelMatrix = mat4xmat4(translationMatrix, rotationMatrix);
         modelMatrix = mat4xmat4(modelMatrix, scaleMatrix);
         //float ratio = (float)intWidth / (float)intHeight;
@@ -793,6 +790,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glBufferData");
         glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)
             wglGetProcAddress("glGenVertexArrays");
+        glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)
+            wglGetProcAddress("glDeleteVertexArrays");
         glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)
             wglGetProcAddress("glBindVertexArray");
         glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
@@ -946,6 +945,11 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glViewport(windowDimension.left, windowDimension.top, 
                windowDimension.right, windowDimension.bottom);
     
+    
+    // global buffer handles for new rendering API
+    glGenBuffers(1, &gvtxHandle);
+    glGenBuffers(1, &gidxHandle);
+    
     // init shaders
     initShaders();
     
@@ -957,7 +961,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
     glCullFace (GL_BACK); // cull back face
-    glFrontFace (GL_CW); // GL_CCW for counter clock-wise
+    //glFrontFace (GL_CW); // GL_CCW is default (but I dislike it)
     
     // enable alpha blending
     glEnable(GL_BLEND);
@@ -973,6 +977,63 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     return 0;
 }
 
+void gl_endFrame(DrawList* drawList)
+{
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    GLuint vaoHandle = 0;
+    glGenVertexArrays(1, &vaoHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
+    glBufferData(GL_ARRAY_BUFFER, drawList->vtxCount*sizeof(Vertex),
+                 drawList->vtxBuffer, GL_STREAM_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, drawList->idxCount*sizeof(uint16_t),
+                 drawList->idxBuffer, GL_STREAM_DRAW);
+    RenderCommand * renderCommands = drawList->renderCmds;
+    RenderCommand * renderCmd = renderCommands;
+    for (int i = 0;
+         i < drawList->renderCmdCount;
+         ++i)
+    {
+        RenderCommandType renderType = renderCmd->type;
+        switch (renderType)
+        {
+            case RENDER_CMD_TEXT:
+            {
+                glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+                glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
+                //glBindTexture(GL_TEXTURE_2D, 0);
+                //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
+                //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
+                
+                // 0 1 2 | 3 4 5 | 6  7
+                // v v v | n n n | uv uv
+                // positions
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+                glEnableVertexAttribArray(0);
+                //normals
+                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)sizeof(v3));
+                glEnableVertexAttribArray(1);
+                // UVs
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
+                glEnableVertexAttribArray(2);
+                
+                glBindTexture(GL_TEXTURE_2D, 1);
+                glDrawElements(GL_TRIANGLES, 6*renderCmd->quadCount, 
+                               GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)) );
+            }
+            break;
+        }
+        ++renderCmd;
+    }
+    drawList->vtxCount = 0;
+    drawList->idxCount = 0;
+    drawList->renderCmdCount = 0;
+    glDeleteVertexArrays(1, &vaoHandle);
+    SwapBuffers(gRenderState.deviceContext);
+}
 
 // init the struct
 refexport_t GetRefAPI(PlatformAPI* platform_api)
@@ -991,5 +1052,6 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.addSpriteFrame = gl_addSpriteFrame;
     re.renderText = gl_renderText;
     re.addTwoNumbers = commonAddTwoNumbers;
+    re.endFrame = gl_endFrame;
     return re;
 }

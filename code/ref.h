@@ -14,6 +14,44 @@
 #define MAX_TEXTURES 256
 #define MAX_MESHES 1024
 
+struct Vertex
+{
+    v3 position;
+    v3 normal;
+    v2 UVs;
+};
+
+// New Rendering API
+// ---------------------------------------
+enum RenderCommandType
+{
+    RENDER_CMD_TEXT
+};
+
+// Every draw call issues a RenderCommand.
+// Each RenderCommand essentially is one draw-call.
+struct RenderCommand
+{
+    RenderCommandType type;
+    uint32_t          textureID;
+    // Vertex           *vtxBufferPos;
+    // uint16_t         *idxBufferPos;
+    uint32_t          idxBufferOffset;
+    uint32_t          elemCount;
+    uint32_t          quadCount;
+};
+
+// gets passed to the rendering API (eg OpenGL),
+// which then goes through the renderCmds and issues draw calls.
+struct DrawList
+{
+    Vertex       *vtxBuffer;
+    uint32_t      vtxCount;
+    uint16_t     *idxBuffer;
+    uint32_t      idxCount;
+    RenderCommand renderCmds[256];
+    uint32_t      renderCmdCount;
+};
 
 enum EntityType
 {
@@ -36,13 +74,6 @@ struct Sprite
     void * spriteHandle;
     int currentFrame;
     int frameCount;
-};
-
-struct Vertex
-{
-    v3 position;
-    v3 normal;
-    v2 UVs;
 };
 
 struct Mesh
@@ -91,7 +122,7 @@ struct refexport_t
     void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);
     void (*renderText)(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite);
     int (*addTwoNumbers)(int a, int b); // dummy
-    
+    void (*endFrame)(DrawList* drawList);
 };
 
 typedef refexport_t (*GetRefAPI_t)(PlatformAPI* platform_api);

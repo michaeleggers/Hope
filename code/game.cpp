@@ -13,6 +13,7 @@ global_var int gNumMeshEntities;
 global_var Sprite gBitmapFontSprite;
 global_var Refdef gRefdef;
 global_var PlatformAPI* gPlatformAPI;
+global_var DrawList gDrawList;
 
 Background loadBackground(char * file)
 {
@@ -282,7 +283,7 @@ ControllerKeycode toControllerKeycode(GameInput gameInput)
         case TURN_LEFT  : return DPAD_LEFT;
         case TURN_RIGHT : return DPAD_RIGHT;
         case ACCELERATE    : return DPAD_A;
-        default          : return NONE;
+        default          : return DPAD_NONE;
     }
 }
 
@@ -293,7 +294,7 @@ Keycode toKeyboardKeycode(GameInput gameInput)
         case TURN_LEFT:  return ARROW_LEFT; break;
         case TURN_RIGHT: return ARROW_RIGHT; break;
         case ACCELERATE: return ARROW_UP; break;
-        default: return ARROW_UP;
+        default: return KEYBOARD_NONE;
     }
 }
 
@@ -322,7 +323,7 @@ bool keyPressed(InputDevice* device, GameInput gameInput)
         case CONTROLLER:
         {
             ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
-            if (controllerKeycode == NONE) return false;
+            if (controllerKeycode == DPAD_NONE) return false;
             Controller* controller = device->controller;
             if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
             {
@@ -360,7 +361,7 @@ bool keyDown(InputDevice * device, GameInput gameInput)
         case CONTROLLER:
         {
             ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
-            if (controllerKeycode == NONE) return false;
+            if (controllerKeycode == DPAD_NONE) return false;
             Controller* controller = device->controller;
             if (controller->keycodes[controllerKeycode])
                 return true;
@@ -397,7 +398,7 @@ bool keyUp(InputDevice * device, GameInput gameInput)
         case CONTROLLER:
         {
             ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
-            if (controllerKeycode == NONE) return false;
+            if (controllerKeycode == DPAD_NONE) return false;
             Controller* controller = device->controller;
             if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
             {
@@ -418,11 +419,76 @@ bool keyUp(InputDevice * device, GameInput gameInput)
     }
 }
 
+void renderText(char * text, 
+                int xPos, int yPos, 
+                float xScale, float yScale, 
+                Sprite * sprite)
+{
+    RenderCommand renderCmd;
+    renderCmd.type = RENDER_CMD_TEXT;
+    renderCmd.textureID = 0; // TODO(Michael): something that makes sense here
+    renderCmd.idxBufferOffset = gDrawList.idxCount;
+    uint32_t quadCount = 0;
+    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    char * c = text;
+    for (int i = 0;
+         *c != '\0';
+         i++)
+    {
+        int asciiValue = *c;
+		if (asciiValue >= 97 && asciiValue <= 122) // lower case letters
+        {
+            asciiValue -= 32;
+        }
+        int frame = asciiValue - ' '; // glyph texture starts with <SPACE> (dec=32)
+        
+        float xUVoffset = frame*16;
+        
+        // for each character we need to:
+        // - create four vertices
+        // - create four UVs (windows into texture)
+        vertex[0].position.x = xPos + i*1.0f;
+        vertex[0].position.y = yPos; vertex[0].position.z = 0.f;
+        vertex[0].UVs.x = 0.0f;
+        vertex[0].UVs.y = 0.0f;
+        vertex[1].position.x = xPos + i*1.0f + 1.0f;
+        vertex[1].position.y = yPos; vertex[1].position.z = 0.f;
+        vertex[1].UVs.x = 1.0f; //1.0f/(float)(xUVoffset + 16.0f);
+        vertex[1].UVs.y = 0.0f;
+        vertex[2].position.x = xPos + i*1.0f + 1.0f;
+        vertex[2].position.y = yPos + 1.0f; vertex[2].position.z = 0.f;
+        vertex[2].UVs.x = 1.0f;// /(float)(xUVoffset + 16.0f);
+        vertex[2].UVs.y = 1.0f;// /(float)16;
+        vertex[3].position.x = xPos + i*1.0f;
+        vertex[3].position.y = yPos + 1.0f; vertex[3].position.z = 0.f;
+        vertex[3].UVs.x = 0.0f;
+        vertex[3].UVs.y = 1.0f;// /(float)16;
+        index[0] = 0+i*4; index[1] = 1+i*4; index[2] = 2+i*4; // first triangle
+        index[3] = 2+i*4; index[4] = 3+i*4; index[5] = 0+i*4; // second triangle
+        
+        vertex += 4;
+        index  += 6;
+        quadCount++;
+        gDrawList.vtxCount += 4;
+        gDrawList.idxCount += 6;
+        
+        c++;
+    }
+    renderCmd.quadCount = quadCount;
+    gDrawList.renderCmds[gDrawList.renderCmdCount] = renderCmd;
+    gDrawList.renderCmdCount++;
+}
+
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     int res = re->addTwoNumbers(1, 11);
     printf("addTwoNumbers: %d\n", res);
+    
+    // init drawlist
+    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1024);
+    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1024);
     
     // init bitmap font
     int x, y, n;
@@ -684,13 +750,19 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         meshEntity++;
     }
     
+    // new rendering API proposal:
+    // beginRender(renderDevice, renderTarget);
+    renderText("abcdzz", 0, 0, 1.f, 1.f, &gBitmapFontSprite);
+    // endRender(renderDevice, renderTarget);
+    
     gRefdef.numSpriteEntities = gNumSpriteEntities;
     gRefdef.spriteEntities = gSpriteEntityList;
     gRefdef.numMeshEntities = gNumMeshEntities;
     gRefdef.meshEntities = gMeshEntityList;
     gRefdef.playerEntity = &gPlayerEntity;
     //re->renderText("Hi, this is some (<>)!? text.", -16, 0, .5f, 1.f, &gBitmapFontSprite);
-    re->renderFrame(&gRefdef);
+    //re->renderFrame(&gRefdef);
+    re->endFrame(&gDrawList);
 }
 
 // NOTE(Michael): Not in use yet. Maybe reverse the control so that

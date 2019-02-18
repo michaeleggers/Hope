@@ -6,7 +6,8 @@
 #include "ref.h"
 #include "scene.h"
 
-
+// Input
+// ---------------------------------------
 enum Keycode
 {
     ARROW_LEFT,
@@ -14,6 +15,7 @@ enum Keycode
     ARROW_UP,
     ARROW_DOWN,
     LETTER_A,
+    KEYBOARD_NONE,
     MAX_KEYCODES = 255
 };
 
@@ -27,7 +29,7 @@ enum ControllerKeycode
     DPAD_B,
     DPAD_X,
     DPAD_Y,
-    NONE
+    DPAD_NONE
 };
 
 enum GameInput
@@ -71,6 +73,8 @@ struct InputDevice
     Keyboard * keyboard;
     Controller * controller;
 };
+
+// ---------------------------------------
 
 /* local to game.cpp */
 Background loadBackground(char * file);

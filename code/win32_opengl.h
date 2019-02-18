@@ -101,6 +101,7 @@ global_var PFNGLGENBUFFERSPROC               glGenBuffers;
 global_var PFNGLBINDBUFFERPROC               glBindBuffer;
 global_var PFNGLBUFFERDATAPROC               glBufferData;
 global_var PFNGLGENVERTEXARRAYSPROC          glGenVertexArrays;
+global_var PFNGLDELETEVERTEXARRAYSPROC       glDeleteVertexArrays;
 global_var PFNGLBINDVERTEXARRAYPROC          glBindVertexArray;
 global_var PFNGLENABLEVERTEXATTRIBARRAYPROC  glEnableVertexAttribArray;
 global_var PFNGLVERTEXATTRIBPOINTERPROC      glVertexAttribPointer;
