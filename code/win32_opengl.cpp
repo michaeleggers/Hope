@@ -961,14 +961,14 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
     glCullFace (GL_BACK); // cull back face
-    //glFrontFace (GL_CW); // GL_CCW is default (but I dislike it)
+    //glFrontFace (GL_CW); // GL_CCW is default
     
     // enable alpha blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync
-    wglSwapIntervalEXT(0);
+    wglSwapIntervalEXT(1);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);

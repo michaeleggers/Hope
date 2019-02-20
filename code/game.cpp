@@ -443,26 +443,30 @@ void renderText(char * text,
         }
         int frame = asciiValue - ' '; // glyph texture starts with <SPACE> (dec=32)
         
-        float xUVoffset = frame*16;
+        float xUVoffset = (1.0f/(float)944) * (float)((frame*16)%944);
         
         // for each character we need to:
         // - create four vertices
         // - create four UVs (windows into texture)
         vertex[0].position.x = xPos + i*1.0f;
-        vertex[0].position.y = yPos; vertex[0].position.z = 0.f;
-        vertex[0].UVs.x = 0.0f;
+        vertex[0].position.y = yPos;
+        vertex[0].position.z = 0.f;
+        vertex[0].UVs.x = xUVoffset;
         vertex[0].UVs.y = 0.0f;
         vertex[1].position.x = xPos + i*1.0f + 1.0f;
-        vertex[1].position.y = yPos; vertex[1].position.z = 0.f;
-        vertex[1].UVs.x = 1.0f; //1.0f/(float)(xUVoffset + 16.0f);
+        vertex[1].position.y = yPos;
+        vertex[1].position.z = 0.f;
+        vertex[1].UVs.x = xUVoffset + 1.0f/944.f*16;
         vertex[1].UVs.y = 0.0f;
         vertex[2].position.x = xPos + i*1.0f + 1.0f;
-        vertex[2].position.y = yPos + 1.0f; vertex[2].position.z = 0.f;
-        vertex[2].UVs.x = 1.0f;// /(float)(xUVoffset + 16.0f);
+        vertex[2].position.y = yPos + 1.0f;
+        vertex[2].position.z = 0.f;
+        vertex[2].UVs.x = xUVoffset + 1.0f/944.f*16;
         vertex[2].UVs.y = 1.0f;// /(float)16;
         vertex[3].position.x = xPos + i*1.0f;
-        vertex[3].position.y = yPos + 1.0f; vertex[3].position.z = 0.f;
-        vertex[3].UVs.x = 0.0f;
+        vertex[3].position.y = yPos + 1.0f;
+        vertex[3].position.z = 0.f;
+        vertex[3].UVs.x = xUVoffset;
         vertex[3].UVs.y = 1.0f;// /(float)16;
         index[0] = 0+i*4; index[1] = 1+i*4; index[2] = 2+i*4; // first triangle
         index[3] = 2+i*4; index[4] = 3+i*4; index[5] = 0+i*4; // second triangle
@@ -475,7 +479,7 @@ void renderText(char * text,
         
         c++;
     }
-    renderCmd.quadCount = quadCount;
+    renderCmd.quadCount += quadCount;
     gDrawList.renderCmds[gDrawList.renderCmdCount] = renderCmd;
     gDrawList.renderCmdCount++;
 }
