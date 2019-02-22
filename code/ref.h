@@ -39,6 +39,7 @@ struct RenderCommand
     uint32_t          idxBufferOffset;
     uint32_t          elemCount;
     uint32_t          quadCount;
+    uint16_t          vtxBufferOffset;
 };
 
 // gets passed to the rendering API (eg OpenGL),
@@ -49,6 +50,7 @@ struct DrawList
     uint32_t      vtxCount;
     uint16_t     *idxBuffer;
     uint32_t      idxCount;
+    uint32_t      highestIndex;
     RenderCommand renderCmds[256];
     uint32_t      renderCmdCount;
 };

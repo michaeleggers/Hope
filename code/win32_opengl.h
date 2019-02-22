@@ -125,6 +125,7 @@ global_var PFNGLGETSHADERIVPROC              glGetShaderiv;
 global_var PFNGLUNIFORMMATRIX4FVPROC         glUniformMatrix4fv;
 global_var PFNGLUNIFORM2FPROC                glUniform2f;
 global_var PFNGLUNIFORM4FPROC                glUniform4f;
+global_var PFNGLDRAWELEMENTSBASEVERTEXPROC   glDrawElementsBaseVertex;                                  
 
 Rect get_window_dimensions();
 void printGlErrMsg();

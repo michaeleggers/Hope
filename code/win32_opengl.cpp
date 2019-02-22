@@ -838,6 +838,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glUniform2f");
         glUniform4f = (PFNGLUNIFORM4FPROC)
             wglGetProcAddress("glUniform4f");
+        glDrawElementsBaseVertex = (PFNGLDRAWELEMENTSBASEVERTEXPROC)
+            wglGetProcAddress("glDrawElementsBaseVertex");
     }
     
     // create extended DC/RC 
@@ -968,7 +970,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync
-    wglSwapIntervalEXT(1);
+    wglSwapIntervalEXT(0);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);
@@ -979,17 +981,17 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 
 void gl_endFrame(DrawList* drawList)
 {
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GLuint vaoHandle = 0;
     glGenVertexArrays(1, &vaoHandle);
     glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
     glBufferData(GL_ARRAY_BUFFER, drawList->vtxCount*sizeof(Vertex),
-                 drawList->vtxBuffer, GL_STREAM_DRAW);
+                 (GLvoid *)drawList->vtxBuffer, GL_STREAM_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, drawList->idxCount*sizeof(uint16_t),
-                 drawList->idxBuffer, GL_STREAM_DRAW);
+                 (GLvoid *)drawList->idxBuffer, GL_STREAM_DRAW);
     RenderCommand * renderCommands = drawList->renderCmds;
     RenderCommand * renderCmd = renderCommands;
     for (int i = 0;
@@ -1002,8 +1004,8 @@ void gl_endFrame(DrawList* drawList)
             case RENDER_CMD_TEXT:
             {
                 glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
-                glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
+                //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
+                //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
                 //glBindTexture(GL_TEXTURE_2D, 0);
                 //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
                 //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
@@ -1021,8 +1023,9 @@ void gl_endFrame(DrawList* drawList)
                 glEnableVertexAttribArray(2);
                 
                 glBindTexture(GL_TEXTURE_2D, 1);
-                glDrawElements(GL_TRIANGLES, 6*renderCmd->quadCount, 
-                               GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)) );
+                glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
+                                         GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
+                                         renderCmd->vtxBufferOffset);
             }
             break;
         }
