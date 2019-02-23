@@ -10,9 +10,10 @@
 #include "common_render.h"
 
 
-#define MAX_SPRITES 512
-#define MAX_TEXTURES 256
-#define MAX_MESHES 1024
+#define MAX_SPRITES             512
+#define MAX_TEXTURES            256
+#define MAX_MESHES              1024
+#define MAX_SPRITESHEET_WINDOWS 256
 
 struct Vertex
 {
@@ -71,11 +72,36 @@ struct Transform
     float angle; // in degrees
 };
 
+struct Texture
+{
+    uint32_t texture_id;
+    char name[64];
+    uint32_t width, height;
+};
+
 struct Sprite
 {
     void * spriteHandle;
     int currentFrame;
     int frameCount;
+};
+
+struct Window
+{
+    float x, y;
+    float width, height;
+    int intWidth, intHeight;
+};
+
+struct SpriteSheet
+{
+    Texture * texture;
+    int currentFrame;
+    int frameCount;
+    int width, height; // width, height of sprite. init to image width, height
+    char name[64];
+    Window windows[MAX_SPRITESHEET_WINDOWS];
+    int freeWindowIndex;
 };
 
 struct Mesh
@@ -123,6 +149,7 @@ struct refexport_t
     void (*notify)(void);
     void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);
     void (*renderText)(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite);
+    Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
     int (*addTwoNumbers)(int a, int b); // dummy
     void (*endFrame)(DrawList* drawList);
 };

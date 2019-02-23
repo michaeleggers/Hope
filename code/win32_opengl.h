@@ -25,7 +25,6 @@
 
 #define global_var static;
 
-#define MAX_SPRITESHEET_WINDOWS 256
 
 enum ShaderType
 {
@@ -35,25 +34,11 @@ enum ShaderType
     MAX_SHADERS
 };
 
-struct Window
-{
-    float x, y;
-    float width, height;
-    int intWidth, intHeight;
-};
-
 struct Shader
 {
     GLuint vertexShader;
     GLuint fragmentShader;
     GLuint shaderProgram;
-};
-
-struct Texture
-{
-    GLuint texture_id;
-    char name[64];
-    int width, height;
 };
 
 struct Quad

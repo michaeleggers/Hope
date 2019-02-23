@@ -14,6 +14,7 @@ global_var Sprite gBitmapFontSprite;
 global_var Refdef gRefdef;
 global_var PlatformAPI* gPlatformAPI;
 global_var DrawList gDrawList;
+global_var SpriteSheet gFontSpriteSheet;
 
 Background loadBackground(char * file)
 {
@@ -419,14 +420,79 @@ bool keyUp(InputDevice * device, GameInput gameInput)
     }
 }
 
-void renderText(char * text, 
+Window createSpriteWindow(Texture *texture,
+                          int xOffset, int yOffset,
+                          int width, int height)
+{
+    uint32_t textureWidth  = texture->width;
+    uint32_t textureHeight = texture->height;
+    Window window;
+    window.width  = (1.0f / (float)textureWidth) * (float)width;
+    window.height = (1.0f / (float)textureHeight) * (float)height;
+    if (xOffset > 0)
+        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
+    else
+        window.x = 0;
+    if (yOffset > 0)
+        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
+    else
+        window.y = 0;
+    window.intWidth = width;
+    window.intHeight = height;
+    
+    return window;
+}
+
+SpriteSheet createSpriteSheet(refexport_t* re,
+                              char * file,
+                              int xOffset, int yOffset,
+                              int windowWidth, int windowHeight)
+{
+    int x, y, n;
+    unsigned char * bitmapData = 0;
+    if (fileExists(file))
+        bitmapData = stbi_load(file, &x, &y, &n, 4);
+    // else
+    // TODO(Michael): what to do on failure???
+    
+    SpriteSheet spriteSheet;
+    Texture *texture = re->createTexture(file, bitmapData, x, y);
+    spriteSheet.texture = texture;
+    spriteSheet.currentFrame = 0;
+    spriteSheet.frameCount = 0;
+    spriteSheet.freeWindowIndex = 0;
+    spriteSheet.width = x;
+    spriteSheet.height = y;
+    strcpy(spriteSheet.name, file);
+    
+    Window window = createSpriteWindow(texture, 0, 0, x, y);
+    spriteSheet.windows[0] = window;
+    // no incrementing of freeWindowIndex, because addSpriteFrame will do that.
+    return spriteSheet;
+}
+
+void addSpriteFrame(SpriteSheet *spriteSheet,
+                    int xOffset, int yOffset,
+                    int width, int height)
+{
+    uint32_t textureWidth = spriteSheet->texture->width;
+    uint32_t textureHeight = spriteSheet->texture->height;
+    int windowIndex = spriteSheet->freeWindowIndex;
+    spriteSheet->windows[windowIndex] = createSpriteWindow(spriteSheet->texture,
+                                                           xOffset, yOffset,
+                                                           width, height);
+    spriteSheet->freeWindowIndex++;
+    spriteSheet->frameCount++;
+}
+
+void renderText(char *text, 
                 float xPos, float yPos, 
                 float xScale, float yScale, 
-                Sprite * sprite)
+                SpriteSheet *spriteSheet)
 {
     RenderCommand renderCmd;
     renderCmd.type = RENDER_CMD_TEXT;
-    renderCmd.textureID = 0; // TODO(Michael): something that makes sense here
+    renderCmd.textureID = spriteSheet->texture->texture_id;
     renderCmd.idxBufferOffset = gDrawList.idxCount;
     renderCmd.vtxBufferOffset = gDrawList.vtxCount;
     renderCmd.quadCount = 0;
@@ -489,6 +555,18 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     gPlatformAPI = platform_api;
     int res = re->addTwoNumbers(1, 11);
     printf("addTwoNumbers: %d\n", res);
+    
+    // init resources for new rendering API
+    gFontSpriteSheet = createSpriteSheet(re, 
+                                         "..\\assets\\kromagrad_16x16.png",
+                                         0, 0,
+                                         0, 0);
+    for (int i = 0;
+         i < 944/16; // number of glyphs
+         i++)
+    {
+        addSpriteFrame(&gFontSpriteSheet, 0 + i*16, 0, 16, 16);
+    }
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1024);
@@ -759,7 +837,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     for (int i = 0; i < 5; i++)
     {
         renderText("moar text!", randBetween(-10, 10), randBetween(-10, 10), 
-                   1.f, 1.f, &gBitmapFontSprite);
+                   1.f, 1.f, &gFontSpriteSheet);
     }
     
     // endRender(renderDevice, renderTarget);

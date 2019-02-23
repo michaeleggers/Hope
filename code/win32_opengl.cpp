@@ -981,8 +981,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 
 void gl_endFrame(DrawList* drawList)
 {
-    //glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GLuint vaoHandle = 0;
     glGenVertexArrays(1, &vaoHandle);
@@ -1022,7 +1022,7 @@ void gl_endFrame(DrawList* drawList)
                 glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
                 glEnableVertexAttribArray(2);
                 
-                glBindTexture(GL_TEXTURE_2D, 1);
+                glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
                 glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
@@ -1055,6 +1055,7 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.addSpriteFrame = gl_addSpriteFrame;
     re.renderText = gl_renderText;
     re.addTwoNumbers = commonAddTwoNumbers;
+    re.createTexture = createTexture;
     re.endFrame = gl_endFrame;
     return re;
 }
