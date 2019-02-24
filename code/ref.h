@@ -41,6 +41,9 @@ struct RenderCommand
     uint32_t          elemCount;
     uint32_t          quadCount;
     uint16_t          vtxBufferOffset;
+    
+    // render cmd specific
+    v3                tint;
 };
 
 // gets passed to the rendering API (eg OpenGL),

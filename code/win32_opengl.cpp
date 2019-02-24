@@ -688,8 +688,8 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
         // TODO(Michael): I think there is a bug in how the windows of a spritesheet are
         // indexed. The space character is probably starting at 1 and not at 0.
         Window window = gpuSprite->windows[frame];
-        int intWidth = window.intWidth;
-        int intHeight = window.intHeight;
+        //int intWidth = window.intWidth;
+        //int intHeight = window.intHeight;
         glUniform4f(window_loc,
                     // offsets
                     window.x, window.y,
@@ -836,6 +836,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glUniformMatrix4fv");
         glUniform2f = (PFNGLUNIFORM2FPROC)
             wglGetProcAddress("glUniform2f");
+        glUniform3f = (PFNGLUNIFORM3FPROC)
+            wglGetProcAddress("glUniform3f");
         glUniform4f = (PFNGLUNIFORM4FPROC)
             wglGetProcAddress("glUniform4f");
         glDrawElementsBaseVertex = (PFNGLDRAWELEMENTSBASEVERTEXPROC)
@@ -970,7 +972,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync
-    wglSwapIntervalEXT(0);
+    wglSwapIntervalEXT(1);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);
@@ -994,6 +996,9 @@ void gl_endFrame(DrawList* drawList)
                  (GLvoid *)drawList->idxBuffer, GL_STREAM_DRAW);
     RenderCommand * renderCommands = drawList->renderCmds;
     RenderCommand * renderCmd = renderCommands;
+    // HACK(Michael): glGetUniformLocation eats up a ton of CPU cycles apparently,
+    // so calling it once and storing the GLint somewhere is prefered I guess.
+    static GLint tintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tint");
     for (int i = 0;
          i < drawList->renderCmdCount;
          ++i)
@@ -1003,13 +1008,16 @@ void gl_endFrame(DrawList* drawList)
         {
             case RENDER_CMD_TEXT:
             {
+                v3 tint = renderCmd->tint;
                 glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+                
                 //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
                 //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
                 //glBindTexture(GL_TEXTURE_2D, 0);
                 //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
                 //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
                 
+                glUniform3f(tintLocation, tint.x, tint.y, tint.z);
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
                 // positions

@@ -487,15 +487,19 @@ void addSpriteFrame(SpriteSheet *spriteSheet,
 
 void renderText(char *text, 
                 float xPos, float yPos, 
-                float xScale, float yScale, 
+                float xScale, float yScale,
+                v3 tint,
                 SpriteSheet *spriteSheet)
 {
     RenderCommand renderCmd;
     renderCmd.type = RENDER_CMD_TEXT;
+    renderCmd.tint = tint;
     renderCmd.textureID = spriteSheet->texture->texture_id;
     renderCmd.idxBufferOffset = gDrawList.idxCount;
     renderCmd.vtxBufferOffset = gDrawList.vtxCount;
     renderCmd.quadCount = 0;
+    uint32_t textureWidth  = spriteSheet->texture->width;
+    uint32_t textureHeight = spriteSheet->texture->height;
     Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     char * c = text;
@@ -510,31 +514,32 @@ void renderText(char *text,
         }
         int frame = asciiValue - ' '; // glyph texture starts with <SPACE> (dec=32)
         
+        Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
         float xUVoffset = (1.0f/(float)944) * (float)((frame*16)%944);
         
         // for each character we need to:
         // - create four vertices
         // - create four UVs (windows into texture)
-        vertex[0].position.x = xPos + i*1.0f;
+        vertex[0].position.x = xPos + i*xScale;
         vertex[0].position.y = yPos;
         vertex[0].position.z = 0.f;
-        vertex[0].UVs.x = xUVoffset;
-        vertex[0].UVs.y = 1.0f;
-        vertex[1].position.x = xPos + i*1.0f + 1.0f;
+        vertex[0].UVs.x = window.x;
+        vertex[0].UVs.y = window.height;
+        vertex[1].position.x = xPos + i*xScale + xScale;
         vertex[1].position.y = yPos;
         vertex[1].position.z = 0.f;
-        vertex[1].UVs.x = xUVoffset + 1.0f/944.f*16;
-        vertex[1].UVs.y = 1.0f;
-        vertex[2].position.x = xPos + i*1.0f + 1.0f;
-        vertex[2].position.y = yPos + 1.0f;
+        vertex[1].UVs.x = window.x + window.width;
+        vertex[1].UVs.y = window.height;
+        vertex[2].position.x = xPos + i*xScale + xScale;
+        vertex[2].position.y = yPos + yScale;
         vertex[2].position.z = 0.f;
-        vertex[2].UVs.x = xUVoffset + 1.0f/944.f*16;
-        vertex[2].UVs.y = 0.0f;
-        vertex[3].position.x = xPos + i*1.0f;
-        vertex[3].position.y = yPos + 1.0f;
+        vertex[2].UVs.x = window.x + window.width;
+        vertex[2].UVs.y = window.y;
+        vertex[3].position.x = xPos + i*xScale;
+        vertex[3].position.y = yPos + yScale;
         vertex[3].position.z = 0.f;
-        vertex[3].UVs.x = xUVoffset;
-        vertex[3].UVs.y = 0.0f;
+        vertex[3].UVs.x = window.x;
+        vertex[3].UVs.y = window.y;
         index[0] = 0+i*4; index[1] = 1+i*4; index[2] = 2+i*4; // first triangle
         index[3] = 2+i*4; index[4] = 3+i*4; index[5] = 0+i*4; // second triangle
         
@@ -834,11 +839,18 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     // new rendering API proposal:
     // beginRender(renderDevice, renderTarget);
-    for (int i = 0; i < 5; i++)
-    {
-        renderText("moar text!", randBetween(-10, 10), randBetween(-10, 10), 
-                   1.f, 1.f, &gFontSpriteSheet);
-    }
+    static float xTextScale = 0.0f;
+    static float yTextScale = 0.0f;
+    
+    float multiplicator = 1;
+    if (xTextScale > 10) xTextScale *= -1;
+    if (yTextScale > 10) yTextScale *= -1;
+    xTextScale += dt/1000*0.001f;
+    yTextScale += dt/1000*0.001f;
+    renderText("moar text!", 0, 0, 1, 1, {1,0,0}, &gFontSpriteSheet);
+    renderText("H E L L O", -5, 3, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
+    renderText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
+    
     
     // endRender(renderDevice, renderTarget);
     
