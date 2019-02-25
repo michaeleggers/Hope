@@ -38,7 +38,7 @@ struct Shader
 {
     GLuint vertexShader;
     GLuint fragmentShader;
-    GLuint shaderProgram;
+    GLuint program;
 };
 
 struct Quad

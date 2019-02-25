@@ -17,7 +17,7 @@ global_var GPUMeshData gMeshList[MAX_MESHES];
 global_var int gUnknownMeshIndex;
 global_var GLuint gvtxHandle;
 global_var GLuint gidxHandle;
-
+global_var GLint gTintLocation;
 // TODO(Michael): we might want to NOT have platform stuff in here (but also I might be wrong).
 global_var PlatformAPI* gPlatformAPI;
 
@@ -65,9 +65,9 @@ int width, int height)
     
     // TODO(Michael): this is shader specific, why is this here?!
     // has to active BEFORE call to glGetUniformLocation!
-    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    glUseProgram(gShaders[SPRITE_SHEET].program);
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
+    int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
     glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
     
     Window window = gl_createWindow(textureWidth, textureHeight,
@@ -143,7 +143,7 @@ void * gl_RegisterMesh(Vertex * vertices, int count)
     // enable, affects only the previously bound VBOs!
     glEnableVertexAttribArray(2);
     
-    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+    glUseProgram(gShaders[STANDARD_MESH].program);
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
     /*
     int vertexPos  = glGetUniformLocation(gShaders[STANDARD_MESH].shaderProgram, "vertex_pos");
@@ -190,6 +190,10 @@ void initShaders()
     gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_sheet_f.glsl",
                                            shaderAttribs,
                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    glUseProgram(gShaders[SPRITE_SHEET].program);
+    gTintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tint");
+    glUseProgram(0);
+    
     gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh_v.glsl", "..\\code\\standard_mesh_f.glsl",
                                             shaderAttribsMesh,
                                             sizeof(shaderAttribsMesh) / sizeof(*shaderAttribsMesh));
@@ -264,9 +268,9 @@ Shader create_shader(char const * vs_file,
     check_shader_error(result.fragmentShader);
     
     // actual compilation
-    result.shaderProgram = glCreateProgram();
-    glAttachShader(result.shaderProgram, result.vertexShader);
-    glAttachShader(result.shaderProgram, result.fragmentShader);
+    result.program = glCreateProgram();
+    glAttachShader(result.program, result.vertexShader);
+    glAttachShader(result.program, result.fragmentShader);
     
     // tell the shader what attribute belongs to which in variable name (OGL3.2 compatibility)
     // has to be done BEFORE linking!
@@ -275,15 +279,15 @@ Shader create_shader(char const * vs_file,
          ++i)
     {
         // TODO(Michael): what's the deal with the index???
-        glBindAttribLocation(result.shaderProgram, i, *attribLocations);
+        glBindAttribLocation(result.program, i, *attribLocations);
         attribLocations++;
     }
     
-    glLinkProgram(result.shaderProgram);
-    check_shader_error(result.shaderProgram);
+    glLinkProgram(result.program);
+    check_shader_error(result.program);
     
-    glDetachShader(result.shaderProgram, result.vertexShader);
-    glDetachShader(result.shaderProgram, result.fragmentShader);
+    glDetachShader(result.program, result.vertexShader);
+    glDetachShader(result.program, result.fragmentShader);
     
     return result;
 }
@@ -483,8 +487,8 @@ void set_model(GLfloat modelMatrix[], Shader * shader, char * location)
 
 void setUniformMat4fv(Shader * shader, char * location, GLfloat mat4data[])
 {
-    glUseProgram(shader->shaderProgram);
-    GLuint uniformLocation = glGetUniformLocation(shader->shaderProgram, location);
+    glUseProgram(shader->program);
+    GLuint uniformLocation = glGetUniformLocation(shader->program, location);
     glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, mat4data);
 }
 
@@ -592,7 +596,7 @@ void gl_renderFrame(Refdef * refdef)
     // render sprite entities
     Entity * spriteEntity = refdef->spriteEntities;
     int numSpriteEntities = refdef->numSpriteEntities;
-    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    glUseProgram(gShaders[SPRITE_SHEET].program);
     for (int i = 0;
          i < numSpriteEntities;
          i++)
@@ -613,7 +617,7 @@ void gl_renderFrame(Refdef * refdef)
     // render mesh entities
     Entity * meshEntity = refdef->meshEntities;
     int numMeshEntities = refdef->numMeshEntities;
-    glUseProgram(gShaders[STANDARD_MESH].shaderProgram);
+    glUseProgram(gShaders[STANDARD_MESH].program);
     for (int i = 0;
          i < numMeshEntities;
          ++i)
@@ -627,7 +631,7 @@ void gl_renderFrame(Refdef * refdef)
     
     // render player entity
     Entity* playerEntity = refdef->playerEntity;
-    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+    glUseProgram(gShaders[SPRITE_SHEET].program);
     GPUSprite * sprite = (GPUSprite *)(playerEntity->sprite.spriteHandle);
     int frame = playerEntity->sprite.currentFrame;
     int intWidth = sprite->windows[frame].intWidth;
@@ -652,7 +656,7 @@ void gl_renderFrame(GPUSprite * sprite, int frame) // later on render-groups, so
 {
     Window window = sprite->windows[frame];
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
+    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "window");
     glUniform4f(window_loc,
                 // offsets
                 window.x, window.y,
@@ -670,8 +674,8 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GPUSprite * gpuSprite = (GPUSprite *)(sprite->spriteHandle);
-    glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
-    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "window");
+    glUseProgram(gShaders[SPRITE_SHEET].program);
+    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "window");
     glBindVertexArray(gpuSprite->mesh.vao);
     glBindTexture(GL_TEXTURE_2D, gpuSprite->texture->texture_id);
     char * c = text;
@@ -680,7 +684,7 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
          i++)
     {
         int asciiValue = *c;
-		if (asciiValue >= 97 && asciiValue <= 122) // lower case letters
+        if (asciiValue >= 97 && asciiValue <= 122) // lower case letters
         {
             asciiValue -= 32;
         }
@@ -996,9 +1000,7 @@ void gl_endFrame(DrawList* drawList)
                  (GLvoid *)drawList->idxBuffer, GL_STREAM_DRAW);
     RenderCommand * renderCommands = drawList->renderCmds;
     RenderCommand * renderCmd = renderCommands;
-    // HACK(Michael): glGetUniformLocation eats up a ton of CPU cycles apparently,
-    // so calling it once and storing the GLint somewhere is prefered I guess.
-    static GLint tintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tint");
+    
     for (int i = 0;
          i < drawList->renderCmdCount;
          ++i)
@@ -1009,7 +1011,7 @@ void gl_endFrame(DrawList* drawList)
             case RENDER_CMD_TEXT:
             {
                 v3 tint = renderCmd->tint;
-                glUseProgram(gShaders[SPRITE_SHEET].shaderProgram);
+                glUseProgram(gShaders[SPRITE_SHEET].program);
                 
                 //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
                 //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
@@ -1017,7 +1019,7 @@ void gl_endFrame(DrawList* drawList)
                 //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
                 //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
                 
-                glUniform3f(tintLocation, tint.x, tint.y, tint.z);
+                glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
                 // positions
