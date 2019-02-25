@@ -4,6 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+
 global_var int gNumRooms;
 global_var Entity gSpriteEntityList[MAX_SPRITES];
 global_var Entity gMeshEntityList[MAX_MESHES];
@@ -575,92 +576,11 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1024);
+    if (!gDrawList.vtxBuffer)
+        OutputDebugStringA("failed to create vtxBuffer\n");
     gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1024);
-    
-    // init bitmap font
-    int x, y, n;
-    unsigned char * bitmapFontData = 0;
-    if (fileExists("..\\assets\\kromagrad_16x16.png"))
-        bitmapFontData = stbi_load("..\\assets\\kromagrad_16x16.png", &x, &y, &n, 4);
-    gBitmapFontSprite = re->registerSprite("..\\assets\\kromagrad_16x16.png",
-                                           bitmapFontData,
-                                           944, 16,
-                                           0, 0,
-                                           944, 16);
-    
-    for (int i = 0;
-         i < 944/16; // number of glyphs
-         i++)
-    {
-        re->addSpriteFrame(&gBitmapFontSprite, 0 + i*16, 0, 16, 16); // glyphs are arranged in one horizontal line.
-    }
-    
-    
-    Entity azores;
-    memcpy(azores.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    azores.entityType = SPRITE_E;
-    unsigned char * azoresImageData = 0;
-    if (fileExists("..\\assets\\azores.png"))
-        azoresImageData = stbi_load("..\\assets\\azores.png", &x, &y, &n, 4);
-    Sprite azoresSprite = re->registerSprite("..\\assets\\azores.png",
-                                             azoresImageData,
-                                             560, 144,
-                                             0, 0,
-                                             560, 144);
-    azores.transform.xPos = 0;
-    azores.transform.yPos = 0;
-    azores.transform.xScale = 1.0f;
-    azores.transform.yScale = 1.0f;
-    azores.sprite = azoresSprite;
-    
-    
-    Entity azores2;
-    memcpy(azores2.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    azores2.entityType = SPRITE_E;
-    Sprite azoresSprite2 = re->registerSprite("..\\assets\\azores.png",
-                                              azoresImageData,
-                                              560, 144,
-                                              0, 0,
-                                              560, 144);
-    azores2.transform.xPos = -10;
-    azores2.transform.yPos = 0;
-    azores2.transform.xScale = 7.0f;
-    azores2.transform.yScale = 7.0f;
-    azores2.sprite = azoresSprite2;
-    re->addSpriteFrame(&azores2.sprite, 50, 50, 50, 50);
-    re->addSpriteFrame(&azores2.sprite, 300, 0, 10, 10);
-    azores2.sprite.currentFrame = 2;
-    
-    addEntity(&azores);
-    //addEntity(&azores2);
-    
-    /*
-    float vertices[] = {
-    -1, -1, 0,
-    0, 1, 0,
-    1, -1, 0
-    };
-    asteroidMesh.meshHandle = re->registerMesh(asteroidMesh.VVVNNNST, asteroidMesh.vertexCount);
-    */
-    
-    Mesh cubeMesh = loadMeshFromOBJ("..\\assets\\cube.obj");
-    cubeMesh.meshHandle = re->registerMesh(cubeMesh.VVVNNNST, cubeMesh.vertexCount);
-    
-    // init asteroids
-    for (int i = 0; i < 50; ++i)
-    {
-        Entity cubeEntity;
-        memcpy(cubeEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
-        cubeEntity.mesh = cubeMesh;
-        cubeEntity.entityType = MESH_E;
-        cubeEntity.transform.xPos = randBetween(-100.f, 100.f);
-        cubeEntity.transform.yPos = randBetween(-100.f, 100.f);
-        float randScale = randBetween(.2f, 1.f);
-        cubeEntity.transform.xScale = randScale;
-        cubeEntity.transform.yScale = randScale;
-        cubeEntity.velocity = { randBetween(.003f, .007f), randBetween(.003f, .007f), 0.f };
-        addEntity(&cubeEntity);
-    }
+    if (!gDrawList.idxBuffer)
+        OutputDebugStringA("failed to create idxBuffer\n");
     
     // init player entity
     Entity playerEntity;
@@ -674,6 +594,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     playerEntity.speed = { 0.005f, 0.005f };
     playerEntity.velocity = {0.f, 1.f, 0.f};
     unsigned char * playerSpriteData = 0;
+    int x, y, n;
     if (fileExists("..\\assets\\base.png"))
         playerSpriteData = stbi_load("..\\assets\\base.png", &x, &y, &n, 4);
     Sprite playerSprite = re->registerSprite("..\\assets\\base.png",
@@ -714,23 +635,25 @@ void addEntity(Entity * entity)
     }
 }
 
+char* ftoa(float n)
+{
+    int decimalPart = (int)n;
+    static char b[32] = {};
+    int i = 0;
+    for (; decimalPart != 0; ++i)
+    {
+        b[i] = (char)((decimalPart % 10) + '0');
+        decimalPart /= 10;
+        i++;
+    }
+    b[i] = (char)(decimalPart + '0');
+    
+    
+    return b;
+}
+
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
-    static float posX = 0.0f;
-    static float scaleY = 1.0f;
-    
-    Entity * spriteEntity = gSpriteEntityList;
-    for (int i = 0;
-         i < gNumSpriteEntities;
-         ++i)
-    {
-        //spriteEntity->transform.xPos = 10.0f*sin(posX); //dt/1000.0f * velocity + spriteEntity->transform.xPos;
-        
-        spriteEntity++;
-    }
-    posX += dt * 0.00001f;
-    scaleY += dt * 0.000001f;
-    
     // control player
     if (keyDown(inputDevice, ACCELERATE))
     {
@@ -811,32 +734,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (gPlayerEntity.transform.yPos < -10.0f) 
         gPlayerEntity.transform.yPos = 10.0f;
     
-    // simulate asteroids
-    Entity* meshEntity = gMeshEntityList;
-    for (int i = 0; i < gNumMeshEntities; ++i)
-    {
-        if (meshEntity->transform.xPos > 100.f)  {
-            meshEntity->transform.xPos = 100;
-            meshEntity->velocity.x *= -1;
-        }
-        if (meshEntity->transform.xPos < -100.f)  {
-            meshEntity->transform.xPos = -100;
-            meshEntity->velocity.x *= -1;
-        }
-        if (meshEntity->transform.yPos > 100.f)  {
-            meshEntity->transform.yPos = 100;
-            meshEntity->velocity.y *= -1;
-        }
-        if (meshEntity->transform.yPos < -100.f)  {
-            meshEntity->transform.yPos = -100;
-            meshEntity->velocity.y *= -1;
-        }
-        
-        meshEntity->transform.xPos += meshEntity->velocity.x * (dt/(float)1000);
-        meshEntity->transform.yPos += meshEntity->velocity.y * (dt/(float)1000);
-        meshEntity++;
-    }
-    
     // new rendering API proposal:
     // beginRender(renderDevice, renderTarget);
     static float xTextScale = 0.0f;
@@ -847,17 +744,18 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (yTextScale > 10) yTextScale *= -1;
     xTextScale += dt/1000*0.001f;
     yTextScale += dt/1000*0.001f;
-    renderText("moar text!", 0, 0, 1, 1, {1,0,0}, &gFontSpriteSheet);
+    //renderText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
     renderText("H E L L O", -5, 3, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
-    renderText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
+    //renderText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
+    //renderText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    char uiAngleBuffer[256];
+    strcpy(uiAngleBuffer, ftoa(15.1f));
+    //renderText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    //renderText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     
     // endRender(renderDevice, renderTarget);
     
-    gRefdef.numSpriteEntities = gNumSpriteEntities;
-    gRefdef.spriteEntities = gSpriteEntityList;
-    gRefdef.numMeshEntities = gNumMeshEntities;
-    gRefdef.meshEntities = gMeshEntityList;
     gRefdef.playerEntity = &gPlayerEntity;
     //re->renderText("Hi, this is some (<>)!? text.", -16, 0, .5f, 1.f, &gBitmapFontSprite);
     //re->renderFrame(&gRefdef);

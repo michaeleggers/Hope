@@ -254,7 +254,9 @@ Shader create_shader(char const * vs_file,
     
     // load shader text from files
     char * vertCode = gPlatformAPI->readTextFile(vs_file);
+    printf("%s\n\n", vertCode);
     char * fragCode = gPlatformAPI->readTextFile(fs_file);
+    printf("%s\n\n\n\n", fragCode);
     
     // compile shader program
     result.vertexShader = glCreateShader (GL_VERTEX_SHADER);
@@ -944,6 +946,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
         return 1;
     }
 #endif
+    OutputDebugStringA("created extended ogl context\n");
     
     RECT windowDimension;
     GetClientRect(
@@ -981,7 +984,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // multisampling
     glEnable(GL_MULTISAMPLE);
     
-    
+    OutputDebugStringA("end init ogl\n");
     return 0;
 }
 

@@ -362,6 +362,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     //glViewport(0, 0, rect.right, rect.bottom); // TODO(Michael): do in renderer
     
     game_init(&platformAPI, &re);
+    OutputDebugStringA("game init done\n");
     
     // XBox Controller state
     XBoxControllerState controllerState = {};
@@ -496,6 +497,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         //printf("elapsed time: %f\n", (float)elapsedTime.QuadPart / 1000.0f);
         QueryPerformanceCounter(&startingTime);
         //Sleep(500); // HACK(Michael): artificial time
+        
+        //OutputDebugStringA("end game loop\n");
     }
     
     fclose(pCin);
