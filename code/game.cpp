@@ -575,10 +575,10 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     }
     
     // init drawlist
-    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1024);
+    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*4096);
     if (!gDrawList.vtxBuffer)
         OutputDebugStringA("failed to create vtxBuffer\n");
-    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1024);
+    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*4096);
     if (!gDrawList.idxBuffer)
         OutputDebugStringA("failed to create idxBuffer\n");
     
@@ -744,14 +744,14 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (yTextScale > 10) yTextScale *= -1;
     xTextScale += dt/1000*0.001f;
     yTextScale += dt/1000*0.001f;
-    //renderText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
+    renderText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
     renderText("H E L L O", -5, 3, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
-    //renderText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
-    //renderText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    renderText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
+    renderText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     char uiAngleBuffer[256];
     strcpy(uiAngleBuffer, ftoa(15.1f));
-    //renderText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    //renderText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    renderText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    renderText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     
     // endRender(renderDevice, renderTarget);
