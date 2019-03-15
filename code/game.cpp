@@ -637,10 +637,10 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     }
     
     // init drawlist
-    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*8192);
+    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*2*8192);
     if (!gDrawList.vtxBuffer)
         OutputDebugStringA("failed to create vtxBuffer\n");
-    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*8192);
+    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*2*8192);
     if (!gDrawList.idxBuffer)
         OutputDebugStringA("failed to create idxBuffer\n");
     
@@ -822,11 +822,17 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     // render tiles
-    pushQuad(0, 0,
-             3, 3,
-             {0, 1, 1},
-             &gTilesSpriteSheet, 1);
     
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 12; j++)
+        {
+            pushQuad(i*2-20, j-10,
+                     1, 1,
+                     {1, 1, 1},
+                     &gTilesSpriteSheet, i+j);
+        }
+    }
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);

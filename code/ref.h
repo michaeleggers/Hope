@@ -26,6 +26,7 @@ struct Vertex
 // ---------------------------------------
 enum RenderCommandType
 {
+    RENDER_CMD_NONE,
     RENDER_CMD_QUAD,
     RENDER_CMD_TEXT
 };
