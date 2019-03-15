@@ -26,6 +26,7 @@ struct Vertex
 // ---------------------------------------
 enum RenderCommandType
 {
+    RENDER_CMD_QUAD,
     RENDER_CMD_TEXT
 };
 
@@ -153,7 +154,6 @@ struct refexport_t
     void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);
     void (*renderText)(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite);
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
-    int (*addTwoNumbers)(int a, int b); // dummy
     void (*endFrame)(DrawList* drawList);
 };
 

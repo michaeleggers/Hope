@@ -16,6 +16,7 @@ global_var Refdef gRefdef;
 global_var PlatformAPI* gPlatformAPI;
 global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
+global_var SpriteSheet gTilesSpriteSheet;
 
 Background loadBackground(char * file)
 {
@@ -486,11 +487,11 @@ void addSpriteFrame(SpriteSheet *spriteSheet,
     spriteSheet->frameCount++;
 }
 
-void renderText(char *text, 
-                float xPos, float yPos, 
-                float xScale, float yScale,
-                v3 tint,
-                SpriteSheet *spriteSheet)
+void pushText(char *text, 
+              float xPos, float yPos, 
+              float xScale, float yScale,
+              v3 tint,
+              SpriteSheet *spriteSheet)
 {
     RenderCommand renderCmd;
     renderCmd.type = RENDER_CMD_TEXT;
@@ -556,11 +557,61 @@ void renderText(char *text,
     gDrawList.renderCmdCount++;
 }
 
+void pushQuad(float xPos, float yPos, 
+              float xScale, float yScale,
+              v3 tint,
+              SpriteSheet *spriteSheet, int frame)
+{
+    RenderCommand renderCmd;
+    renderCmd.type = RENDER_CMD_QUAD;
+    renderCmd.tint = tint;
+    renderCmd.textureID = spriteSheet->texture->texture_id;
+    renderCmd.idxBufferOffset = gDrawList.idxCount;
+    renderCmd.vtxBufferOffset = gDrawList.vtxCount;
+    renderCmd.quadCount = 0;
+    uint32_t textureWidth  = spriteSheet->texture->width;
+    uint32_t textureHeight = spriteSheet->texture->height;
+    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    
+    Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
+    float aspectRatio = (float)window.intWidth / (float)window.intHeight;
+    vertex[0].position.x = xPos;
+    vertex[0].position.y = yPos;
+    vertex[0].position.z = 0.f;
+    vertex[0].UVs.x = window.x;
+    vertex[0].UVs.y = window.height;
+    vertex[1].position.x = xPos + xScale*aspectRatio;
+    vertex[1].position.y = yPos;
+    vertex[1].position.z = 0.f;
+    vertex[1].UVs.x = window.x + window.width;
+    vertex[1].UVs.y = window.height;
+    vertex[2].position.x = xPos + xScale*aspectRatio;
+    vertex[2].position.y = yPos + yScale;
+    vertex[2].position.z = 0.f;
+    vertex[2].UVs.x = window.x + window.width;
+    vertex[2].UVs.y = window.y;
+    vertex[3].position.x = xPos;
+    vertex[3].position.y = yPos + yScale;
+    vertex[3].position.z = 0.f;
+    vertex[3].UVs.x = window.x;
+    vertex[3].UVs.y = window.y;
+    index[0] = 0; index[1] = 1; index[2] = 2; // first triangle
+    index[3] = 2; index[4] = 3; index[5] = 0; // second triangle
+    
+    vertex += 4;
+    index  += 6;
+    renderCmd.quadCount++;
+    gDrawList.vtxCount += 4;
+    gDrawList.idxCount += 6;
+    
+    gDrawList.renderCmds[gDrawList.renderCmdCount] = renderCmd;
+    gDrawList.renderCmdCount++;
+}
+
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
-    int res = re->addTwoNumbers(1, 11);
-    printf("addTwoNumbers: %d\n", res);
     
     // init resources for new rendering API
     gFontSpriteSheet = createSpriteSheet(re, 
@@ -574,11 +625,22 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
         addSpriteFrame(&gFontSpriteSheet, 0 + i*16, 0, 16, 16);
     }
     
+    gTilesSpriteSheet = createSpriteSheet(re,
+                                          "..\\assets\\dungeon_iso_tiles.png",
+                                          0, 0,
+                                          0, 0);
+    for (int i = 0;
+         i < 1536/64; // number of tiles
+         i++)
+    {
+        addSpriteFrame(&gTilesSpriteSheet, 0 + i*64, 0, 64, 32);
+    }
+    
     // init drawlist
-    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*4096);
+    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*8192);
     if (!gDrawList.vtxBuffer)
         OutputDebugStringA("failed to create vtxBuffer\n");
-    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*4096);
+    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*8192);
     if (!gDrawList.idxBuffer)
         OutputDebugStringA("failed to create idxBuffer\n");
     
@@ -635,19 +697,24 @@ void addEntity(Entity * entity)
     }
 }
 
+// 1000 0000
+// 8    0 
 char* ftoa(float n)
 {
     int decimalPart = (int)n;
     static char b[32] = {};
     int i = 0;
-    for (; decimalPart != 0; ++i)
+    if (decimalPart < 0)
+    {
+        b[i] = '-';
+        decimalPart *= -1;
+        i++;
+    }
+    for (; decimalPart != 0; i++)
     {
         b[i] = (char)((decimalPart % 10) + '0');
         decimalPart /= 10;
-        i++;
     }
-    b[i] = (char)(decimalPart + '0');
-    
     
     return b;
 }
@@ -736,29 +803,32 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     // new rendering API proposal:
     // beginRender(renderDevice, renderTarget);
+    
+    // render text
     static float xTextScale = 0.0f;
     static float yTextScale = 0.0f;
-    
     float multiplicator = 1;
     if (xTextScale > 10) xTextScale *= -1;
     if (yTextScale > 10) yTextScale *= -1;
     xTextScale += dt/1000*0.001f;
     yTextScale += dt/1000*0.001f;
-    renderText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
-    renderText("H E L L O", -5, 3, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
-    renderText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
-    renderText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
+    pushText("H E L L O", 0, 0, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
+    pushText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
+    pushText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     char uiAngleBuffer[256];
-    strcpy(uiAngleBuffer, ftoa(15.1f));
-    renderText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    renderText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    strcpy(uiAngleBuffer, ftoa(-15.1f));
+    pushText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
+    // render tiles
+    pushQuad(0, 0,
+             3, 3,
+             {0, 1, 1},
+             &gTilesSpriteSheet, 1);
     
-    // endRender(renderDevice, renderTarget);
     
     gRefdef.playerEntity = &gPlayerEntity;
-    //re->renderText("Hi, this is some (<>)!? text.", -16, 0, .5f, 1.f, &gBitmapFontSprite);
-    //re->renderFrame(&gRefdef);
     re->endFrame(&gDrawList);
 }
 
