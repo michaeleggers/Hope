@@ -569,8 +569,8 @@ void pushQuad(float xPos, float yPos,
     renderCmd.idxBufferOffset = gDrawList.idxCount;
     renderCmd.vtxBufferOffset = gDrawList.vtxCount;
     renderCmd.quadCount = 0;
-    uint32_t textureWidth  = spriteSheet->texture->width;
-    uint32_t textureHeight = spriteSheet->texture->height;
+    
+    // current free pos in global vertex/index buffers
     Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     
@@ -596,17 +596,26 @@ void pushQuad(float xPos, float yPos,
     vertex[3].position.z = 0.f;
     vertex[3].UVs.x = window.x;
     vertex[3].UVs.y = window.y;
-    index[0] = 0; index[1] = 1; index[2] = 2; // first triangle
-    index[3] = 2; index[4] = 3; index[5] = 0; // second triangle
-    
+    index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+    index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
     vertex += 4;
     index  += 6;
-    renderCmd.quadCount++;
     gDrawList.vtxCount += 4;
     gDrawList.idxCount += 6;
+    gDrawList.quadCount++;
     
-    gDrawList.renderCmds[gDrawList.renderCmdCount] = renderCmd;
-    gDrawList.renderCmdCount++;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_QUAD))
+    {
+        prevRenderCmd->quadCount++;
+    }
+    else
+    {
+        renderCmd.quadCount++;
+        gDrawList.renderCmds[gDrawList.renderCmdCount] = renderCmd;
+        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.renderCmdCount];
+        gDrawList.renderCmdCount++;
+    }
 }
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
@@ -812,14 +821,14 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (yTextScale > 10) yTextScale *= -1;
     xTextScale += dt/1000*0.001f;
     yTextScale += dt/1000*0.001f;
-    pushText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
-    pushText("H E L L O", 0, 0, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
-    pushText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
-    pushText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    //pushText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
+    //pushText("H E L L O", 0, 0, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
+    //pushText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
+    //pushText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     char uiAngleBuffer[256];
     strcpy(uiAngleBuffer, ftoa(-15.1f));
-    pushText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    //pushText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    //pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     // render tiles
     
@@ -827,7 +836,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     {
         for (int j = 0; j < 12; j++)
         {
-            pushQuad(i*2-20, j-10,
+            pushQuad(i*2-10, j-10,
                      1, 1,
                      {1, 1, 1},
                      &gTilesSpriteSheet, i+j);

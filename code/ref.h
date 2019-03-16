@@ -45,20 +45,29 @@ struct RenderCommand
     uint16_t          vtxBufferOffset;
     
     // render cmd specific
-    v3                tint;
+    union
+    {
+        struct
+        {
+            v3 tint;
+        };
+    };
 };
 
 // gets passed to the rendering API (eg OpenGL),
 // which then goes through the renderCmds and issues draw calls.
 struct DrawList
 {
-    Vertex       *vtxBuffer;
-    uint32_t      vtxCount;
-    uint16_t     *idxBuffer;
-    uint32_t      idxCount;
-    uint32_t      highestIndex;
-    RenderCommand renderCmds[256];
-    uint32_t      renderCmdCount;
+    Vertex           *vtxBuffer;
+    uint32_t          vtxCount;
+    uint16_t         *idxBuffer;
+    uint32_t          idxCount;
+    uint32_t          highestIndex;
+    RenderCommand     renderCmds[256];
+    uint32_t          renderCmdCount;
+    RenderCommand    *prevRenderCmd;
+    
+    uint32_t          quadCount;
 };
 
 enum EntityType

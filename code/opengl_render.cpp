@@ -809,6 +809,8 @@ void gl_endFrame(DrawList* drawList)
     drawList->vtxCount = 0;
     drawList->idxCount = 0;
     drawList->renderCmdCount = 0;
+    drawList->prevRenderCmd = 0;
+    drawList->quadCount = 0;
     glDeleteVertexArrays(1, &vaoHandle);
     SwapBuffers(gRenderState.deviceContext);
 }
