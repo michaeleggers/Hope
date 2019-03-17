@@ -736,7 +736,7 @@ void gl_endFrame(DrawList* drawList)
     RenderCommand * renderCmd = renderCommands;
     
     for (int i = 0;
-         i < drawList->renderCmdCount;
+         i < drawList->freeIndex;
          ++i)
     {
         RenderCommandType renderType = renderCmd->type;
@@ -808,7 +808,7 @@ void gl_endFrame(DrawList* drawList)
     }
     drawList->vtxCount = 0;
     drawList->idxCount = 0;
-    drawList->renderCmdCount = 0;
+    drawList->freeIndex = 0;
     drawList->prevRenderCmd = 0;
     drawList->quadCount = 0;
     glDeleteVertexArrays(1, &vaoHandle);

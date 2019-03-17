@@ -64,7 +64,7 @@ struct DrawList
     uint32_t          idxCount;
     uint32_t          highestIndex;
     RenderCommand     renderCmds[256];
-    uint32_t          renderCmdCount;
+    uint32_t          freeIndex;
     RenderCommand    *prevRenderCmd;
     
     uint32_t          quadCount;
