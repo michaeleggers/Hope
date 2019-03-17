@@ -552,8 +552,8 @@ void pushText(char *text,
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = window.x;
         vertex[3].UVs.y = window.y;
-        index[0] = 0+i*4; index[1] = 1+i*4; index[2] = 2+i*4; // first triangle
-        index[3] = 2+i*4; index[4] = 3+i*4; index[5] = 0+i*4; // second triangle
+        index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+        index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
         vertex += 4;
         index  += 6;
         gDrawList.vtxCount += 4;
@@ -851,8 +851,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     */
-    pushText("A", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushText("B", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("AB", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("C", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushQuad(-18, 5,
              1, 1,
              {1, 1, 1},
