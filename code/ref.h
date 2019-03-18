@@ -67,7 +67,6 @@ struct DrawList
     RenderCommand    *prevRenderCmd;
     
     uint32_t          quadCount;
-    uint32_t          quadCountText;
 };
 
 enum EntityType

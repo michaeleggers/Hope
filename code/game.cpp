@@ -508,6 +508,7 @@ void pushText(char *text,
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->quadCount = 0;
+        gDrawList.quadCount = 0;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;
     }
@@ -552,13 +553,13 @@ void pushText(char *text,
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = window.x;
         vertex[3].UVs.y = window.y;
-        index[0] = 0+gDrawList.quadCountText*4; index[1] = 1+gDrawList.quadCountText*4; index[2] = 2+gDrawList.quadCountText*4; // first triangle
-        index[3] = 2+gDrawList.quadCountText*4; index[4] = 3+gDrawList.quadCountText*4; index[5] = 0+gDrawList.quadCountText*4; // second triangle
+        index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+        index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
         vertex += 4;
         index  += 6;
         gDrawList.vtxCount += 4;
         gDrawList.idxCount += 6;
-        gDrawList.quadCountText++;
+        gDrawList.quadCount++;
         renderCmdPtr->quadCount++;
         
         c++;
@@ -585,6 +586,7 @@ void pushQuad(float xPos, float yPos,
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->quadCount = 0;
+        gDrawList.quadCount = 0;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;
     }
@@ -849,12 +851,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     
-    //pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    //pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    
     pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushQuad(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
     pushQuad(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
-    //pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
