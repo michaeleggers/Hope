@@ -804,6 +804,10 @@ void gl_endFrame(DrawList* drawList)
             }
             break;
         }
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        glUseProgram(0);
         ++renderCmd;
     }
     drawList->vtxCount = 0;

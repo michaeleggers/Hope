@@ -82,6 +82,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glBindVertexArray");
         glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
             wglGetProcAddress("glEnableVertexAttribArray");
+        glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
+            wglGetProcAddress("glDisableVertexAttribArray");
         glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
             wglGetProcAddress("glVertexAttribPointer");
         glCreateShader = (PFNGLCREATESHADERPROC)

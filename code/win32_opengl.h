@@ -89,6 +89,7 @@ global_var PFNGLGENVERTEXARRAYSPROC          glGenVertexArrays;
 global_var PFNGLDELETEVERTEXARRAYSPROC       glDeleteVertexArrays;
 global_var PFNGLBINDVERTEXARRAYPROC          glBindVertexArray;
 global_var PFNGLENABLEVERTEXATTRIBARRAYPROC  glEnableVertexAttribArray;
+global_var PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 global_var PFNGLVERTEXATTRIBPOINTERPROC      glVertexAttribPointer;
 global_var PFNGLCREATESHADERPROC             glCreateShader;
 global_var PFNGLSHADERSOURCEPROC             glShaderSource;

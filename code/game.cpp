@@ -851,12 +851,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     */
-    pushText("AB", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushText("C", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushQuad(-18, 5,
-             1, 1,
-             {1, 1, 1},
-             &gTilesSpriteSheet, 0);
+    //pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("D", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushQuad(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
+    pushQuad(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
