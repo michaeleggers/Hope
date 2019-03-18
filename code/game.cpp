@@ -17,6 +17,7 @@ global_var PlatformAPI* gPlatformAPI;
 global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
+global_var int gIsoMap[10000];
 
 Background loadBackground(char * file)
 {
@@ -376,6 +377,23 @@ bool keyDown(InputDevice * device, GameInput gameInput)
     }
 }
 
+bool keyDown(InputDevice * device, Keycode keycode)
+{
+    switch (device->deviceType)
+    {
+        case KEYBOARD:
+        {
+            Keyboard* keyboard = device->keyboard;
+            if (keyboard->keycodes[keycode])
+                return true;
+            return false;
+        }
+        break;
+        
+        default: return false;
+    }
+}
+
 bool keyUp(InputDevice * device, GameInput gameInput)
 {
     switch (device->deviceType)
@@ -495,7 +513,11 @@ void pushText(char *text,
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
-    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXT))
+    if (prevRenderCmd 
+        && (prevRenderCmd->type == RENDER_CMD_TEXT)
+        && (tint.x == prevRenderCmd->tint.x)
+        && (tint.y == prevRenderCmd->tint.y)
+        && (tint.z == prevRenderCmd->tint.z))
     {
         renderCmdPtr = prevRenderCmd;
     }
@@ -655,12 +677,21 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     }
     
     // init drawlist
-    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*2*8192);
+    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
     if (!gDrawList.vtxBuffer)
         OutputDebugStringA("failed to create vtxBuffer\n");
-    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*2*8192);
+    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1000*1024);
     if (!gDrawList.idxBuffer)
         OutputDebugStringA("failed to create idxBuffer\n");
+    
+    // init iso-map
+    for (int y = 0; y < 100; y++)
+    {
+        for (int x = 0; x < 100; x++)
+        {
+            gIsoMap[y*100 + x] = (int)randBetween(0, 24);
+        }
+    }
     
     // init player entity
     Entity playerEntity;
@@ -839,15 +870,27 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     //pushText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     //pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
-    // render tiles
-    for (int i = 0; i < 11; i++)
+    // HACK(Michael): 'camera'-controlls to move around the iso-map
+    static float xOffset = 0.0f;
+    static float yOffset = 0.0f;
+    if (keyDown(inputDevice, ARROW_LEFT))
+        xOffset += 0.1f;
+    if (keyDown(inputDevice, ARROW_RIGHT))
+        xOffset -= 0.1f;
+    if (keyDown(inputDevice, ARROW_UP))
+        yOffset -= 0.1f;
+    if (keyDown(inputDevice, ARROW_DOWN))
+        yOffset += 0.1f;
+    
+    // render iso-map
+    for (int y = 0; y < 100; y++)
     {
-        for (int j = 0; j < 12; j++)
+        for (int x = 0; x < 100; x++)
         {
-            pushQuad(i*2-10, j-10,
+            pushQuad(x -y+xOffset, x*(-0.5f) - y*0.5f + yOffset,
                      1, 1,
                      {1, 1, 1},
-                     &gTilesSpriteSheet, i+j);
+                     &gTilesSpriteSheet, gIsoMap[100*y + x]);
         }
     }
     
@@ -858,6 +901,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushQuad(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
     pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
