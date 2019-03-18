@@ -1,2 +1,2 @@
 @echo off
-subst w: "c:\handmade"
+subst w: "c:\repos\Hope"

@@ -552,13 +552,13 @@ void pushText(char *text,
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = window.x;
         vertex[3].UVs.y = window.y;
-        index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
-        index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+        index[0] = 0+gDrawList.quadCountText*4; index[1] = 1+gDrawList.quadCountText*4; index[2] = 2+gDrawList.quadCountText*4; // first triangle
+        index[3] = 2+gDrawList.quadCountText*4; index[4] = 3+gDrawList.quadCountText*4; index[5] = 0+gDrawList.quadCountText*4; // second triangle
         vertex += 4;
         index  += 6;
         gDrawList.vtxCount += 4;
         gDrawList.idxCount += 6;
-        gDrawList.quadCount++;
+        gDrawList.quadCountText++;
         renderCmdPtr->quadCount++;
         
         c++;
@@ -570,13 +570,24 @@ void pushQuad(float xPos, float yPos,
               v3 tint,
               SpriteSheet *spriteSheet, int frame)
 {
-    RenderCommand renderCmd;
-    renderCmd.type = RENDER_CMD_QUAD;
-    renderCmd.tint = tint;
-    renderCmd.textureID = spriteSheet->texture->texture_id;
-    renderCmd.idxBufferOffset = gDrawList.idxCount;
-    renderCmd.vtxBufferOffset = gDrawList.vtxCount;
-    renderCmd.quadCount = 0;
+    RenderCommand *renderCmdPtr = 0;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_QUAD))
+    {
+        renderCmdPtr = prevRenderCmd;
+    }
+    else
+    {
+        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr->type = RENDER_CMD_QUAD;
+        renderCmdPtr->tint = tint;
+        renderCmdPtr->textureID = spriteSheet->texture->texture_id;
+        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->quadCount = 0;
+        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+        gDrawList.freeIndex++;
+    }
     
     // current free pos in global vertex/index buffers
     Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
@@ -611,19 +622,7 @@ void pushQuad(float xPos, float yPos,
     gDrawList.vtxCount += 4;
     gDrawList.idxCount += 6;
     gDrawList.quadCount++;
-    
-    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
-    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_QUAD))
-    {
-        prevRenderCmd->quadCount++;
-    }
-    else
-    {
-        renderCmd.quadCount++;
-        gDrawList.renderCmds[gDrawList.freeIndex] = renderCmd;
-        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-        gDrawList.freeIndex++;
-    }
+    renderCmdPtr->quadCount++;
 }
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
@@ -839,7 +838,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     //pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     // render tiles
-    /*
     for (int i = 0; i < 11; i++)
     {
         for (int j = 0; j < 12; j++)
@@ -850,12 +848,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
                      &gTilesSpriteSheet, i+j);
         }
     }
-    */
+    
     //pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushText("D", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
+    //pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushQuad(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
     pushQuad(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
+    //pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
