@@ -128,6 +128,30 @@ bool VID_LoadRefresh(char const * name, PlatformAPI* platform_api)
     return true;
 }
 
+global_var HINSTANCE xinput_library;
+typedef DWORD (*xinput_get_state)(DWORD dwUserIndex, XINPUT_STATE *pState);
+DWORD XInputGetStateStub(DWORD dwUserIndex, XINPUT_STATE *pState){ return 0; }
+global_var xinput_get_state XInputGetState_ = XInputGetStateStub;
+#define XInputGetState XInputGetState_
+bool XInputInit()
+{
+    xinput_library = LoadLibrary("Xinput1_4.dll");
+    if ( !xinput_library )
+    {
+        xinput_library = LoadLibrary("Xinput9_1_0.dll");
+    }
+    if ( !xinput_library )
+    {
+        return false;
+    }
+    else
+    {
+        XInputGetState = (xinput_get_state)GetProcAddress(xinput_library, "XInputGetState");
+    }
+    
+    return true;
+}
+
 Keyboard keyboard = {};
 
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
