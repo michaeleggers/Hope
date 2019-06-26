@@ -261,7 +261,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync
-    wglSwapIntervalEXT(1);
+    wglSwapIntervalEXT(0);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);

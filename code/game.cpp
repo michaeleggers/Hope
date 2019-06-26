@@ -649,6 +649,49 @@ void pushQuad(float xPos, float yPos,
     renderCmdPtr->quadCount++;
 }
 
+void pushLine2D(float x1, float y1, float x2, float y2)
+{
+    RenderCommand *renderCmdPtr = 0;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_LINE))
+    {
+        renderCmdPtr = prevRenderCmd;
+    }
+    else
+    {
+        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr->type = RENDER_CMD_LINE;
+        renderCmdPtr->tint = { 1, 0, 0 };
+        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->lineCount = 0;
+        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+        gDrawList.freeIndex++;
+    }
+    
+    // current free pos in global vertex/index buffers
+    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    
+    vertex[0].position.x = x1;
+    vertex[0].position.y = y1;
+    vertex[0].position.z = 0.0f;
+    vertex[0].UVs.x = 0.f;
+    vertex[0].UVs.y = 0.f;
+    vertex[1].position.x = x2;
+    vertex[1].position.y = y2;
+    vertex[1].position.z = 0.0f;
+    vertex[1].UVs.x = 0.f;
+    vertex[1].UVs.y = 0.f;
+    index[0] = 0+gDrawList.lineCount*2; index[1] = 1+gDrawList.lineCount*2;
+    vertex += 2;
+    index += 2;
+    gDrawList.vtxCount += 2;
+    gDrawList.idxCount += 2;
+    gDrawList.lineCount++;
+    renderCmdPtr->lineCount++;
+}
+
 void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
@@ -882,6 +925,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, ARROW_DOWN))
         yOffset += 0.1f;
     
+    /*
     // render iso-map
     for (int y = 0; y < 100; y++)
     {
@@ -894,7 +938,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     
-    
     pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushQuad(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
@@ -902,6 +945,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
+    */
+    
+    pushLine2D(10.f, 10.f, 200.f, 200.f);
+    pushLine2D(0.f, 0.f, 200.f, 200.f);
+    pushLine2D(-10.f, -10.f, 200.f, 200.f);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);

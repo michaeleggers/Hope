@@ -803,6 +803,28 @@ void gl_endFrame(DrawList* drawList)
                                          renderCmd->vtxBufferOffset);
             }
             break;
+            
+            case RENDER_CMD_LINE:
+            {
+                v3 tint = renderCmd->tint;
+                glUseProgram(gShaders[SPRITE_SHEET].program);
+                glLineWidth(10.0f);
+                glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
+                // positions
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+                glEnableVertexAttribArray(0);
+                //normals
+                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)sizeof(v3));
+                glEnableVertexAttribArray(1);
+                // UVs
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
+                glEnableVertexAttribArray(2);
+                
+                glDrawElementsBaseVertex(GL_LINES, 2*renderCmd->lineCount, 
+                                         GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
+                                         renderCmd->vtxBufferOffset);
+            }
+            break;
         }
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
@@ -815,6 +837,7 @@ void gl_endFrame(DrawList* drawList)
     drawList->freeIndex = 0;
     drawList->prevRenderCmd = 0;
     drawList->quadCount = 0;
+    drawList->lineCount = 0;
     glDeleteVertexArrays(1, &vaoHandle);
     SwapBuffers(gRenderState.deviceContext);
 }

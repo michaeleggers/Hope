@@ -28,7 +28,8 @@ enum RenderCommandType
 {
     RENDER_CMD_NONE,
     RENDER_CMD_QUAD,
-    RENDER_CMD_TEXT
+    RENDER_CMD_TEXT,
+    RENDER_CMD_LINE
 };
 
 // Every draw call issues a RenderCommand.
@@ -40,7 +41,6 @@ struct RenderCommand
     // Vertex           *vtxBufferPos;
     // uint16_t         *idxBufferPos;
     uint32_t          idxBufferOffset;
-    uint32_t          quadCount;
     uint16_t          vtxBufferOffset;
     
     // render cmd specific
@@ -48,6 +48,13 @@ struct RenderCommand
     {
         struct
         {
+            uint32_t quadCount;
+            v3 tint;
+        };
+        
+        struct
+        {
+            uint32_t lineCount;
             v3 tint;
         };
     };
@@ -67,6 +74,7 @@ struct DrawList
     RenderCommand    *prevRenderCmd;
     
     uint32_t          quadCount;
+    uint32_t          lineCount;
 };
 
 enum EntityType
