@@ -829,19 +829,11 @@ void gl_endFrame(DrawList* drawList)
                 // positions
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
                 glEnableVertexAttribArray(0);
-                //normals
-                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)sizeof(v3));
-                glEnableVertexAttribArray(1);
-                // UVs
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
-                glEnableVertexAttribArray(2);
                 
                 glDrawElementsBaseVertex(GL_LINES, 2*renderCmd->lineCount, 
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
                 glDisableVertexAttribArray(0);
-                glDisableVertexAttribArray(1);
-                glDisableVertexAttribArray(2);
             }
             break;
         }

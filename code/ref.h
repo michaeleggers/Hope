@@ -74,6 +74,9 @@ struct DrawList
     uint32_t          freeIndex;
     RenderCommand    *prevRenderCmd;
     
+    // these are just crutches for offsetting into the idxBuffer
+    // if the previous render command was the same.
+    // These do _not_ tell you how many quads/lines in total were being pushed!!!
     uint32_t          quadCount;
     uint32_t          lineCount;
 };

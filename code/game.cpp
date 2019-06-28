@@ -666,6 +666,7 @@ void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->lineCount = 0;
         renderCmdPtr->thickness = thickness;
+        gDrawList.lineCount = 0;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;
     }
@@ -947,11 +948,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     */
     
+    pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     pushLine2D(-10.f, 0.f, 10.f, 0.f, {1,0,0},2);
     pushLine2D(-1.f, 1.f, 1.f, -1.f, {0,1,0},2);
     pushLine2D(-20.f, 3.f, 10.f, -10.f, {0,0,1},2);
+    //pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
-    
+    pushLine2D(-20.f, 5.f, 10.f, 5.f, {0,1,0},2);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
