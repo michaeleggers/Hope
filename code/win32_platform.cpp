@@ -243,6 +243,12 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
                     keyboard.keycodes[LETTER_A] = 1;
                 }
                 break;
+                
+                case VK_ESCAPE:
+                {
+                    keyboard.keycodes[ESCAPE] = 1;
+                }
+                break;
             }
         }
         break;
@@ -278,6 +284,12 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
                 case 0x41: // A
                 {
                     keyboard.keycodes[LETTER_A] = 0;
+                }
+                break;
+                
+                case VK_ESCAPE:
+                {
+                    keyboard.keycodes[ESCAPE] = 0;
                 }
                 break;
             }
@@ -417,7 +429,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     while (running)
     {
-        
+        if (keyDown(&inputDevice, ESCAPE))
+            running = 0;
         // Run the message loop.
         MSG msg = { };
         while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))

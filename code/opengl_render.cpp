@@ -181,12 +181,18 @@ void initShaders()
         "normals",
         "UVs"
     };
+    char * shaderAttribsLine[] = {
+        "vertex_pos",
+    };
     gShaders[SPRITE] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_f.glsl",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
     gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_sheet_f.glsl",
                                            shaderAttribs,
                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    gShaders[LINE] = create_shader("..\\code\\line_vert.glsl", "..\\code\\line_frag.glsl",
+                                   shaderAttribsLine,
+                                   sizeof(shaderAttribsLine) / sizeof(*shaderAttribsLine));
     glUseProgram(gShaders[SPRITE_SHEET].program);
     gTintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tint");
     glUseProgram(0);
@@ -534,6 +540,7 @@ void glSetProjection(Projection_t projType)
             RECT rect;
             GetClientRect(*gRenderState.windowHandle, &rect);
             set_ortho(rect.right, rect. bottom, &gShaders[SPRITE], "ortho");
+            set_ortho(rect.right, rect. bottom, &gShaders[LINE], "ortho");
             set_ortho(rect.right, rect. bottom, &gShaders[SPRITE_SHEET], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[STANDARD_MESH], "projectionMat");
         }
@@ -559,6 +566,7 @@ void gl_notify()
         &windowDimension
         );
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
@@ -770,6 +778,9 @@ void gl_endFrame(DrawList* drawList)
                 glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
+                glDisableVertexAttribArray(0);
+                glDisableVertexAttribArray(1);
+                glDisableVertexAttribArray(2);
             }
             break;
             
@@ -801,15 +812,20 @@ void gl_endFrame(DrawList* drawList)
                 glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
+                glDisableVertexAttribArray(0);
+                glDisableVertexAttribArray(1);
+                glDisableVertexAttribArray(2);
             }
             break;
             
             case RENDER_CMD_LINE:
             {
                 v3 tint = renderCmd->tint;
-                glUseProgram(gShaders[SPRITE_SHEET].program);
-                glLineWidth(10.0f);
-                glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
+                glUseProgram(gShaders[LINE].program);
+                //set_ortho(600, 400, &gShaders[LINE], "ortho");
+                GLint tintLocation = glGetUniformLocation(gShaders[LINE].program, "tint");
+                glLineWidth(renderCmd->thickness);
+                glUniform3f(tintLocation, tint.x, tint.y, tint.z);
                 // positions
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
                 glEnableVertexAttribArray(0);
@@ -823,12 +839,13 @@ void gl_endFrame(DrawList* drawList)
                 glDrawElementsBaseVertex(GL_LINES, 2*renderCmd->lineCount, 
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
+                glDisableVertexAttribArray(0);
+                glDisableVertexAttribArray(1);
+                glDisableVertexAttribArray(2);
             }
             break;
         }
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
+        
         glUseProgram(0);
         ++renderCmd;
     }

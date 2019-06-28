@@ -649,7 +649,7 @@ void pushQuad(float xPos, float yPos,
     renderCmdPtr->quadCount++;
 }
 
-void pushLine2D(float x1, float y1, float x2, float y2)
+void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness)
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
@@ -661,10 +661,11 @@ void pushLine2D(float x1, float y1, float x2, float y2)
     {
         renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
         renderCmdPtr->type = RENDER_CMD_LINE;
-        renderCmdPtr->tint = { 1, 0, 0 };
+        renderCmdPtr->tint = tint;
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->lineCount = 0;
+        renderCmdPtr->thickness = thickness;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;
     }
@@ -944,12 +945,12 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushQuad(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
     pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     */
     
-    pushLine2D(10.f, 10.f, 200.f, 200.f);
-    pushLine2D(0.f, 0.f, 200.f, 200.f);
-    pushLine2D(-10.f, -10.f, 200.f, 200.f);
+    pushLine2D(-10.f, 0.f, 10.f, 0.f, {1,0,0},2);
+    pushLine2D(-1.f, 1.f, 1.f, -1.f, {0,1,0},2);
+    pushLine2D(-20.f, 3.f, 10.f, -10.f, {0,0,1},2);
+    pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);

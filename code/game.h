@@ -15,6 +15,7 @@ enum Keycode
     ARROW_UP,
     ARROW_DOWN,
     LETTER_A,
+    ESCAPE,
     KEYBOARD_NONE,
     MAX_KEYCODES = 255
 };

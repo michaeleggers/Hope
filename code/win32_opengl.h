@@ -31,6 +31,7 @@ enum ShaderType
     SPRITE,
     SPRITE_SHEET,
     STANDARD_MESH,
+    LINE,
     MAX_SHADERS
 };
 

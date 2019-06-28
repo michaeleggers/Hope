@@ -56,6 +56,7 @@ struct RenderCommand
         {
             uint32_t lineCount;
             v3 tint;
+            float thickness;
         };
     };
 };

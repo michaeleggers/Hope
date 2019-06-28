@@ -249,7 +249,9 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // upload orthographic projection uniform
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
+    
     
     // backface/frontface culling (creates less shaders if enabled)
     glEnable (GL_CULL_FACE); // cull face
@@ -260,7 +262,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    // enable vsync
+    // enable vsync (1), disable vsync (0)
     wglSwapIntervalEXT(0);
     
     // multisampling

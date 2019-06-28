@@ -12,7 +12,6 @@ void main ()
     //frag_colour = texture2D(tex, window.zw * texturePosForFrag + window.xy);
     
     // new API, just draw the freakin thing. UVs are precomputed on CPU.
-    //frag_colour = vec4(tint.xyz, 1.0f) * texture2D(tex, texturePosForFrag);
-    frag_colour = vec4(tint.xyz, 1.0f);
+    frag_colour = vec4(tint.xyz, 1.0f) * texture2D(tex, texturePosForFrag);
 }
 
