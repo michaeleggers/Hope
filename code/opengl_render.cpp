@@ -750,7 +750,7 @@ void gl_endFrame(DrawList* drawList)
         RenderCommandType renderType = renderCmd->type;
         switch (renderType)
         {
-            case RENDER_CMD_QUAD:
+            case RENDER_CMD_TEXTURED_RECT:
             {
                 v3 tint = renderCmd->tint;
                 glUseProgram(gShaders[SPRITE_SHEET].program);
@@ -781,6 +781,31 @@ void gl_endFrame(DrawList* drawList)
                 glDisableVertexAttribArray(0);
                 glDisableVertexAttribArray(1);
                 glDisableVertexAttribArray(2);
+            }
+            break;
+            
+            case RENDER_CMD_FILLED_RECT:
+            {
+                v3 tint = renderCmd->tint;
+                glUseProgram(gShaders[LINE].program);
+                
+                //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
+                //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
+                //glBindTexture(GL_TEXTURE_2D, 0);
+                //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
+                //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
+                
+                glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
+                // 0 1 2 | 3 4 5 | 6  7
+                // v v v | n n n | uv uv
+                // positions
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+                glEnableVertexAttribArray(0);
+                
+                glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
+                                         GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
+                                         renderCmd->vtxBufferOffset);
+                glDisableVertexAttribArray(0);
             }
             break;
             

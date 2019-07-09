@@ -588,21 +588,21 @@ void pushText(char *text,
     }
 }
 
-void pushQuad(float xPos, float yPos, 
-              float xScale, float yScale,
-              v3 tint,
-              SpriteSheet *spriteSheet, int frame)
+void pushTexturedRect(float xPos, float yPos, 
+                      float xScale, float yScale,
+                      v3 tint,
+                      SpriteSheet *spriteSheet, int frame)
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
-    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_QUAD))
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXTURED_RECT))
     {
         renderCmdPtr = prevRenderCmd;
     }
     else
     {
         renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-        renderCmdPtr->type = RENDER_CMD_QUAD;
+        renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
         renderCmdPtr->tint = tint;
         renderCmdPtr->textureID = spriteSheet->texture->texture_id;
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
@@ -696,6 +696,65 @@ void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness
     gDrawList.idxCount += 2;
     gDrawList.lineCount++;
     renderCmdPtr->lineCount++;
+}
+
+void pushRect2D(float left, float top, float right, float bottom, v3 tint, float thickness)
+{
+    // top horizontal line
+    pushLine2D(left, top, right, top, tint, thickness);
+    // bottom horizontal line
+    pushLine2D(left, bottom, right, bottom, tint, thickness);
+    // left vertical line
+    pushLine2D(left, top, left, bottom, tint, thickness);
+    // right vertical line
+    pushLine2D(right, top, right, bottom, tint, thickness);
+}
+
+void pushFilledRect(float left, float top, float width, float height, v3 tint)
+{
+    RenderCommand *renderCmdPtr = 0;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_FILLED_RECT))
+    {
+        renderCmdPtr = prevRenderCmd;
+    }
+    else
+    {
+        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr->type = RENDER_CMD_FILLED_RECT;
+        renderCmdPtr->tint = tint;
+        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->quadCount = 0;
+        gDrawList.quadCount = 0;
+        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+        gDrawList.freeIndex++;
+    }
+    
+    // current free pos in global vertex/index buffers
+    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    
+    vertex[0].position.x = left;
+    vertex[0].position.y = top - height;
+    vertex[0].position.z = 0.f;
+    vertex[1].position.x = left + width;
+    vertex[1].position.y = top - height;
+    vertex[1].position.z = 0.f;
+    vertex[2].position.x = left + width;
+    vertex[2].position.y = top;
+    vertex[2].position.z = 0.f;
+    vertex[3].position.x = left;
+    vertex[3].position.y = top;
+    vertex[3].position.z = 0.f;
+    index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+    index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+    vertex += 4;
+    index  += 6;
+    gDrawList.vtxCount += 4;
+    gDrawList.idxCount += 6;
+    gDrawList.quadCount++;
+    renderCmdPtr->quadCount++;
 }
 
 void game_init(PlatformAPI* platform_api, refexport_t* re)
@@ -937,17 +996,17 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     {
         for (int x = 0; x < 100; x++)
         {
-            pushQuad(x -y+xOffset, x*(-0.5f) - y*0.5f + yOffset,
+            pushTexturedRect(x -y+xOffset, x*(-0.5f) - y*0.5f + yOffset,
                      1, 1,
                      {1, 1, 1},
                      &gTilesSpriteSheet, gIsoMap[100*y + x]);
         }
     }
     
-    pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushQuad(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
-    pushQuad(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
+    pushTexturedRect(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
+    pushTexturedRect(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
     pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     */
@@ -957,9 +1016,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushLine2D(0.f, 5.f, 10.f, 5.f, {0,1,0},5);
     pushLine2D(-10.f, -10.f, 0.f, 0.f, {0,0,1},3);
     pushLine2D(-10.f, -10.f, 10.f, 0.f, {0,0,1},3);
-    //pushQuad(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    //pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     pushLine2D(0.f, 0.f, 10.f, -10.f, {1,1,0},7);
+    pushRect2D(0.0f, 0.0f, 7.0f, -7.0f, {1,0,0}, 2.5f);
+    pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }

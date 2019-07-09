@@ -27,9 +27,10 @@ struct Vertex
 enum RenderCommandType
 {
     RENDER_CMD_NONE,
-    RENDER_CMD_QUAD,
+    RENDER_CMD_TEXTURED_RECT,
     RENDER_CMD_TEXT,
-    RENDER_CMD_LINE
+    RENDER_CMD_LINE,
+    RENDER_CMD_FILLED_RECT
 };
 
 // Every draw call issues a RenderCommand.
