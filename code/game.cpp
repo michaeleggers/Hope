@@ -714,7 +714,10 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
-    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_FILLED_RECT))
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_FILLED_RECT) &&
+        (prevRenderCmd->tint.x == tint.x) && 
+        (prevRenderCmd->tint.y == tint.y) &&
+        (prevRenderCmd->tint.z == tint.z) )
     {
         renderCmdPtr = prevRenderCmd;
     }
@@ -1021,6 +1024,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushLine2D(0.f, 0.f, 10.f, -10.f, {1,1,0},7);
     pushRect2D(0.0f, 0.0f, 7.0f, -7.0f, {1,0,0}, 2.5f);
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
+    pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
+    pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
