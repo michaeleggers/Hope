@@ -1,8 +1,7 @@
 #ifndef MATHX_H
 #define MATHX_H
 
-#include <vector>
-#include <iostream>
+#include <math.h>
 
 struct vec4
 {
@@ -36,14 +35,6 @@ struct vec4
                 , values[3] - rhs.values[3] };
     }
     
-    friend std::ostream& operator<<(std::ostream& os, vec4 const & rhs)
-    {
-        os << rhs.values[0] << std::endl
-            << rhs.values[1] << std::endl
-            << rhs.values[2] << std::endl
-            << rhs.values[3] << std::endl;
-        return os;
-    }
 };
 
 struct vec3
@@ -73,11 +64,6 @@ struct vec3
         return { rhs.x_ * scalar, rhs.y_ * scalar, rhs.z_ * scalar };
     }
     
-    friend std::ostream& operator<<(std::ostream& os, vec3 const & rhs)
-    {
-        os << rhs.x_ << std::endl << rhs.y_ << std::endl << rhs.z_ << std::endl;
-        return os;
-    }
 };
 
 vec3 normalize(vec3 const & v)
@@ -118,18 +104,6 @@ struct mat4x4
         return columns[index];
     }
     
-    friend std::ostream& operator<<(std::ostream& os, mat4x4 const & rhs)
-    {
-        for (int row = 0; row < 4; ++row)
-        {
-            for (int col = 0; col < 4; ++col)
-            {
-                os << rhs[col][row] << " ";
-            }
-            os << std::endl;
-        }
-        return os;
-    }
 };
 
 // vector * matrix multiplication
@@ -190,24 +164,6 @@ mat4x4 LookAtRH(vec3 eye, vec3 lookAt, vec3 up)
     
     return viewMatrix;
 }
-
-void ortho(float left, float right, float bottom, float top, float nearVal, float farVal, float * m)
-{
-    float tx = -((right + left) / (right - left));
-    float ty = -((top + bottom) / (top - bottom));
-    float tz = -((farVal + nearVal) / (farVal - nearVal));
-    float x = 2.0f / (right - left);
-    float y = 2.0f / (top - bottom);
-    float z = -2.0f / (farVal - nearVal);
-    
-    float src[16] = {
-        x, 0.0f, 0.0f, 0.0f,
-        0.0f, y, 0.0f, 0.0f,
-        0.0f, 0.0f, z, 0.0f,
-        tx, ty, tz, 1.0f
-    };
-    memcpy(m, src, 16 * sizeof(float));
-};
 
 
 #endif

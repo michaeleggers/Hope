@@ -347,6 +347,39 @@ void createFallbackTexture(Texture * texture)
     texture->height = gCheckImageHeight;
 }
 
+Texture createTextureFromBitmap(unsigned char * bmp, int width, int height)
+{
+    Texture texture;
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        width,
+        height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        bmp
+        );
+    
+    // TODO(Michael): pull this out later, or is this per texture?
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    texture.texture_id = tex;
+    texture.width = width;
+    texture.height = height;
+    strcpy(texture.name, "I don't know about this");
+    return texture;
+}
+
 Texture * createTexture(char * filename, unsigned char * imageData, int width, int height)
 {
     Texture * texture = gTexturesKnown;
@@ -583,8 +616,8 @@ mat4 updateModelMat(Entity * entity)
         entity->transform.zScale);
     mat4 rotationMatrix = hope_rotate_around_z(entity->transform.angle);
     
-    mat4 modelMatrix = mat4xmat4(translationMatrix, rotationMatrix);
-    modelMatrix = mat4xmat4(modelMatrix, scaleMatrix);
+    mat4 modelMatrix = mat4x4(translationMatrix, rotationMatrix);
+    modelMatrix = mat4x4(modelMatrix, scaleMatrix);
     
     return modelMatrix;
 }
@@ -716,8 +749,8 @@ void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, 
             yScale,
             0.0f);
         mat4 rotationMatrix = hope_rotate_around_z(15.0f);
-        mat4 modelMatrix = mat4xmat4(translationMatrix, rotationMatrix);
-        modelMatrix = mat4xmat4(modelMatrix, scaleMatrix);
+        mat4 modelMatrix = mat4x4(translationMatrix, rotationMatrix);
+        modelMatrix = mat4x4(modelMatrix, scaleMatrix);
         //float ratio = (float)intWidth / (float)intHeight;
         //modelMatrix.c[0] *= ratio;
         set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
@@ -882,7 +915,6 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     gPlatformAPI = platform_api;
     refexport_t re;
     re.init = win32_initGL;
-    //re.loadRooms = glLoadRooms;
     re.setViewport = glSetViewport;
     //re.render = glRender;
     re.setProjection = glSetProjection;
@@ -894,6 +926,7 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.renderText = gl_renderText;
     re.createTexture = createTexture;
     re.endFrame = gl_endFrame;
+    re.createTextureFromBitmap = createTextureFromBitmap;
     return re;
 }
 

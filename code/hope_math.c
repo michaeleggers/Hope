@@ -41,7 +41,7 @@ v3 v3cross(v3 lhs, v3 rhs)
     };
 }
 
-mat4 mat4xmat4(mat4 lhs, mat4 rhs)
+mat4 mat4x4(mat4 lhs, mat4 rhs)
 {
     mat4 result = {};
     for (int row = 0; row < 4; ++row)
@@ -97,9 +97,28 @@ mat4 hope_rotate_around_z(float angle)
     float angleInRad  = (PI*angle) / 180.f;
     mat4 result = {
         cosf(angleInRad), sinf(angleInRad), 0, 0,
-        -sin(angleInRad), cosf(angleInRad), 0, 0,
+        -sinf(angleInRad), cosf(angleInRad), 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
     };
     return result;
 }
+
+
+void ortho(float left, float right, float bottom, float top, float nearVal, float farVal, float * m)
+{
+    float tx = -((right + left) / (right - left));
+    float ty = -((top + bottom) / (top - bottom));
+    float tz = -((farVal + nearVal) / (farVal - nearVal));
+    float x = 2.0f / (right - left);
+    float y = 2.0f / (top - bottom);
+    float z = -2.0f / (farVal - nearVal);
+    
+    float src[16] = {
+        x, 0.0f, 0.0f, 0.0f,
+        0.0f, y, 0.0f, 0.0f,
+        0.0f, 0.0f, z, 0.0f,
+        tx, ty, tz, 1.0f
+    };
+    memcpy(m, src, 16 * sizeof(float));
+};

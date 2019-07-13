@@ -4,6 +4,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
 
 global_var int gNumRooms;
 global_var Entity gSpriteEntityList[MAX_SPRITES];
@@ -17,6 +19,7 @@ global_var PlatformAPI* gPlatformAPI;
 global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
+global_var SpriteSheet gTTFSpriteSheet;
 global_var int gIsoMap[10000];
 
 Background loadBackground(char * file)
@@ -764,6 +767,15 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
+    // load TTF Font
+    char* ttf_font = gPlatformAPI->readTextFile("c:/windows/fonts/arialbd.ttf");
+    stbtt_fontinfo font;
+    unsigned char *ttfBitmap;
+    stbtt_InitFont(&font, (uint8_t*)ttf_font, stbtt_GetFontOffsetForIndex((uint8_t*)ttf_font, 0));
+    int w, h;
+    ttfBitmap = stbtt_GetCodepointBitmap(&font, 0,stbtt_ScaleForPixelHeight(&font, 1.0f), 80, &w, &h, 0,0);
+    Texture ttfTexture = re->createTextureFromBitmap(ttfBitmap, w, h);
+    
     // init resources for new rendering API
     gFontSpriteSheet = createSpriteSheet(re, 
                                          "..\\assets\\kromagrad_16x16.png",
@@ -1019,10 +1031,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushLine2D(0.f, 5.f, 10.f, 5.f, {0,1,0},5);
     pushLine2D(-10.f, -10.f, 0.f, 0.f, {0,0,1},3);
     pushLine2D(-10.f, -10.f, 10.f, 0.f, {0,0,1},3);
-    //pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     pushLine2D(0.f, 0.f, 10.f, -10.f, {1,1,0},7);
     pushRect2D(0.0f, 0.0f, 7.0f, -7.0f, {1,0,0}, 2.5f);
+    //pushTexturedRect(x, y, scale, &bitmapData);
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});

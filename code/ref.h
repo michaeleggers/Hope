@@ -3,12 +3,12 @@
 
 // interface for renderer. To be implemented in DLL (OpenGL, DirectX, ...)
 // for the moment not platform independent
+#include <stdint.h>
 
 #include "hope_math.h"
 #include "hope_math.c"
 #include "platform.h"
 #include "common_render.h"
-
 
 #define MAX_SPRITES             512
 #define MAX_TEXTURES            256
@@ -177,6 +177,7 @@ struct refexport_t
     void (*renderText)(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite);
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
     void (*endFrame)(DrawList* drawList);
+    Texture (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
 };
 
 typedef refexport_t (*GetRefAPI_t)(PlatformAPI* platform_api);

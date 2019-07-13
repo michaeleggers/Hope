@@ -13,14 +13,7 @@
 #include "openglext/glext.h"
 #include "openglext/wglext.h"
 
-#include "helper.h"
-#include "Mathx.h"
-
 #include "ref.h"
-#include "scene.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 
 #define global_var static;
@@ -115,7 +108,6 @@ global_var PFNGLUNIFORM3FPROC                glUniform3f;
 global_var PFNGLUNIFORM4FPROC                glUniform4f;
 global_var PFNGLDRAWELEMENTSBASEVERTEXPROC   glDrawElementsBaseVertex;                                  
 
-Rect get_window_dimensions();
 void printGlErrMsg();
 void check_shader_error(GLuint shader);
 void l_drawTriangle();
@@ -124,7 +116,7 @@ Shader create_shader(char const * vs_file, char const * fs_file,
                      int numAttribs);
 Texture * createTexture(char * filename, unsigned char * imageData, int width, int height);
 Texture create_texture(char const * texture_file);
-Texture create_texture(Background * bg);
+//Texture create_texture(Background * bg);
 Quad create_quad();
 void set_ortho(int width, int height, Shader * shader, char * location);
 void set_model(GLfloat modelMatrix[], Shader * shader, char * location);
@@ -153,8 +145,6 @@ Window gl_createWindow(int textureWidth, int textureHeight,
 
 // exported stuff
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass);
-void glLoadRooms(Room* room);
-void glRender(Room * room);
 void glSetViewport(int xLeft, int yBottom, int width, int height);
 void glSetProjection(Projection_t projType);
 Sprite glRegisterSprite(char * spriteID, char * filename, unsigned char * imageData,

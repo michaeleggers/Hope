@@ -1,6 +1,8 @@
 #include "win32_opengl.h"
 #include "opengl_render.cpp"
-#include "common_os.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
 {
@@ -267,6 +269,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     // multisampling
     glEnable(GL_MULTISAMPLE);
+    
     
     OutputDebugStringA("end init ogl\n");
     return 0;
