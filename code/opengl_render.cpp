@@ -193,6 +193,9 @@ void initShaders()
     gShaders[LINE] = create_shader("..\\code\\line_vert.glsl", "..\\code\\line_frag.glsl",
                                    shaderAttribsLine,
                                    sizeof(shaderAttribsLine) / sizeof(*shaderAttribsLine));
+    gShaders[FILLED_RECT] = create_shader("..\\code\\line_vert.glsl", "..\\code\\line_frag.glsl",
+                                          shaderAttribsLine,
+                                          sizeof(shaderAttribsLine) / sizeof(*shaderAttribsLine));
     glUseProgram(gShaders[SPRITE_SHEET].program);
     gTintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tint");
     glUseProgram(0);
@@ -572,9 +575,10 @@ void glSetProjection(Projection_t projType)
         {
             RECT rect;
             GetClientRect(*gRenderState.windowHandle, &rect);
-            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE], "ortho");
-            set_ortho(rect.right, rect. bottom, &gShaders[LINE], "ortho");
-            set_ortho(rect.right, rect. bottom, &gShaders[SPRITE_SHEET], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[SPRITE], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[LINE], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[FILLED_RECT], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[SPRITE_SHEET], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[STANDARD_MESH], "projectionMat");
         }
         break;
@@ -600,6 +604,7 @@ void gl_notify()
         );
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[FILLED_RECT], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
@@ -820,15 +825,11 @@ void gl_endFrame(DrawList* drawList)
             case RENDER_CMD_FILLED_RECT:
             {
                 v3 tint = renderCmd->tint;
-                glUseProgram(gShaders[LINE].program);
-                
-                //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
-                //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
-                //glBindTexture(GL_TEXTURE_2D, 0);
-                //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
-                //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
-                
-                glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
+                // cannot use gTintLocation and LINE shader, because nVidia driver somehow "chaches" (?)
+                // and then won't actually update properly. Worked on intel integrated GPU, though...
+                glUseProgram(gShaders[FILLED_RECT].program);
+                GLuint tintLocation = glGetUniformLocation(gShaders[FILLED_RECT].program, "tint");
+                glUniform3f(tintLocation, tint.x, tint.y, tint.z);
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
                 // positions

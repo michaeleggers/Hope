@@ -252,6 +252,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[FILLED_RECT], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
     
     
