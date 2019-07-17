@@ -156,10 +156,4 @@ void *gl_RegisterMesh(Vertex * vertices, int count);
 void gl_renderFrame(Refdef * refdef);
 void gl_addWindow(Sprite * sprite, int xOffset, int yOffset, int width, int height);
 
-// exported functions
-extern "C"
-{
-    refexport_t GetRefAPI();
-}
-
 #endif

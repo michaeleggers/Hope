@@ -180,6 +180,8 @@ struct refexport_t
     Texture (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
 };
 
+// creating function pointer type:
+// https://de.wikipedia.org/wiki/Typedef
 typedef refexport_t (*GetRefAPI_t)(PlatformAPI* platform_api);
 
 #endif

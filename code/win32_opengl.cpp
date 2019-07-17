@@ -149,7 +149,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // create "real" opengl context
     *windowHandle = CreateWindow(
         windowClass->lpszClassName,
-        "Hello OpenGL2",
+        "EngineWorkInProgress",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         0,
         0,
@@ -266,7 +266,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     // enable vsync (1), disable vsync (0)
-    wglSwapIntervalEXT(0);
+    wglSwapIntervalEXT(1);
     
     // multisampling
     glEnable(GL_MULTISAMPLE);

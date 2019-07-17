@@ -327,7 +327,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     global_windowHandle = CreateWindow(
         windowClass.lpszClassName,
-        "Hello OpenGL",
+        "EngineWorkInProgress...",
         WS_OVERLAPPEDWINDOW, // style,so there are buttons like close,minimize,etc
         CW_USEDEFAULT,
         CW_USEDEFAULT,
