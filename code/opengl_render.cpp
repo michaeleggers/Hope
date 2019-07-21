@@ -17,7 +17,6 @@ global_var GLuint gidxHandle;
 global_var GLint gTintLocation;
 global_var GLint gTextureLocation;
 
-// TODO(Michael): we might want to NOT have platform stuff in here (but also I might be wrong).
 global_var PlatformAPI* gPlatformAPI;
 
 Window gl_createWindow(int textureWidth, int textureHeight,
@@ -40,75 +39,6 @@ Window gl_createWindow(int textureWidth, int textureHeight,
     window.intHeight = height;
     
     return window;
-}
-
-Sprite glRegisterSprite(
-char * filename, 
-unsigned char * imageData,
-int textureWidth, int textureHeight,
-int xOffset, int yOffset,
-int width, int height)
-{
-    Sprite sprite;
-    sprite.currentFrame = 0;
-    sprite.frameCount = 1;
-    GPUSprite gpuSpriteData;
-    
-    gpuSpriteData.freeWindowIndex = 0;
-    gpuSpriteData.shader = &gShaders[SPRITE_SHEET];
-    gpuSpriteData.mesh = create_quad();
-    gpuSpriteData.width = width;
-    gpuSpriteData.height = height;
-    Texture * texture = 0; //createTexture(filename, imageData, textureWidth, textureHeight);
-    gpuSpriteData.texture = texture;
-    
-    // TODO(Michael): this is shader specific, why is this here?!
-    // has to active BEFORE call to glGetUniformLocation!
-    //glUseProgram(gShaders[SPRITE_SHEET].program);
-    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
-    //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
-    
-    Window window = {}; 
-    /*
-    gl_createWindow(textureWidth, textureHeight,
-                                    xOffset, yOffset,
-                                    width, height);
-    */
-    
-    //gpuSpriteData.windows[0] = window;
-    //gpuSpriteData.freeWindowIndex++; // NOTE(Michael): we are not incrementing here,
-    // because it conflicts with text rendering, eg. if the character bitmap font
-    // starts with ' ' the offset value won't be 32 (dec for space) but rather 31,
-    // which is confusing.
-    
-    if (gUnknownSpriteIndex == MAX_SPRITES)
-    {
-        //gSpritesKnown[gUnknownSpriteIndex-1] = gpuSpriteData;
-        //sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex-1];
-    }
-    else
-    {
-        //gSpritesKnown[gUnknownSpriteIndex] = gpuSpriteData;
-        //sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex];
-        //gUnknownSpriteIndex++;
-    }
-    
-    return sprite;
-}
-
-void gl_addSpriteFrame(Sprite * sprite, int xOffset, int yOffset, int width, int height)
-{
-    GPUSprite * gpuSprite = (GPUSprite *)sprite->spriteHandle;
-    if (gpuSprite->freeWindowIndex == MAX_SPRITESHEET_WINDOWS) return;
-    
-    int textureWidth = gpuSprite->texture->width;
-    int textureHeight = gpuSprite->texture->height;
-    gpuSprite->windows[gpuSprite->freeWindowIndex] = gl_createWindow(textureWidth, textureHeight,
-                                                                     xOffset, yOffset,
-                                                                     width, height);
-    gpuSprite->freeWindowIndex++;
-    sprite->frameCount++;
 }
 
 // TODO(Michael): how to unregister meshes, like, how do we free
@@ -189,12 +119,19 @@ void initShaders()
     char * shaderAttribsLine[] = {
         "vertex_pos",
     };
+    char * shaderAttribsTTF[] = {
+        "vertex_pos",
+        "texture_pos"
+    };
     gShaders[SPRITE] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_f.glsl",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
     gShaders[SPRITE_SHEET] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_sheet_f.glsl",
                                            shaderAttribs,
                                            sizeof(shaderAttribs) / sizeof(*shaderAttribs));
+    gShaders[TTF] = create_shader("..\\code\\ttf_vert.glsl", "..\\code\\ttf_frag.glsl",
+                                  shaderAttribsTTF,
+                                  sizeof(shaderAttribsTTF) / sizeof(*shaderAttribsTTF));
     gShaders[LINE] = create_shader("..\\code\\line_vert.glsl", "..\\code\\line_frag.glsl",
                                    shaderAttribsLine,
                                    sizeof(shaderAttribsLine) / sizeof(*shaderAttribsLine));
@@ -204,7 +141,7 @@ void initShaders()
     glUseProgram(gShaders[SPRITE_SHEET].program);
     gTintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tint");
     gTextureLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
-    glUniform1i(gTextureLocation, 0); // use active texture (why is this necessary???)
+    //glUniform1i(gTextureLocation, 0); // use active texture (why is this necessary???)
     glUseProgram(0);
     
     gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh_v.glsl", "..\\code\\standard_mesh_f.glsl",
@@ -367,11 +304,11 @@ Texture * createTextureFromBitmap(unsigned char * bmp, int width, int height)
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        GL_ALPHA,
+        GL_RED,
         width,
         height,
         0,
-        GL_ALPHA,
+        GL_RED,
         GL_UNSIGNED_BYTE,
         bmp
         );
@@ -587,6 +524,7 @@ void glSetProjection(Projection_t projType)
             set_ortho(rect.right, rect.bottom, &gShaders[LINE], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[FILLED_RECT], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[SPRITE_SHEET], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[TTF], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[STANDARD_MESH], "projectionMat");
         }
         break;
@@ -614,6 +552,7 @@ void gl_notify()
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[FILLED_RECT], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[TTF], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
 
@@ -635,142 +574,10 @@ mat4 updateModelMat(Entity * entity)
     return modelMatrix;
 }
 
-void gl_renderFrame(Refdef * refdef)
-{
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    RECT windowDimension;
-    GetClientRect(
-        *gRenderState.windowHandle,
-        &windowDimension
-        );
-    
-    // render sprite entities
-    Entity * spriteEntity = refdef->spriteEntities;
-    int numSpriteEntities = refdef->numSpriteEntities;
-    glUseProgram(gShaders[SPRITE_SHEET].program);
-    for (int i = 0;
-         i < numSpriteEntities;
-         i++)
-    {
-        
-        GPUSprite * sprite = (GPUSprite *)(spriteEntity->sprite.spriteHandle);
-        int frame = spriteEntity->sprite.currentFrame;
-        int intWidth = sprite->windows[frame].intWidth;
-        int intHeight = sprite->windows[frame].intHeight;
-        mat4 modelMatrix = updateModelMat(spriteEntity);
-        float ratio = (float)intWidth / (float)intHeight;
-        modelMatrix.c[0] *= ratio;
-        set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
-        gl_renderFrame(sprite, frame);
-        spriteEntity++;
-    }
-    
-    // render mesh entities
-    Entity * meshEntity = refdef->meshEntities;
-    int numMeshEntities = refdef->numMeshEntities;
-    glUseProgram(gShaders[STANDARD_MESH].program);
-    for (int i = 0;
-         i < numMeshEntities;
-         ++i)
-    {
-        GPUMeshData * meshData = (GPUMeshData *)(meshEntity->mesh.meshHandle);
-        mat4 modelMatrix = updateModelMat(meshEntity);
-        set_model(modelMatrix.c, &gShaders[STANDARD_MESH], "modelMat");
-        gl_renderMesh(meshData);
-        meshEntity++;
-    }
-    
-    // render player entity
-    Entity* playerEntity = refdef->playerEntity;
-    glUseProgram(gShaders[SPRITE_SHEET].program);
-    GPUSprite * sprite = (GPUSprite *)(playerEntity->sprite.spriteHandle);
-    int frame = playerEntity->sprite.currentFrame;
-    int intWidth = sprite->windows[frame].intWidth;
-    int intHeight = sprite->windows[frame].intHeight;
-    mat4 modelMatrix = updateModelMat(playerEntity);
-    float ratio = (float)intWidth / (float)intHeight;
-    modelMatrix.c[0] *= ratio;
-    set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
-    gl_renderFrame(sprite, frame);
-    
-    SwapBuffers(gRenderState.deviceContext);
-    glFinish();
-}
-
 void gl_renderMesh(GPUMeshData* meshData)
 {
     glBindVertexArray(meshData->vao);
     glDrawArrays(GL_TRIANGLES, 0, meshData->vertexCount);
-}
-
-void gl_renderFrame(GPUSprite * sprite, int frame) // later on render-groups, so I can also render moving sprites?
-{
-    Window window = sprite->windows[frame];
-    // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "window");
-    glUniform4f(window_loc,
-                // offsets
-                window.x, window.y,
-                //0.067f, 0.1f,
-                window.width, window.height
-                ); // use active texture
-    glBindVertexArray(sprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, sprite->texture->texture_id);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void gl_renderText(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite)
-{
-    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    GPUSprite * gpuSprite = (GPUSprite *)(sprite->spriteHandle);
-    glUseProgram(gShaders[SPRITE_SHEET].program);
-    int window_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "window");
-    glBindVertexArray(gpuSprite->mesh.vao);
-    glBindTexture(GL_TEXTURE_2D, gpuSprite->texture->texture_id);
-    char * c = text;
-    for (int i = 0;
-         *c != '\0';
-         i++)
-    {
-        int asciiValue = *c;
-        if (asciiValue >= 97 && asciiValue <= 122) // lower case letters
-        {
-            asciiValue -= 32;
-        }
-        int frame = asciiValue - ' '; // glyph texture starts with <SPACE> (dec=32)
-        // TODO(Michael): I think there is a bug in how the windows of a spritesheet are
-        // indexed. The space character is probably starting at 1 and not at 0.
-        Window window = gpuSprite->windows[frame];
-        //int intWidth = window.intWidth;
-        //int intHeight = window.intHeight;
-        glUniform4f(window_loc,
-                    // offsets
-                    window.x, window.y,
-                    //0.067f, 0.1f,
-                    window.width, window.height
-                    );
-        mat4 translationMatrix = hope_translate(
-            xPos + i*2*xScale,
-            yPos,
-            0.0f);
-        mat4 scaleMatrix = hope_scale(
-            xScale,
-            yScale,
-            0.0f);
-        mat4 rotationMatrix = hope_rotate_around_z(15.0f);
-        mat4 modelMatrix = mat4x4(translationMatrix, rotationMatrix);
-        modelMatrix = mat4x4(modelMatrix, scaleMatrix);
-        //float ratio = (float)intWidth / (float)intHeight;
-        //modelMatrix.c[0] *= ratio;
-        set_model(modelMatrix.c, &gShaders[SPRITE_SHEET], "model");
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        c++;
-    }
-    SwapBuffers(gRenderState.deviceContext);
 }
 
 void gl_endFrame(DrawList* drawList)
@@ -803,11 +610,6 @@ void gl_endFrame(DrawList* drawList)
                 v3 tint = renderCmd->tint;
                 glUseProgram(gShaders[SPRITE_SHEET].program);
                 
-                //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
-                //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
-                //glBindTexture(GL_TEXTURE_2D, 0);
-                //GLint tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
-                //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
                 glUniform1i(gTextureLocation, 0);
@@ -830,6 +632,35 @@ void gl_endFrame(DrawList* drawList)
                 glDisableVertexAttribArray(0);
                 glDisableVertexAttribArray(1);
                 glDisableVertexAttribArray(2);
+            }
+            break;
+            
+            case RENDER_CMD_TTF:
+            {
+                v3 tint = renderCmd->tint;
+                glUseProgram(gShaders[TTF].program);
+                
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
+                GLint tintLocation = glGetUniformLocation(gShaders[TTF].program, "tint");
+                GLint textureLocation = glGetUniformLocation(gShaders[TTF].program, "tex");
+                glUniform1i(textureLocation, 0);
+                glUniform3f(tintLocation, tint.x, tint.y, tint.z);
+                
+                // 0 1 2 | 3 4 5 | 6  7
+                // v v v | n n n | uv uv
+                // positions
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+                glEnableVertexAttribArray(0);
+                // UVs
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
+                glEnableVertexAttribArray(1);
+                
+                glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
+                                         GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
+                                         renderCmd->vtxBufferOffset);
+                glDisableVertexAttribArray(0);
+                glDisableVertexAttribArray(1);
             }
             break;
             
@@ -928,14 +759,9 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     refexport_t re;
     re.init = win32_initGL;
     re.setViewport = glSetViewport;
-    //re.render = glRender;
     re.setProjection = glSetProjection;
-    re.registerSprite = glRegisterSprite;
     re.registerMesh = gl_RegisterMesh;
-    re.renderFrame = gl_renderFrame;
     re.notify = gl_notify;
-    re.addSpriteFrame = gl_addSpriteFrame;
-    re.renderText = gl_renderText;
     re.createTexture = createTexture;
     re.endFrame = gl_endFrame;
     re.createTextureFromBitmap = createTextureFromBitmap;

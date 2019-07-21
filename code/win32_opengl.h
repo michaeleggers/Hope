@@ -23,6 +23,7 @@ enum ShaderType
 {
     SPRITE,
     SPRITE_SHEET,
+    TTF,
     STANDARD_MESH,
     LINE,
     FILLED_RECT,

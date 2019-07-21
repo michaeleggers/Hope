@@ -28,6 +28,7 @@ enum RenderCommandType
 {
     RENDER_CMD_NONE,
     RENDER_CMD_TEXTURED_RECT,
+    RENDER_CMD_TTF,
     RENDER_CMD_TEXT,
     RENDER_CMD_LINE,
     RENDER_CMD_FILLED_RECT
@@ -162,22 +163,13 @@ struct Refdef
 struct refexport_t
 {
     int (*init)(HWND* windowHandle, WNDCLASS* windowClass);
-    //void (*loadRooms)(Room* room);
-    //void (*render)(Room* room);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
     void (*setProjection)(Projection_t projType);
-    Sprite (*registerSprite)(char * filename, unsigned char * imageData,
-                             int textureWidth, int textureHeight,
-                             int xOffset, int yOffset,
-                             int width, int height);
     void* (*registerMesh)(Vertex * vertices, int count);
-    void (*renderFrame)(Refdef * refdef);
     void (*notify)(void);
-    void (*addSpriteFrame)(Sprite * sprite, int xOffset, int yOffset, int width, int height);
-    void (*renderText)(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite);
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
-    void (*endFrame)(DrawList* drawList);
     Texture * (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
+    void (*endFrame)(DrawList* drawList);
 };
 
 // creating function pointer type:

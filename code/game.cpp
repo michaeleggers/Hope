@@ -656,18 +656,18 @@ void pushTexturedRect(float xPos, float yPos,
 void pushTexturedRect(float xPos, float yPos, 
                       float xScale, float yScale,
                       v3 tint,
-                      Texture *texture)
+                      Texture * texture)
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
-    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXTURED_RECT))
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TTF))
     {
         renderCmdPtr = prevRenderCmd;
     }
     else
     {
         renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-        renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
+        renderCmdPtr->type = RENDER_CMD_TTF;
         renderCmdPtr->tint = tint;
         renderCmdPtr->textureID = texture->texture_id;
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
@@ -830,15 +830,15 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     // load TTF Font
     char* ttf_font = gPlatformAPI->readTextFile("c:/windows/fonts/arialbd.ttf");
     stbtt_fontinfo font;
-    unsigned char *ttfBitmap;
+    unsigned char *ttfBitmap = 0;
     stbtt_InitFont(&font, (uint8_t*)ttf_font, stbtt_GetFontOffsetForIndex((uint8_t*)ttf_font, 0));
     int w, h;
-    ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 40.0f), 65, &w, &h, 0, 0);
-    unsigned char ttfTexture[512*512];
+    ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 100.0f), 65, &w, &h, 0, 0);
+    unsigned char ttfTexture[512*512] = {};
     for (int i = 0; i<h; ++i)
     {
         for (int k = 0; k<w; ++k)
-            ttfTexture[i*512+k] = ttfBitmap[i*w+k];
+            ttfTexture[i*512+k] = ttfBitmap[(h-i)*w+k];
     }
     gTTFTexture = re->createTextureFromBitmap(ttfTexture, 512, 512);
     
@@ -1000,7 +1000,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
-    //pushTexturedRect(-18, 0,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushTexturedRect(-18, 0,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushTexturedRect(-18, 0, 5, 5,{0, 1, 1}, gTTFTexture);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
