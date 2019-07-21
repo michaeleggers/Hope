@@ -177,7 +177,7 @@ struct refexport_t
     void (*renderText)(char * text, int xPos, int yPos, float xScale, float yScale, Sprite * sprite);
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
     void (*endFrame)(DrawList* drawList);
-    Texture (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
+    Texture * (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
 };
 
 // creating function pointer type:

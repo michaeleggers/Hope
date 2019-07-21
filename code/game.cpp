@@ -20,6 +20,7 @@ global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
 global_var SpriteSheet gTTFSpriteSheet;
+global_var Texture *gTTFTexture;
 global_var int gIsoMap[10000];
 
 Background loadBackground(char * file)
@@ -652,6 +653,65 @@ void pushTexturedRect(float xPos, float yPos,
     renderCmdPtr->quadCount++;
 }
 
+void pushTexturedRect(float xPos, float yPos, 
+                      float xScale, float yScale,
+                      v3 tint,
+                      Texture *texture)
+{
+    RenderCommand *renderCmdPtr = 0;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXTURED_RECT))
+    {
+        renderCmdPtr = prevRenderCmd;
+    }
+    else
+    {
+        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
+        renderCmdPtr->tint = tint;
+        renderCmdPtr->textureID = texture->texture_id;
+        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->quadCount = 0;
+        gDrawList.quadCount = 0;
+        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+        gDrawList.freeIndex++;
+    }
+    
+    // current free pos in global vertex/index buffers
+    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    
+    vertex[0].position.x = xPos;
+    vertex[0].position.y = yPos;
+    vertex[0].position.z = 0.f;
+    vertex[0].UVs.x = 0.0f;
+    vertex[0].UVs.y = 0.0f;
+    vertex[1].position.x = xPos + xScale;
+    vertex[1].position.y = yPos;
+    vertex[1].position.z = 0.f;
+    vertex[1].UVs.x = 1.0f;
+    vertex[1].UVs.y = 0.0f;
+    vertex[2].position.x = xPos + xScale;
+    vertex[2].position.y = yPos + yScale;
+    vertex[2].position.z = 0.f;
+    vertex[2].UVs.x = 1.0f;
+    vertex[2].UVs.y = 1.0f;
+    vertex[3].position.x = xPos;
+    vertex[3].position.y = yPos + yScale;
+    vertex[3].position.z = 0.f;
+    vertex[3].UVs.x = 0.0f;
+    vertex[3].UVs.y = 1.0f;
+    index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+    index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+    vertex += 4;
+    index  += 6;
+    gDrawList.vtxCount += 4;
+    gDrawList.idxCount += 6;
+    gDrawList.quadCount++;
+    renderCmdPtr->quadCount++;
+}
+
 void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness)
 {
     RenderCommand *renderCmdPtr = 0;
@@ -773,8 +833,24 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     unsigned char *ttfBitmap;
     stbtt_InitFont(&font, (uint8_t*)ttf_font, stbtt_GetFontOffsetForIndex((uint8_t*)ttf_font, 0));
     int w, h;
-    ttfBitmap = stbtt_GetCodepointBitmap(&font, 0,stbtt_ScaleForPixelHeight(&font, 1.0f), 80, &w, &h, 0,0);
-    Texture ttfTexture = re->createTextureFromBitmap(ttfBitmap, w, h);
+    ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 40.0f), 65, &w, &h, 0, 0);
+    unsigned char ttfTexture[512*512];
+    for (int i = 0; i<h; ++i)
+    {
+        for (int k = 0; k<w; ++k)
+            ttfTexture[i*512+k] = ttfBitmap[i*w+k];
+    }
+    gTTFTexture = re->createTextureFromBitmap(ttfTexture, 512, 512);
+    
+#if 0
+    for (int i = 0; i<h; ++i)
+    {
+        for (int k = 0; k<w; ++k)
+            ttfBitmap[i*w+k] > 0 ? printf(" # ") : printf(" _ ");
+        printf("\n");
+    }
+#endif
+    
     
     // init resources for new rendering API
     gFontSpriteSheet = createSpriteSheet(re, 
@@ -806,40 +882,6 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1000*1024);
     if (!gDrawList.idxBuffer)
         OutputDebugStringA("failed to create idxBuffer\n");
-    
-    // init iso-map
-    for (int y = 0; y < 100; y++)
-    {
-        for (int x = 0; x < 100; x++)
-        {
-            gIsoMap[y*100 + x] = (int)randBetween(0, 24);
-        }
-    }
-    
-    // init player entity
-    Entity playerEntity;
-    memcpy(playerEntity.transform.modelMat, gModelMatrix, 16*sizeof(float));
-    playerEntity.entityType = PLAYER_E;
-    playerEntity.transform.xPos = 0;
-    playerEntity.transform.yPos = 0;
-    playerEntity.transform.xScale = 2;
-    playerEntity.transform.yScale = 2;
-    playerEntity.transform.angle = 0;
-    playerEntity.speed = { 0.005f, 0.005f };
-    playerEntity.velocity = {0.f, 1.f, 0.f};
-    unsigned char * playerSpriteData = 0;
-    int x, y, n;
-    if (fileExists("..\\assets\\base.png"))
-        playerSpriteData = stbi_load("..\\assets\\base.png", &x, &y, &n, 4);
-    Sprite playerSprite = re->registerSprite("..\\assets\\base.png",
-                                             playerSpriteData,
-                                             240, 160,
-                                             0, 0,
-                                             240, 160);
-    playerEntity.sprite = playerSprite;
-    re->addSpriteFrame(&playerEntity.sprite, 32, 32, 16, 16);
-    playerEntity.sprite.currentFrame = 0;
-    addEntity(&playerEntity);
 }
 
 void addEntity(Entity * entity)
@@ -893,86 +935,6 @@ char* ftoa(float n)
 
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
-    // control player
-    if (keyDown(inputDevice, ACCELERATE))
-    {
-        //printf("DPAD UP pressed\n");
-        v3 direction = {0,1,0};
-#if 1
-        gPlayerEntity.speed.x += 0.000001f; 
-        gPlayerEntity.speed.y += 0.000001f;
-        if (gPlayerEntity.speed.x >= 0.01f)
-            gPlayerEntity.speed.x = 0.01f;
-        if (gPlayerEntity.speed.y >= 0.01f)
-            gPlayerEntity.speed.y = 0.01f;
-#endif
-        float angleInRad = (PI*gPlayerEntity.transform.angle)/180.0f;
-        v3 newVelocity = {
-            direction.x*cosf(angleInRad) - direction.y*sinf(angleInRad),
-            direction.x*sinf(angleInRad) + direction.y*cosf(angleInRad),
-            0
-        };
-        newVelocity.x *= gPlayerEntity.speed.x*dt/1000;
-        newVelocity.y *= gPlayerEntity.speed.y*dt/1000;
-        newVelocity = v3add(newVelocity, gPlayerEntity.velocity);
-        gPlayerEntity.velocity = newVelocity;
-        printf("speed: (%f, %f), ", gPlayerEntity.speed.x, gPlayerEntity.speed.y);
-        printf("velocity: %f\n", v3length(gPlayerEntity.velocity));
-        //gPlayerEntity.velocity = {0,1,0};
-    }
-    
-#if 0    
-    if (keyDown(inputDevice, ARROW_DOWN))
-    {
-        //gPlayerEntity.velocity = {0,-1,0};
-    }
-#endif
-    
-    if (keyDown(inputDevice, TURN_LEFT))
-    {
-        //printf("DPAD LEFT pressed\n");
-        gPlayerEntity.transform.angle += .3f*dt/1000;
-#if 0
-        if (gPlayerEntity.transform.angle >= 360.f)
-            gPlayerEntity.transform.angle = 0.f;
-#endif
-        //gPlayerEntity.velocity = {-1,0,0};
-    }
-    
-    if (keyDown(inputDevice, TURN_RIGHT))
-    {
-        //printf("DPAD RIGHT pressed\n");
-        gPlayerEntity.transform.angle -= .3f*dt/1000;
-#if 0
-        if (gPlayerEntity.transform.angle <= 0.f)
-            gPlayerEntity.transform.angle = 360.f;
-#endif
-        //gPlayerEntity.velocity = {+1,0,0};
-    }
-    
-#if 0    
-    if (keyDown(inputDevice, LETTER_A))
-    {
-        //printf("A pressed\n");
-        //gPlayerEntity.transform.xScale += 0.02f * dt/1000;
-        gPlayerEntity.speed.x += 0.00001f;
-        gPlayerEntity.speed.y += 0.00001f;
-    }
-#endif
-    gPlayerEntity.transform.xPos += gPlayerEntity.velocity.x * gPlayerEntity.speed.x * dt/1000;
-    gPlayerEntity.transform.yPos += gPlayerEntity.velocity.y * gPlayerEntity.speed.y * dt/1000;
-    //printf("angle: %f\n", gPlayerEntity.transform.angle);
-    //printf ("pos player (x: %f, y: %f)\n", gPlayerEntity.transform.xPos, gPlayerEntity.transform.yPos);
-    
-    if (gPlayerEntity.transform.xPos > 20.0f) 
-        gPlayerEntity.transform.xPos = -20.0f;
-    if (gPlayerEntity.transform.xPos < -20.0f) 
-        gPlayerEntity.transform.xPos = 20.0f;
-    if (gPlayerEntity.transform.yPos > 10.0f) 
-        gPlayerEntity.transform.yPos = -10.0f;
-    if (gPlayerEntity.transform.yPos < -10.0f) 
-        gPlayerEntity.transform.yPos = 10.0f;
-    
     // new rendering API proposal:
     // beginRender(renderDevice, renderTarget);
     
@@ -1031,7 +993,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushLine2D(0.f, 5.f, 10.f, 5.f, {0,1,0},5);
     pushLine2D(-10.f, -10.f, 0.f, 0.f, {0,0,1},3);
     pushLine2D(-10.f, -10.f, 10.f, 0.f, {0,0,1},3);
-    pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     pushLine2D(0.f, 0.f, 10.f, -10.f, {1,1,0},7);
     pushRect2D(0.0f, 0.0f, 7.0f, -7.0f, {1,0,0}, 2.5f);
@@ -1039,6 +1000,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
+    //pushTexturedRect(-18, 0,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushTexturedRect(-18, 0, 5, 5,{0, 1, 1}, gTTFTexture);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }

@@ -15,6 +15,8 @@ global_var int gUnknownMeshIndex;
 global_var GLuint gvtxHandle;
 global_var GLuint gidxHandle;
 global_var GLint gTintLocation;
+global_var GLint gTextureLocation;
+
 // TODO(Michael): we might want to NOT have platform stuff in here (but also I might be wrong).
 global_var PlatformAPI* gPlatformAPI;
 
@@ -57,21 +59,24 @@ int width, int height)
     gpuSpriteData.mesh = create_quad();
     gpuSpriteData.width = width;
     gpuSpriteData.height = height;
-    Texture * texture = createTexture(filename, imageData, textureWidth, textureHeight);
+    Texture * texture = 0; //createTexture(filename, imageData, textureWidth, textureHeight);
     gpuSpriteData.texture = texture;
     
     // TODO(Michael): this is shader specific, why is this here?!
     // has to active BEFORE call to glGetUniformLocation!
-    glUseProgram(gShaders[SPRITE_SHEET].program);
+    //glUseProgram(gShaders[SPRITE_SHEET].program);
     // in ogl 4 uniform 0 will do. this is necessary for ogl 3.2
-    int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
-    glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
+    //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
+    //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
     
-    Window window = gl_createWindow(textureWidth, textureHeight,
+    Window window = {}; 
+    /*
+    gl_createWindow(textureWidth, textureHeight,
                                     xOffset, yOffset,
                                     width, height);
+    */
     
-    gpuSpriteData.windows[0] = window;
+    //gpuSpriteData.windows[0] = window;
     //gpuSpriteData.freeWindowIndex++; // NOTE(Michael): we are not incrementing here,
     // because it conflicts with text rendering, eg. if the character bitmap font
     // starts with ' ' the offset value won't be 32 (dec for space) but rather 31,
@@ -79,14 +84,14 @@ int width, int height)
     
     if (gUnknownSpriteIndex == MAX_SPRITES)
     {
-        gSpritesKnown[gUnknownSpriteIndex-1] = gpuSpriteData;
-        sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex-1];
+        //gSpritesKnown[gUnknownSpriteIndex-1] = gpuSpriteData;
+        //sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex-1];
     }
     else
     {
-        gSpritesKnown[gUnknownSpriteIndex] = gpuSpriteData;
-        sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex];
-        gUnknownSpriteIndex++;
+        //gSpritesKnown[gUnknownSpriteIndex] = gpuSpriteData;
+        //sprite.spriteHandle = (void *)&gSpritesKnown[gUnknownSpriteIndex];
+        //gUnknownSpriteIndex++;
     }
     
     return sprite;
@@ -198,6 +203,8 @@ void initShaders()
                                           sizeof(shaderAttribsLine) / sizeof(*shaderAttribsLine));
     glUseProgram(gShaders[SPRITE_SHEET].program);
     gTintLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tint");
+    gTextureLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
+    glUniform1i(gTextureLocation, 0); // use active texture (why is this necessary???)
     glUseProgram(0);
     
     gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh_v.glsl", "..\\code\\standard_mesh_f.glsl",
@@ -350,9 +357,9 @@ void createFallbackTexture(Texture * texture)
     texture->height = gCheckImageHeight;
 }
 
-Texture createTextureFromBitmap(unsigned char * bmp, int width, int height)
+Texture * createTextureFromBitmap(unsigned char * bmp, int width, int height)
 {
-    Texture texture;
+    Texture * texture = &gTexturesKnown[gUnknownTextureIndex];
     GLuint tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -360,11 +367,11 @@ Texture createTextureFromBitmap(unsigned char * bmp, int width, int height)
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        GL_RGBA,
+        GL_ALPHA,
         width,
         height,
         0,
-        GL_RGBA,
+        GL_ALPHA,
         GL_UNSIGNED_BYTE,
         bmp
         );
@@ -372,14 +379,15 @@ Texture createTextureFromBitmap(unsigned char * bmp, int width, int height)
     // TODO(Michael): pull this out later, or is this per texture?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    texture.texture_id = tex;
-    texture.width = width;
-    texture.height = height;
-    strcpy(texture.name, "I don't know about this");
+    texture->texture_id = tex;
+    texture->width = width;
+    texture->height = height;
+    strcpy(texture->name, "I don't know about this");
+    gUnknownTextureIndex++;
     return texture;
 }
 
@@ -772,6 +780,8 @@ void gl_endFrame(DrawList* drawList)
     
     GLuint vaoHandle = 0;
     glGenVertexArrays(1, &vaoHandle);
+    glBindVertexArray(vaoHandle);
+    
     glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
     glBufferData(GL_ARRAY_BUFFER, drawList->vtxCount*sizeof(Vertex),
                  (GLvoid *)drawList->vtxBuffer, GL_STREAM_DRAW);
@@ -796,9 +806,11 @@ void gl_endFrame(DrawList* drawList)
                 //glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
                 //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gidxHandle);
                 //glBindTexture(GL_TEXTURE_2D, 0);
-                //int tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].shaderProgram, "tex");
+                //GLint tex_loc = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "tex");
                 //glUniform1i(tex_loc, 0); // use active texture (why is this necessary???)
-                
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
+                glUniform1i(gTextureLocation, 0);
                 glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
@@ -812,7 +824,6 @@ void gl_endFrame(DrawList* drawList)
                 glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(v3)*2));
                 glEnableVertexAttribArray(2);
                 
-                glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
                 glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
@@ -836,7 +847,7 @@ void gl_endFrame(DrawList* drawList)
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
                 glEnableVertexAttribArray(0);
                 
-                glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount, 
+                glDrawElementsBaseVertex(GL_TRIANGLES, 6*renderCmd->quadCount,
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
                 glDisableVertexAttribArray(0);

@@ -13,5 +13,11 @@ void main ()
     
     // new API, just draw the freakin thing. UVs are precomputed on CPU.
     frag_colour = vec4(tint.xyz, 1.0f) * texture2D(tex, texturePosForFrag);
+    vec4 sample = texture2D(tex, texturePosForFrag);
+    if (sample.a > 0.f)
+        frag_colour = vec4(tint.xyz, 1.0f) * sample.a;
+    else
+        frag_colour = vec4(0.f, 1.f, 0.f, 1.f);
+    
 }
 
