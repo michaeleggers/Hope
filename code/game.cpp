@@ -833,14 +833,21 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     unsigned char *ttfBitmap = 0;
     stbtt_InitFont(&font, (uint8_t*)ttf_font, stbtt_GetFontOffsetForIndex((uint8_t*)ttf_font, 0));
     int w, h;
-    ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 100.0f), 65, &w, &h, 0, 0);
-    unsigned char ttfTexture[512*512] = {};
-    for (int i = 0; i<h; ++i)
+    unsigned char * ttfTexture = (unsigned char *)malloc(sizeof(unsigned char)*1024*1024);
+    
+    for (int codePoint = 0; codePoint < 26; ++codePoint)
     {
-        for (int k = 0; k<w; ++k)
-            ttfTexture[i*512+k] = ttfBitmap[(h-i)*w+k];
+        ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 80.0f), codePoint + 65, &w, &h, 0, 0);
+        for (int i = 0; i<h; ++i)
+        {
+            for (int k = 0; k<w; ++k)
+            {
+                ttfTexture[ (codePoint*64/1024)*64*1024+i*1024 + (k+(codePoint%16)*64)] = ttfBitmap[(h-i)*w+k];
+            }
+        }
     }
-    gTTFTexture = re->createTextureFromBitmap(ttfTexture, 512, 512);
+    gTTFTexture = re->createTextureFromBitmap(ttfTexture, 1024, 1024);
+    free(ttfTexture);
     
 #if 0
     for (int i = 0; i<h; ++i)
@@ -1001,7 +1008,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
     pushTexturedRect(-18, 0,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
-    pushTexturedRect(-18, 0, 5, 5,{0, 1, 1}, gTTFTexture);
+    pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
