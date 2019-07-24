@@ -716,16 +716,25 @@ void pushTexturedRect(float xPos, float yPos,
 
 void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontInfo)
 {
-    float xTexturePos = 0, yTexturePos = 0;
+    float xOffset = 0, yOffset = 0;
+    float lineBreakOffset = 0.f;
     char * c = text;
+    stbtt_aligned_quad quad = {};
     while (*c != '\0')
     {
+        if (*c == '\n') 
+        { 
+            lineBreakOffset += 1.0f;
+            xOffset = 0.f;
+            c++; 
+            continue; 
+        }
+        
         int characterCode = *c;
-        stbtt_aligned_quad quad;
         stbtt_GetPackedQuad(fontInfo->chardata, 
                             fontInfo->texture->width, fontInfo->texture->height,  // same data as above
                             characterCode - fontInfo->firstChar,             // character to display
-                            &xTexturePos, &yTexturePos,
+                            &xOffset, &yOffset,
                             // pointers to current position in screen pixel space
                             &quad,      // output: quad to draw
                             1);
@@ -760,22 +769,22 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
         quad.y1 /= fontInfo->fontSize;
         
         vertex[0].position.x = quad.x0;
-        vertex[0].position.y = quad.y0;
+        vertex[0].position.y = quad.y0 - lineBreakOffset;
         vertex[0].position.z = 0.f;
         vertex[0].UVs.x = quad.s0;
         vertex[0].UVs.y = quad.t1;
         vertex[1].position.x = quad.x1;
-        vertex[1].position.y = quad.y0;
+        vertex[1].position.y = quad.y0 - lineBreakOffset;
         vertex[1].position.z = 0.f;
         vertex[1].UVs.x = quad.s1;
         vertex[1].UVs.y = quad.t1;
         vertex[2].position.x = quad.x1;
-        vertex[2].position.y = quad.y1;
+        vertex[2].position.y = quad.y1 - lineBreakOffset;
         vertex[2].position.z = 0.f;
         vertex[2].UVs.x = quad.s1;
         vertex[2].UVs.y = quad.t0;
         vertex[3].position.x = quad.x0;
-        vertex[3].position.y = quad.y1;
+        vertex[3].position.y = quad.y1 - lineBreakOffset;
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = quad.s0;
         vertex[3].UVs.y = quad.t0;
@@ -1098,9 +1107,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
-    pushTexturedRect(-18, 0,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
+    pushTexturedRect(-18, 0,1, 1,{1, 1, 1}, &gTilesSpriteSheet, 0);
     //pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
-    pushTTFText("Yo Sven was geht?!\0", 0, 0, {1,1,1}, &gFontInfo);
+    pushTTFText("Yi\nYo Sven was geht?!\nMit Zeilenumbruch. So geihel!\nPORNO\0", 0, 0, {0.f,0.6f, .4f}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
