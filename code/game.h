@@ -5,6 +5,7 @@
 #include "platform.h"
 #include "ref.h"
 #include "scene.h"
+#include "stb_truetype.h"
 
 // Input
 // ---------------------------------------
@@ -73,6 +74,16 @@ struct InputDevice
     DeviceType deviceType;
     Keyboard * keyboard;
     Controller * controller;
+};
+
+struct FontInfo
+{
+    Texture * texture;
+    SpriteSheet * spriteSheet;
+    stbtt_packedchar chardata['~'-' '];
+    float fontSize;
+    int numCharsInRange;
+    int firstChar;
 };
 
 // ---------------------------------------

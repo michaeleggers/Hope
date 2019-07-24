@@ -22,6 +22,7 @@ global_var SpriteSheet gTilesSpriteSheet;
 global_var SpriteSheet gTTFSpriteSheet;
 global_var Texture *gTTFTexture;
 global_var int gIsoMap[10000];
+global_var FontInfo gFontInfo;
 
 Background loadBackground(char * file)
 {
@@ -509,6 +510,7 @@ void addSpriteFrame(SpriteSheet *spriteSheet,
     spriteSheet->frameCount++;
 }
 
+// TODO(Michael): text passed not guaranteed to end with \0 !
 void pushText(char *text, 
               float xPos, float yPos, 
               float xScale, float yScale,
@@ -667,7 +669,7 @@ void pushTexturedRect(float xPos, float yPos,
     else
     {
         renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-        renderCmdPtr->type = RENDER_CMD_TTF;
+        renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
         renderCmdPtr->tint = tint;
         renderCmdPtr->textureID = texture->texture_id;
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
@@ -710,6 +712,83 @@ void pushTexturedRect(float xPos, float yPos,
     gDrawList.idxCount += 6;
     gDrawList.quadCount++;
     renderCmdPtr->quadCount++;
+}
+
+void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontInfo)
+{
+    float xTexturePos = 0, yTexturePos = 0;
+    char * c = text;
+    while (*c != '\0')
+    {
+        int characterCode = *c;
+        stbtt_aligned_quad quad;
+        stbtt_GetPackedQuad(fontInfo->chardata, 
+                            fontInfo->texture->width, fontInfo->texture->height,  // same data as above
+                            characterCode - fontInfo->firstChar,             // character to display
+                            &xTexturePos, &yTexturePos,
+                            // pointers to current position in screen pixel space
+                            &quad,      // output: quad to draw
+                            1);
+        
+        RenderCommand *renderCmdPtr = 0;
+        RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+        if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TTF))
+        {
+            renderCmdPtr = prevRenderCmd;
+        }
+        else
+        {
+            renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+            renderCmdPtr->type = RENDER_CMD_TTF;
+            renderCmdPtr->tint = tint;
+            renderCmdPtr->textureID = fontInfo->texture->texture_id;
+            renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+            renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+            renderCmdPtr->quadCount = 0;
+            gDrawList.quadCount = 0;
+            gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+            gDrawList.freeIndex++;
+        }
+        
+        // current free pos in global vertex/index buffers
+        Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+        uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+        
+        quad.x0 /= fontInfo->fontSize;
+        quad.x1 /= fontInfo->fontSize;
+        quad.y0 /= fontInfo->fontSize;
+        quad.y1 /= fontInfo->fontSize;
+        
+        vertex[0].position.x = quad.x0;
+        vertex[0].position.y = quad.y0;
+        vertex[0].position.z = 0.f;
+        vertex[0].UVs.x = quad.s0;
+        vertex[0].UVs.y = quad.t1;
+        vertex[1].position.x = quad.x1;
+        vertex[1].position.y = quad.y0;
+        vertex[1].position.z = 0.f;
+        vertex[1].UVs.x = quad.s1;
+        vertex[1].UVs.y = quad.t1;
+        vertex[2].position.x = quad.x1;
+        vertex[2].position.y = quad.y1;
+        vertex[2].position.z = 0.f;
+        vertex[2].UVs.x = quad.s1;
+        vertex[2].UVs.y = quad.t0;
+        vertex[3].position.x = quad.x0;
+        vertex[3].position.y = quad.y1;
+        vertex[3].position.z = 0.f;
+        vertex[3].UVs.x = quad.s0;
+        vertex[3].UVs.y = quad.t0;
+        index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+        index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+        vertex += 4;
+        index  += 6;
+        gDrawList.vtxCount += 4;
+        gDrawList.idxCount += 6;
+        gDrawList.quadCount++;
+        renderCmdPtr->quadCount++;
+        c++;
+    }
 }
 
 void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness)
@@ -827,8 +906,9 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
+    char* ttf_font = gPlatformAPI->readTextFile("c:/windows/fonts/MATURASC.TTF");
+#if 0
     // load TTF Font
-    char* ttf_font = gPlatformAPI->readTextFile("c:/windows/fonts/arialbd.ttf");
     stbtt_fontinfo font;
     unsigned char *ttfBitmap = 0;
     stbtt_InitFont(&font, (uint8_t*)ttf_font, stbtt_GetFontOffsetForIndex((uint8_t*)ttf_font, 0));
@@ -848,16 +928,27 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     }
     gTTFTexture = re->createTextureFromBitmap(ttfTexture, 1024, 1024);
     free(ttfTexture);
-    
-#if 0
-    for (int i = 0; i<h; ++i)
-    {
-        for (int k = 0; k<w; ++k)
-            ttfBitmap[i*w+k] > 0 ? printf(" # ") : printf(" _ ");
-        printf("\n");
-    }
 #endif
     
+    // stb_truetype texture baking API
+    stbtt_pack_context spc;
+    unsigned char * pixels = (unsigned char *)malloc(sizeof(unsigned char)*1024*1024);
+    if (!stbtt_PackBegin(&spc, pixels, 1024, 1024, 0, 1, 0))
+        printf("failed to create packing context\n");
+    
+    
+    stbtt_packedchar chardata['~'-' '];
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 40.0f,
+                        ' ', '~'-' ', chardata);
+    
+    stbtt_PackEnd(&spc);
+    gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
+    
+    gFontInfo.texture = gTTFTexture;
+    memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
+    gFontInfo.fontSize = 40.0f;
+    gFontInfo.numCharsInRange = '~' - ' ';
+    gFontInfo.firstChar = ' ';
     
     // init resources for new rendering API
     gFontSpriteSheet = createSpriteSheet(re, 
@@ -1008,7 +1099,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
     pushTexturedRect(-18, 0,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
-    pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
+    //pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
+    pushTTFText("Yo Sven was geht?!\0", 0, 0, {1,1,1}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
