@@ -726,6 +726,7 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
         { 
             lineBreakOffset += 1.0f;
             xOffset = 0.f;
+            yOffset = 0.f;
             c++; 
             continue; 
         }
@@ -768,26 +769,27 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
         quad.y0 /= fontInfo->fontSize;
         quad.y1 /= fontInfo->fontSize;
         
-        vertex[0].position.x = quad.x0;
-        vertex[0].position.y = quad.y0 - lineBreakOffset;
+        vertex[0].position.x =  quad.x0 + xPos;
+        vertex[0].position.y = -quad.y0 - lineBreakOffset;
         vertex[0].position.z = 0.f;
         vertex[0].UVs.x = quad.s0;
-        vertex[0].UVs.y = quad.t1;
-        vertex[1].position.x = quad.x1;
-        vertex[1].position.y = quad.y0 - lineBreakOffset;
+        vertex[0].UVs.y = quad.t0;
+        vertex[1].position.x =  quad.x0 + xPos;
+        vertex[1].position.y = -quad.y1 - lineBreakOffset;
         vertex[1].position.z = 0.f;
-        vertex[1].UVs.x = quad.s1;
+        vertex[1].UVs.x = quad.s0;
         vertex[1].UVs.y = quad.t1;
-        vertex[2].position.x = quad.x1;
-        vertex[2].position.y = quad.y1 - lineBreakOffset;
+        vertex[2].position.x =  quad.x1 + xPos;
+        vertex[2].position.y = -quad.y1 - lineBreakOffset;
         vertex[2].position.z = 0.f;
         vertex[2].UVs.x = quad.s1;
-        vertex[2].UVs.y = quad.t0;
-        vertex[3].position.x = quad.x0;
-        vertex[3].position.y = quad.y1 - lineBreakOffset;
+        vertex[2].UVs.y = quad.t1;
+        vertex[3].position.x =  quad.x1 + xPos;
+        vertex[3].position.y = -quad.y0 - lineBreakOffset;
         vertex[3].position.z = 0.f;
-        vertex[3].UVs.x = quad.s0;
+        vertex[3].UVs.x = quad.s1;
         vertex[3].UVs.y = quad.t0;
+        
         index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
         index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
         vertex += 4;
@@ -915,7 +917,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
-    char* ttf_font = gPlatformAPI->readTextFile("c:/windows/fonts/MATURASC.TTF");
+    char* ttf_font = gPlatformAPI->readTextFile("..\\assets\\ttf\\efmi.TTF");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -1094,7 +1096,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     */
-    
+#if 0
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
     pushLine2D(0.f, 1.f, 10.f, 1.f, {1,0,0},3);
     pushLine2D(0.f, 5.f, 10.f, 5.f, {0,1,0},5);
@@ -1109,7 +1111,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
     pushTexturedRect(-18, 0,1, 1,{1, 1, 1}, &gTilesSpriteSheet, 0);
     //pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
-    pushTTFText("Yi\nYo Sven was geht?!\nMit Zeilenumbruch. So geihel!\nPORNO\0", 0, 0, {0.f,0.6f, .4f}, &gFontInfo);
+#endif
+    pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\0", -15, 0, {1.f,1.f, 1.f}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
