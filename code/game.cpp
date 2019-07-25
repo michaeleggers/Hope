@@ -948,6 +948,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
         printf("failed to create packing context\n");
     
     
+    stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
     stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 40.0f,
                         ' ', '~'-' ', chardata);
