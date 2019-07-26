@@ -626,22 +626,22 @@ void pushTexturedRect(float xPos, float yPos,
     Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
     float aspectRatio = (float)window.intWidth / (float)window.intHeight;
     vertex[0].position.x = xPos;
-    vertex[0].position.y = yPos;
+    vertex[0].position.y = -yPos;
     vertex[0].position.z = 0.f;
     vertex[0].UVs.x = window.x;
     vertex[0].UVs.y = window.height;
     vertex[1].position.x = xPos + xScale*aspectRatio;
-    vertex[1].position.y = yPos;
+    vertex[1].position.y = -yPos;
     vertex[1].position.z = 0.f;
     vertex[1].UVs.x = window.x + window.width;
     vertex[1].UVs.y = window.height;
     vertex[2].position.x = xPos + xScale*aspectRatio;
-    vertex[2].position.y = yPos + yScale;
+    vertex[2].position.y = -yPos + yScale;
     vertex[2].position.z = 0.f;
     vertex[2].UVs.x = window.x + window.width;
     vertex[2].UVs.y = window.y;
     vertex[3].position.x = xPos;
-    vertex[3].position.y = yPos + yScale;
+    vertex[3].position.y = -yPos + yScale;
     vertex[3].position.z = 0.f;
     vertex[3].UVs.x = window.x;
     vertex[3].UVs.y = window.y;
@@ -724,7 +724,7 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
     {
         if (*c == '\n') 
         { 
-            lineBreakOffset += 1.0f;
+            lineBreakOffset += fontInfo->fontSize;
             xOffset = 0.f;
             yOffset = 0.f;
             c++; 
@@ -764,28 +764,23 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
         Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
         uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
         
-        quad.x0 /= fontInfo->fontSize;
-        quad.x1 /= fontInfo->fontSize;
-        quad.y0 /= fontInfo->fontSize;
-        quad.y1 /= fontInfo->fontSize;
-        
         vertex[0].position.x =  quad.x0 + xPos;
-        vertex[0].position.y = -quad.y0 - lineBreakOffset;
+        vertex[0].position.y = -quad.y0 - lineBreakOffset - yPos;
         vertex[0].position.z = 0.f;
         vertex[0].UVs.x = quad.s0;
         vertex[0].UVs.y = quad.t0;
         vertex[1].position.x =  quad.x0 + xPos;
-        vertex[1].position.y = -quad.y1 - lineBreakOffset;
+        vertex[1].position.y = -quad.y1 - lineBreakOffset - yPos;
         vertex[1].position.z = 0.f;
         vertex[1].UVs.x = quad.s0;
         vertex[1].UVs.y = quad.t1;
         vertex[2].position.x =  quad.x1 + xPos;
-        vertex[2].position.y = -quad.y1 - lineBreakOffset;
+        vertex[2].position.y = -quad.y1 - lineBreakOffset - yPos;
         vertex[2].position.z = 0.f;
         vertex[2].UVs.x = quad.s1;
         vertex[2].UVs.y = quad.t1;
         vertex[3].position.x =  quad.x1 + xPos;
-        vertex[3].position.y = -quad.y0 - lineBreakOffset;
+        vertex[3].position.y = -quad.y0 - lineBreakOffset - yPos;
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = quad.s1;
         vertex[3].UVs.y = quad.t0;
@@ -917,7 +912,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
-    char* ttf_font = gPlatformAPI->readTextFile("..\\assets\\ttf\\efmi.TTF");
+    char* ttf_font = gPlatformAPI->readTextFile("C:\\repos\\Hope\\assets\\ttf\\efmi.ttf");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -942,15 +937,18 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 #endif
     
     // stb_truetype texture baking API
+    stbtt_fontinfo font;
+    stbtt_InitFont(&font, (uint8_t*)ttf_font, 0);
+    float scale = stbtt_ScaleForMappingEmToPixels(&font, 15);
+    
     stbtt_pack_context spc;
     unsigned char * pixels = (unsigned char *)malloc(sizeof(unsigned char)*1024*1024);
     if (!stbtt_PackBegin(&spc, pixels, 1024, 1024, 0, 1, 0))
         printf("failed to create packing context\n");
     
-    
     stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 40.0f,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 50,
                         ' ', '~'-' ', chardata);
     
     stbtt_PackEnd(&spc);
@@ -958,7 +956,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 40.0f;
+    gFontInfo.fontSize = 50.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -1104,16 +1102,16 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushLine2D(-10.f, -10.f, 0.f, 0.f, {0,0,1},3);
     pushLine2D(-10.f, -10.f, 10.f, 0.f, {0,0,1},3);
     pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
-    pushLine2D(0.f, 0.f, 10.f, -10.f, {1,1,0},7);
     pushRect2D(0.0f, 0.0f, 7.0f, -7.0f, {1,0,0}, 2.5f);
     //pushTexturedRect(x, y, scale, &bitmapData);
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
-    pushTexturedRect(-18, 0,1, 1,{1, 1, 1}, &gTilesSpriteSheet, 0);
-    //pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
+    pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
-    pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\0", -15, 0, {1.f,1.f, 1.f}, &gFontInfo);
+    pushLine2D(0.f, 0.f, 1920.f, 1080.f, {1,1,0},7);
+    pushTexturedRect(900, 500, 100, 100, {1, 1, 1}, &gTilesSpriteSheet, 0);
+    pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0.f, 50.f, {1.f,1.f, 1.f}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
