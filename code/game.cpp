@@ -920,7 +920,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
-    char* ttf_font = gPlatformAPI->readTextFile("C:\\repos\\Hope\\assets\\ttf\\efmi.ttf");
+    char* ttf_font = gPlatformAPI->readTextFile("c:\\windows\\fonts\\arialbd.ttf");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -954,17 +954,17 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     if (!stbtt_PackBegin(&spc, pixels, 1024, 1024, 0, 1, 0))
         printf("failed to create packing context\n");
     
-    stbtt_PackSetOversampling(&spc, 2, 2);
+    //stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 50,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 60,
                         ' ', '~'-' ', chardata);
-    
     stbtt_PackEnd(&spc);
     gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
+    free(pixels);
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 50.f;
+    gFontInfo.fontSize = 60.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -1118,8 +1118,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
     pushLine2D(0.f, 0.f, 10.f, 0.f, {1,1,0},7);
-    pushTexturedRect(0, 0, 1, 1, {1, 1, 1}, &gTilesSpriteSheet, 0);
-    pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0.f, 50.f, {1.f,1.f, 1.f}, &gFontInfo);
+    static float advance = 0.f;
+    advance += .01f;
+    pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
+    pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0, 50.f, {0.f,1.f, 0.f}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }

@@ -132,6 +132,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glUniform4f");
         glDrawElementsBaseVertex = (PFNGLDRAWELEMENTSBASEVERTEXPROC)
             wglGetProcAddress("glDrawElementsBaseVertex");
+        glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
+            wglGetProcAddress("glGenerateMipmap");
     }
     
     // create extended DC/RC 

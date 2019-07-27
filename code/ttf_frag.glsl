@@ -10,8 +10,8 @@ uniform vec3 tint;
 void main () 
 {
     vec4 sample = texture2D(tex, texturePosForFrag);
-    //if (sample.r > 0.f)
-    frag_colour = sample.r * vec4(tint.xyz, 1.f);
+    //if (sample.r > .1f)
+    frag_colour = vec4(tint.xyz, sample.r);
     
 }
 

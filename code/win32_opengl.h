@@ -108,7 +108,8 @@ global_var PFNGLUNIFORMMATRIX4FVPROC         glUniformMatrix4fv;
 global_var PFNGLUNIFORM2FPROC                glUniform2f;
 global_var PFNGLUNIFORM3FPROC                glUniform3f;
 global_var PFNGLUNIFORM4FPROC                glUniform4f;
-global_var PFNGLDRAWELEMENTSBASEVERTEXPROC   glDrawElementsBaseVertex;                                  
+global_var PFNGLDRAWELEMENTSBASEVERTEXPROC   glDrawElementsBaseVertex;
+global_var PFNGLGENERATEMIPMAPPROC           glGenerateMipmap;
 
 void printGlErrMsg();
 void check_shader_error(GLuint shader);

@@ -301,6 +301,7 @@ Texture * createTextureFromBitmap(unsigned char * bmp, int width, int height)
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
@@ -312,12 +313,15 @@ Texture * createTextureFromBitmap(unsigned char * bmp, int width, int height)
         GL_UNSIGNED_BYTE,
         bmp
         );
+    glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+    glGenerateMipmap(GL_TEXTURE_2D);
     
     // TODO(Michael): pull this out later, or is this per texture?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     texture->texture_id = tex;
@@ -583,7 +587,7 @@ void gl_renderMesh(GPUMeshData* meshData)
 
 void gl_endFrame(DrawList* drawList)
 {
-    glClearColor(.4f, .4f, .4f, 0.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GLuint vaoHandle = 0;
@@ -639,10 +643,17 @@ void gl_endFrame(DrawList* drawList)
             case RENDER_CMD_TTF:
             {
                 v3 tint = renderCmd->tint;
+                
                 glUseProgram(gShaders[TTF].program);
                 setUniformMat4fv(&gShaders[TTF], "ortho", renderCmd->projectionMatrix.c);
-                glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+                
+                glActiveTexture(GL_TEXTURE0);
                 GLint tintLocation = glGetUniformLocation(gShaders[TTF].program, "tint");
                 GLint textureLocation = glGetUniformLocation(gShaders[TTF].program, "tex");
                 glUniform1i(textureLocation, 0);
