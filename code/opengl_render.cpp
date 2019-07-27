@@ -450,9 +450,9 @@ void set_ortho(int width, int height, Shader * shader, char * location)
     float squeeze = (float)targetHeight / (float)height;
     float orthoMatrix[16] = { };
     float aspectRatio = (float)width / (float)height;
-    ortho(
-        0.0f, (float)width,
-        -(float)height, 0.0f,
+    hope_create_ortho_matrix(
+        -10.0f*aspectRatio, 10.0f*aspectRatio,
+        -10, 10.0f,
         -1.0f, 1.0f,
         orthoMatrix
         );
@@ -640,7 +640,7 @@ void gl_endFrame(DrawList* drawList)
             {
                 v3 tint = renderCmd->tint;
                 glUseProgram(gShaders[TTF].program);
-                
+                setUniformMat4fv(&gShaders[TTF], "ortho", renderCmd->projectionMatrix.c);
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
                 GLint tintLocation = glGetUniformLocation(gShaders[TTF].program, "tint");

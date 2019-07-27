@@ -44,6 +44,7 @@ struct RenderCommand
     // uint16_t         *idxBufferPos;
     uint32_t          idxBufferOffset;
     uint16_t          vtxBufferOffset;
+    mat4 projectionMatrix;
     
     // render cmd specific
     union

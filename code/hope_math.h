@@ -32,6 +32,6 @@ v3 v3normalize(v3 v);
 float v2length(v2 v);
 float v3length(v3 v);
 v3 v3add(v3 lhs, v3 rhs);
-void ortho(float left, float right, float bottom, float top, float nearVal, float farVal, float * m);
+void hope_create_ortho_matrix(float left, float right, float bottom, float top, float nearVal, float farVal, float * out_m);
 
 #endif

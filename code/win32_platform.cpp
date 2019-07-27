@@ -97,6 +97,17 @@ PLATFORM_READ_TEXT_FILE(win32ReadTextFile)
     return result;
 }
 
+PLATFORM_GET_WINDOW_DIMENSIONS(win32GetWindowDimensions)
+{
+    Rect result;
+    RECT rect;
+    GetClientRect(global_windowHandle, &rect);
+    result.width  = rect.right;
+    result.height = rect.bottom;
+    
+    return result;
+}
+
 bool fileExists(char const * file)
 {
     WIN32_FIND_DATA findFileData;
@@ -356,6 +367,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     // init platform API
     PlatformAPI platformAPI;
     platformAPI.readTextFile = win32ReadTextFile;
+    platformAPI.getWindowDimensions = win32GetWindowDimensions;
     
     // init GL
     VID_LoadRefresh("win32_opengl.dll", &platformAPI);

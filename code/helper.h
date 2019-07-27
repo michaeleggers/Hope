@@ -8,10 +8,12 @@ struct meg_strbuf
     int pos;
 };
 
+#if 0
 struct Rect
 {
     int width, height;
 };
+#endif
 
 meg_strbuf meg_strbuf_create();
 int meg_strbuf_write(meg_strbuf* strbuf, char const * s);

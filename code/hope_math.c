@@ -105,7 +105,7 @@ mat4 hope_rotate_around_z(float angle)
 }
 
 
-void ortho(float left, float right, float bottom, float top, float nearVal, float farVal, float * m)
+void hope_create_ortho_matrix(float left, float right, float bottom, float top, float nearVal, float farVal, float * out_m)
 {
     float tx = -((right + left) / (right - left));
     float ty = -((top + bottom) / (top - bottom));
@@ -120,5 +120,5 @@ void ortho(float left, float right, float bottom, float top, float nearVal, floa
         0.0f, 0.0f, z, 0.0f,
         tx, ty, tz, 1.0f
     };
-    memcpy(m, src, 16 * sizeof(float));
+    memcpy(out_m, src, 16 * sizeof(float));
 };

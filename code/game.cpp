@@ -626,22 +626,22 @@ void pushTexturedRect(float xPos, float yPos,
     Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
     float aspectRatio = (float)window.intWidth / (float)window.intHeight;
     vertex[0].position.x = xPos;
-    vertex[0].position.y = -yPos;
+    vertex[0].position.y = yPos;
     vertex[0].position.z = 0.f;
     vertex[0].UVs.x = window.x;
     vertex[0].UVs.y = window.height;
     vertex[1].position.x = xPos + xScale*aspectRatio;
-    vertex[1].position.y = -yPos;
+    vertex[1].position.y = yPos;
     vertex[1].position.z = 0.f;
     vertex[1].UVs.x = window.x + window.width;
     vertex[1].UVs.y = window.height;
     vertex[2].position.x = xPos + xScale*aspectRatio;
-    vertex[2].position.y = -yPos + yScale;
+    vertex[2].position.y = yPos + yScale;
     vertex[2].position.z = 0.f;
     vertex[2].UVs.x = window.x + window.width;
     vertex[2].UVs.y = window.y;
     vertex[3].position.x = xPos;
-    vertex[3].position.y = -yPos + yScale;
+    vertex[3].position.y = yPos + yScale;
     vertex[3].position.z = 0.f;
     vertex[3].UVs.x = window.x;
     vertex[3].UVs.y = window.y;
@@ -658,6 +658,7 @@ void pushTexturedRect(float xPos, float yPos,
 void pushTexturedRect(float xPos, float yPos, 
                       float xScale, float yScale,
                       v3 tint,
+                      Quad quad,
                       Texture * texture)
 {
     RenderCommand *renderCmdPtr = 0;
@@ -684,26 +685,26 @@ void pushTexturedRect(float xPos, float yPos,
     Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     
-    vertex[0].position.x = xPos;
-    vertex[0].position.y = yPos;
+    vertex[0].position.x = quad.x0;
+    vertex[0].position.y = quad.y0;
     vertex[0].position.z = 0.f;
-    vertex[0].UVs.x = 0.0f;
-    vertex[0].UVs.y = 0.0f;
-    vertex[1].position.x = xPos + xScale;
-    vertex[1].position.y = yPos;
+    vertex[0].UVs.x = quad.s0;
+    vertex[0].UVs.y = quad.t0;
+    vertex[1].position.x = quad.x0 + xScale;
+    vertex[1].position.y = quad.y1;
     vertex[1].position.z = 0.f;
-    vertex[1].UVs.x = 1.0f;
-    vertex[1].UVs.y = 0.0f;
-    vertex[2].position.x = xPos + xScale;
-    vertex[2].position.y = yPos + yScale;
+    vertex[1].UVs.x = quad.s0;
+    vertex[1].UVs.y = quad.t1;
+    vertex[2].position.x = quad.x1 + xScale;
+    vertex[2].position.y = quad.y1 + yScale;
     vertex[2].position.z = 0.f;
-    vertex[2].UVs.x = 1.0f;
-    vertex[2].UVs.y = 1.0f;
-    vertex[3].position.x = xPos;
-    vertex[3].position.y = yPos + yScale;
+    vertex[2].UVs.x = quad.s1;
+    vertex[2].UVs.y = quad.t1;
+    vertex[3].position.x = quad.x1;
+    vertex[3].position.y = quad.y0 + yScale;
     vertex[3].position.z = 0.f;
-    vertex[3].UVs.x = 0.0f;
-    vertex[3].UVs.y = 1.0f;
+    vertex[3].UVs.x = quad.s1;
+    vertex[3].UVs.y = quad.t0;
     index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
     index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
     vertex += 4;
@@ -755,6 +756,13 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
             renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
             renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
             renderCmdPtr->quadCount = 0;
+            Rect windowDimensions = gPlatformAPI->getWindowDimensions();
+            hope_create_ortho_matrix(
+                0.0f, (float)windowDimensions.width,
+                -(float)windowDimensions.height, 0.0f,
+                -1.0f, 1.0f,
+                renderCmdPtr->projectionMatrix.c
+                );
             gDrawList.quadCount = 0;
             gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
             gDrawList.freeIndex++;
@@ -1109,8 +1117,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
     pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
-    pushLine2D(0.f, 0.f, 1920.f, 1080.f, {1,1,0},7);
-    pushTexturedRect(900, 500, 100, 100, {1, 1, 1}, &gTilesSpriteSheet, 0);
+    pushLine2D(0.f, 0.f, 10.f, 0.f, {1,1,0},7);
+    pushTexturedRect(0, 0, 1, 1, {1, 1, 1}, &gTilesSpriteSheet, 0);
     pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0.f, 50.f, {1.f,1.f, 1.f}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);

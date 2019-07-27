@@ -86,6 +86,12 @@ struct FontInfo
     int firstChar;
 };
 
+struct Quad
+{
+    float x0, y0, s0, t0;
+    float x1, y1, s1, t1;
+};
+
 // ---------------------------------------
 
 /* local to game.cpp */
