@@ -316,6 +316,7 @@ Texture * createTextureFromBitmap(unsigned char * bmp, int width, int height)
     glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
     glGenerateMipmap(GL_TEXTURE_2D);
     
+#if 0    
     // TODO(Michael): pull this out later, or is this per texture?
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -324,6 +325,7 @@ Texture * createTextureFromBitmap(unsigned char * bmp, int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+#endif
     texture->texture_id = tex;
     texture->width = width;
     texture->height = height;
@@ -587,7 +589,7 @@ void gl_renderMesh(GPUMeshData* meshData)
 
 void gl_endFrame(DrawList* drawList)
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glClearColor(.0f, .0f, .0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     GLuint vaoHandle = 0;

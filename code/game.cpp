@@ -920,7 +920,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
-    char* ttf_font = gPlatformAPI->readTextFile("c:\\windows\\fonts\\arialbd.ttf");
+    char* ttf_font = gPlatformAPI->readTextFile("C:\\repos\\Hope\\assets\\ttf\\efmi.ttf");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -956,7 +956,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     //stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 60,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 50,
                         ' ', '~'-' ', chardata);
     stbtt_PackEnd(&spc);
     gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
@@ -964,7 +964,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 60.f;
+    gFontInfo.fontSize = 50.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -1119,9 +1119,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #endif
     pushLine2D(0.f, 0.f, 10.f, 0.f, {1,1,0},7);
     static float advance = 0.f;
-    advance += .01f;
+    advance += .001f;
     pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
-    pushTTFText("How much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0, 50.f, {0.f,1.f, 0.f}, &gFontInfo);
+    pushTTFText("XXXHow much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0, 50.f, {1.f,1.f, 1.f}, &gFontInfo);
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }

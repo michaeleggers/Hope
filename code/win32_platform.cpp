@@ -2,6 +2,7 @@
 #include <wingdi.h>
 #include <dwmapi.h>
 #include <xinput.h>
+#include <shellscalingapi.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -354,6 +355,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     {
         return 0;
     }
+    
+    // TODO(Michael): DPI scaling using this function only works from win 8.1 on!
+#if 1    
+    HRESULT scalingAwarenessResult = SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+    if (scalingAwarenessResult == S_OK)
+        OutputDebugStringA("DPI scaling set successfully\n");
+    else if (scalingAwarenessResult == E_ACCESSDENIED)
+        OutputDebugStringA("DPI scaling failerd. It has already been set before\n");
+    else
+        OutputDebugStringA("DPI scaling failed. Illegal Value\n");
+#endif
     
     // init console
     AllocConsole();
