@@ -686,6 +686,7 @@ void gl_endFrame(DrawList* drawList)
                 glUseProgram(gShaders[FILLED_RECT].program);
                 GLuint tintLocation = glGetUniformLocation(gShaders[FILLED_RECT].program, "tint");
                 glUniform3f(tintLocation, tint.x, tint.y, tint.z);
+                setUniformMat4fv(&gShaders[FILLED_RECT], "ortho", renderCmd->projectionMatrix.c);
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
                 // positions

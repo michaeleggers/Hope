@@ -759,7 +759,7 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
             Rect windowDimensions = gPlatformAPI->getWindowDimensions();
             hope_create_ortho_matrix(
                 0.0f, (float)windowDimensions.width,
-                -(float)windowDimensions.height, 0.0f,
+                (float)windowDimensions.height, 0.0f,
                 -1.0f, 1.0f,
                 renderCmdPtr->projectionMatrix.c
                 );
@@ -773,22 +773,22 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
         uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
         
         vertex[0].position.x =  quad.x0 + xPos;
-        vertex[0].position.y = -quad.y0 - lineBreakOffset - yPos;
+        vertex[0].position.y =  quad.y0 + lineBreakOffset + yPos;
         vertex[0].position.z = 0.f;
         vertex[0].UVs.x = quad.s0;
         vertex[0].UVs.y = quad.t0;
         vertex[1].position.x =  quad.x0 + xPos;
-        vertex[1].position.y = -quad.y1 - lineBreakOffset - yPos;
+        vertex[1].position.y =  quad.y1 + lineBreakOffset + yPos;
         vertex[1].position.z = 0.f;
         vertex[1].UVs.x = quad.s0;
         vertex[1].UVs.y = quad.t1;
         vertex[2].position.x =  quad.x1 + xPos;
-        vertex[2].position.y = -quad.y1 - lineBreakOffset - yPos;
+        vertex[2].position.y =  quad.y1 + lineBreakOffset + yPos;
         vertex[2].position.z = 0.f;
         vertex[2].UVs.x = quad.s1;
         vertex[2].UVs.y = quad.t1;
         vertex[3].position.x =  quad.x1 + xPos;
-        vertex[3].position.y = -quad.y0 - lineBreakOffset - yPos;
+        vertex[3].position.y =  quad.y0 + lineBreakOffset + yPos;
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = quad.s1;
         vertex[3].UVs.y = quad.t0;
@@ -885,6 +885,13 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->quadCount = 0;
+        Rect windowDimensions = gPlatformAPI->getWindowDimensions();
+        hope_create_ortho_matrix(
+            0.0f, (float)windowDimensions.width,
+            (float)windowDimensions.height, 0.0f,
+            -1.0f, 1.0f,
+            renderCmdPtr->projectionMatrix.c
+            );
         gDrawList.quadCount = 0;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;
@@ -895,15 +902,15 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     
     vertex[0].position.x = left;
-    vertex[0].position.y = top - height;
+    vertex[0].position.y = top;
     vertex[0].position.z = 0.f;
-    vertex[1].position.x = left + width;
-    vertex[1].position.y = top - height;
+    vertex[1].position.x = left;
+    vertex[1].position.y = top + height;
     vertex[1].position.z = 0.f;
     vertex[2].position.x = left + width;
-    vertex[2].position.y = top;
+    vertex[2].position.y = top + height;
     vertex[2].position.z = 0.f;
-    vertex[3].position.x = left;
+    vertex[3].position.x = left + width;
     vertex[3].position.y = top;
     vertex[3].position.z = 0.f;
     index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
@@ -956,7 +963,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     //stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 50,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 24,
                         ' ', '~'-' ', chardata);
     stbtt_PackEnd(&spc);
     gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
@@ -964,7 +971,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 50.f;
+    gFontInfo.fontSize = 24.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -1114,14 +1121,19 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     //pushTexturedRect(x, y, scale, &bitmapData);
     pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
-    pushFilledRect(0.0f, 0.0f, 10.0f, 2.0f, {1,0,1});
     pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
     pushLine2D(0.f, 0.f, 10.f, 0.f, {1,1,0},7);
     static float advance = 0.f;
-    advance += .001f;
+    if (advance > 1080.+120.f)
+        advance = 0.f;
+    advance += 0.5f;
     pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
-    pushTTFText("XXXHow much wood could a woodchuck chuck if a woodchuck could chuck wood?\nand now it works and I can be very proud of myself!\0", 0, 50.f, {1.f,1.f, 1.f}, &gFontInfo);
+    pushTTFText("Lead Programmer\nMichael Eggers\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
+    pushTTFText("Game Art\nMichael Eggers\0", 960, advance-60.f, {1.f,1.f, 1.f}, &gFontInfo);
+    pushTTFText("Other stuff\nMichael Eggers\0", 960, advance-120.f, {1.f,1.f, 1.f}, &gFontInfo);
+    pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
+    pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
