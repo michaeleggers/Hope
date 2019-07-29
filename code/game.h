@@ -53,7 +53,8 @@ struct GenericKeycode
 enum DeviceType
 {
     KEYBOARD,
-    CONTROLLER
+    CONTROLLER,
+    MOUSE
 };
 
 struct Controller
@@ -69,11 +70,17 @@ struct Keyboard
     int prevKeycodes[256];
 };
 
+struct Mouse
+{
+    short x, y;
+};
+
 struct InputDevice
 {
     DeviceType deviceType;
     Keyboard * keyboard;
     Controller * controller;
+    Mouse * mouse;
 };
 
 struct FontInfo

@@ -165,6 +165,7 @@ bool XInputInit()
 }
 
 Keyboard keyboard = {};
+Mouse mouse = {};
 
 LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -214,6 +215,27 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         {
             running = false;
             PostQuitMessage(0);
+        }
+        break;
+        
+        case WM_LBUTTONDOWN:
+        {
+            if (inputDevice.deviceType != MOUSE)
+            {
+                inputDevice.deviceType = MOUSE;
+                printf("input device: MOUSE\n");
+            }
+            switch(wParam)
+            {
+                case MK_LBUTTON:
+                {
+                    mouse.x = lParam & 0x0000FFFF;
+                    mouse.y = (lParam & 0xFFFF0000) >> 16;
+                    printf ("MOUSE X: %d\n", mouse.x);
+                    printf ("MOUSE Y: %d\n", mouse.y);
+                }
+                break;
+            }
         }
         break;
         

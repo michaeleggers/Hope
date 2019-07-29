@@ -927,6 +927,10 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     
+    // INIT HOPE UI
+    
+    
+    // TTF font loading
     char* ttf_font = gPlatformAPI->readTextFile("C:\\repos\\Hope\\assets\\ttf\\efmi.ttf");
 #if 0
     // load TTF Font
@@ -963,7 +967,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     //stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 24,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 36,
                         ' ', '~'-' ', chardata);
     stbtt_PackEnd(&spc);
     gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
@@ -971,7 +975,7 @@ void game_init(PlatformAPI* platform_api, refexport_t* re)
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 24.f;
+    gFontInfo.fontSize = 36.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -1127,11 +1131,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     static float advance = 0.f;
     if (advance > 1080.+120.f)
         advance = 0.f;
-    advance += 0.5f;
+    advance += 1.3f;
     pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
-    pushTTFText("Lead Programmer\nMichael Eggers\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
-    pushTTFText("Game Art\nMichael Eggers\0", 960, advance-60.f, {1.f,1.f, 1.f}, &gFontInfo);
-    pushTTFText("Other stuff\nMichael Eggers\0", 960, advance-120.f, {1.f,1.f, 1.f}, &gFontInfo);
+    pushTTFText("Test1\nLinebreak1\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
+    pushTTFText("Test2\nLinebreak2\0", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
+    pushTTFText("Test3\nLinebreak3\0", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
     pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
     gRefdef.playerEntity = &gPlayerEntity;
