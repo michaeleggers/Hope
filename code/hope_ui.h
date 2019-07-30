@@ -3,18 +3,29 @@
 
 #define HOPE_UI_MAX_BUTTONS    256
 
-HopeUIBinding
+#define GET_WINDOW_WIDTH(name) int name(void)
+typedef GET_WINDOW_WIDTH(ui_get_window_width);
+#define GET_WINDOW_HEIGHT(name) int name(void)
+typedef GET_WINDOW_HEIGHT(ui_get_window_height);
+
+#define GET_MOUSE_X(name) int name(void)
+typedef GET_MOUSE_X(ui_get_mouse_x);
+#define GET_MOUSE_Y(name) int name(void)
+typedef GET_MOUSE_Y(ui_get_mouse_y);
+struct HopeUIBinding
 {
-    short *mouseX, *mouseY;
-    int   *windowWidth, *windowHeight;
+    ui_get_window_width  * getWindowWidth;
+    ui_get_window_height * getWindowHeight;
+    ui_get_mouse_x * getMouseX;
+    ui_get_mouse_y * getMouseY;
 };
 
-HopeUIID
+struct HopeUIID
 {
     char const * strid = "";
 };
 
-HopeUIContext
+struct HopeUIContext
 {
     int windowWidth, windowHeight;
     int mouseX, mouseY;
@@ -26,6 +37,12 @@ struct HopeUIRect
     int x1, y1;
 };
 
+void hope_ui_init(HopeUIBinding binding);
+void hope_ui_begin();
+void hope_ui_end();
+bool hope_ui_button(char const * name, Rect rect);
+bool hope_ui_hit_region(int x, int y, HopeUIRect rect);
+void hope_ui_render();
 
 
 

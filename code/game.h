@@ -119,7 +119,7 @@ void update_messages();
 bool fileExists(char const * file);
 
 /* services to platform layer */
-void game_init(PlatformAPI* platform_api, refexport_t* re);
+void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re);
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re);
 
 #endif GAME_H

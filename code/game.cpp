@@ -1,4 +1,7 @@
 #include "game.h"
+#include "hope_ui.h"
+#include "hope_ui.cpp"
+
 #include "common_os.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -16,6 +19,7 @@ global_var int gNumMeshEntities;
 global_var Sprite gBitmapFontSprite;
 global_var Refdef gRefdef;
 global_var PlatformAPI* gPlatformAPI;
+global_var InputDevice* gInputDevice;
 global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
@@ -23,6 +27,7 @@ global_var SpriteSheet gTTFSpriteSheet;
 global_var Texture *gTTFTexture;
 global_var int gIsoMap[10000];
 global_var FontInfo gFontInfo;
+global_var HopeUIBinding gUiBinding;
 
 Background loadBackground(char * file)
 {
@@ -923,12 +928,37 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
     renderCmdPtr->quadCount++;
 }
 
-void game_init(PlatformAPI* platform_api, refexport_t* re)
+int get_window_width()
+{
+    return gPlatformAPI->getWindowDimensions().width;
+}
+
+// HOPE UI CALLBACKS
+int get_window_height()
+{
+    return gPlatformAPI->getWindowDimensions().height;
+}
+
+int get_mouse_x()
+{
+    return gInputDevice->mouse->x;
+}
+
+int get_mouse_y()
+{
+    return gInputDevice->mouse->y;
+}
+
+void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
+    gInputDevice = input_device;
     
     // INIT HOPE UI
-    
+    gUiBinding.getWindowWidth = get_window_width;gUiBinding.getWindowHeight = get_window_height;
+    gUiBinding.getMouseX = get_mouse_x;
+    gUiBinding.getMouseY = get_mouse_y;
+    hope_ui_init(&gUiBinding);
     
     // TTF font loading
     char* ttf_font = gPlatformAPI->readTextFile("C:\\repos\\Hope\\assets\\ttf\\efmi.ttf");
@@ -1138,6 +1168,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushTTFText("Test3\nLinebreak3\0", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
     pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
+    pushFilledRect(0, 0, 300, 300, {0,0,1});
+    if (hope_ui_button("Button A", {0, 0, 300, 300}))
+    {
+        pushTTFText("HIT!", 150, 150, {0,0,0}, &gFontInfo);
+    }
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }

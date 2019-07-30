@@ -127,7 +127,6 @@ bool fileExists(char const * file)
 
 global_var HINSTANCE reflib_library;
 global_var refexport_t re;
-
 bool VID_LoadRefresh(char const * name, PlatformAPI* platform_api)
 {
     GetRefAPI_t GetRefAPI;
@@ -218,6 +217,16 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         }
         break;
         
+        case WM_MOUSEMOVE:
+        {
+            mouse.x = lParam & 0x0000FFFF;
+            mouse.y = (lParam & 0xFFFF0000) >> 16;
+            printf ("MOUSE X: %d\n", mouse.x);
+            printf ("MOUSE Y: %d\n", mouse.y);
+            // NOTE(Michael): If an application processes this message, it should return zero. (MSDN)
+        }
+        break;
+        
         case WM_LBUTTONDOWN:
         {
             if (inputDevice.deviceType != MOUSE)
@@ -229,6 +238,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             {
                 case MK_LBUTTON:
                 {
+                    mouse.keycodes[LBUTTON_DOWN] = 1;
                     mouse.x = lParam & 0x0000FFFF;
                     mouse.y = (lParam & 0xFFFF0000) >> 16;
                     printf ("MOUSE X: %d\n", mouse.x);
@@ -443,20 +453,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     GetClientRect(global_windowHandle, &rect);
     //glViewport(0, 0, rect.right, rect.bottom); // TODO(Michael): do in renderer
     
-    game_init(&platformAPI, &re);
-    OutputDebugStringA("game init done\n");
     
     XInputInit();
-    
     // XBox Controller state
     XBoxControllerState controllerState = {};
     Controller controller = {};
-    
     // Generic input device. Holds pointer to a couple of input deivces such as
     // keyboard, mouse, controller...
     inputDevice.keyboard   = &keyboard;
     inputDevice.controller = &controller;
+    inputDevice.mouse      = &mouse;
     inputDevice.deviceType = KEYBOARD;
+    
+    game_init(&platformAPI, &inputDevice, &re);
+    OutputDebugStringA("game init done\n");
     
     // set up timing stuff
     QueryPerformanceFrequency(&performanceFrequency);
