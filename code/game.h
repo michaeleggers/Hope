@@ -34,6 +34,15 @@ enum ControllerKeycode
     DPAD_NONE
 };
 
+enum MouseKeycode
+{
+    LBUTTON_DOWN,
+    RBUTTON_DOWN,
+    MBUTTON_DOWN,
+    WHEEL_UP,
+    WHEEL_DOWN
+};
+
 enum GameInput
 {
     TURN_LEFT,
@@ -72,6 +81,9 @@ struct Keyboard
 
 struct Mouse
 {
+    // NOTE(Michael): not sure why we would need that many keycodes...
+    int keycodes[256];
+    int prevKeycodes[256];
     short x, y;
 };
 

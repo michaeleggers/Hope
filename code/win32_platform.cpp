@@ -249,6 +249,13 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         }
         break;
         
+        case WM_LBUTTONUP:
+        {
+            printf("MOUSE BUTTON IS UP\n");
+            mouse.keycodes[LBUTTON_DOWN] = 0;
+        }
+        break;
+        
         case WM_KEYDOWN:
         {
             if (inputDevice.deviceType != KEYBOARD)

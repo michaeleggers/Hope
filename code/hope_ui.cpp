@@ -17,10 +17,13 @@ void hope_ui_end()
 
 bool hope_ui_button(char const * name, HopeUIRect rect)
 {
-    bool result = false;
     int mouseX = gBinding->getMouseX();
     int mouseY = gBinding->getMouseY();
-    return hope_ui_hit_region(mouseX, mouseY, rect);
+    bool inRegion = hope_ui_hit_region(mouseX, mouseY, rect);
+    bool leftMBPressed = gBinding->leftMouseButtonPressed();
+    if (inRegion && leftMBPressed)
+        return true;
+    return false;
 }
 
 bool hope_ui_hit_region(int x, int y, HopeUIRect rect)

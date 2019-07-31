@@ -928,12 +928,12 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
     renderCmdPtr->quadCount++;
 }
 
+// HOPE UI CALLBACKS
 int get_window_width()
 {
     return gPlatformAPI->getWindowDimensions().width;
 }
 
-// HOPE UI CALLBACKS
 int get_window_height()
 {
     return gPlatformAPI->getWindowDimensions().height;
@@ -949,6 +949,32 @@ int get_mouse_y()
     return gInputDevice->mouse->y;
 }
 
+bool leftMouseButtonDown()
+{
+    Mouse * mouse = gInputDevice->mouse;
+    if (mouse->keycodes[LBUTTON_DOWN])
+        return true;
+    return false;
+}
+
+bool leftMouseButtonPressed()
+{
+    Mouse * mouse = gInputDevice->mouse;
+    if (mouse->keycodes[LBUTTON_DOWN] &&
+        !mouse->prevKeycodes[LBUTTON_DOWN])
+    {
+        mouse->prevKeycodes[LBUTTON_DOWN] = 1;
+        return false;
+    }
+    else if (!mouse->keycodes[LBUTTON_DOWN] &&
+             mouse->prevKeycodes[LBUTTON_DOWN])
+    {
+        mouse->prevKeycodes[LBUTTON_DOWN] = 0;
+        return true;
+    }
+    return false;
+}
+
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
@@ -958,6 +984,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gUiBinding.getWindowWidth = get_window_width;gUiBinding.getWindowHeight = get_window_height;
     gUiBinding.getMouseX = get_mouse_x;
     gUiBinding.getMouseY = get_mouse_y;
+    gUiBinding.leftMouseButtonDown = leftMouseButtonDown;
+    gUiBinding.leftMouseButtonPressed = leftMouseButtonPressed;
     hope_ui_init(&gUiBinding);
     
     // TTF font loading
@@ -1157,7 +1185,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
-    pushLine2D(0.f, 0.f, 10.f, 0.f, {1,1,0},7);
+    pushLine2D(0.f, 900.f, 10.f, 900.f, {1,1,0},7);
     static float advance = 0.f;
     if (advance > 1080.+120.f)
         advance = 0.f;
@@ -1169,10 +1197,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
     pushFilledRect(0, 0, 300, 300, {0,0,1});
+    pushTTFText("click me!", 150, 150, {1,1,0}, &gFontInfo);
+    static bool buttonClicked = false;
     if (hope_ui_button("Button A", {0, 0, 300, 300}))
-    {
-        pushTTFText("HIT!", 150, 150, {0,0,0}, &gFontInfo);
-    }
+        buttonClicked = !buttonClicked;
+    if (buttonClicked)
+        pushTTFText("button toggle clicked", 960, 540, {1,1,0}, &gFontInfo);
+    
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
