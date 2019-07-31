@@ -44,6 +44,12 @@ struct HopeUIRect
     int x1, y1;
 };
 
+struct HopeUIWindow
+{
+    HopeUIRect * rects;
+    int rectCount = 0;
+};
+
 void hope_ui_init(HopeUIBinding binding);
 void hope_ui_begin();
 void hope_ui_end();
