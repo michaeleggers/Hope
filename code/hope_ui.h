@@ -27,21 +27,27 @@ struct HopeUIBinding
     ui_left_mouse_button_pressed * leftMouseButtonPressed;
 };
 
-struct HopeUIID
-{
-    char const * strid = "";
-};
-
-struct HopeUIContext
-{
-    int windowWidth, windowHeight;
-    int mouseX, mouseY;
-};
-
 struct HopeUIRect
 {
     int x0, y0;
     int x1, y1;
+};
+
+struct HopeUIDrawList
+{
+    HopeUIRect rects[32]; // later: more complex structures of windows, buttons, etc.
+};
+
+struct HopeUIContext
+{
+    HopeUIBinding * binding;
+    int rectCount = 0;
+    HopeUIRect rects[32];
+};
+
+struct HopeUIID
+{
+    char const * strid = "";
 };
 
 struct HopeUIWindow

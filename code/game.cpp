@@ -3,6 +3,7 @@
 #include "hope_draw.cpp"
 #include "hope_ui.h"
 #include "hope_ui.cpp"
+#include "hope_ui_impl_render.cpp"
 
 #include "common_os.h"
 
