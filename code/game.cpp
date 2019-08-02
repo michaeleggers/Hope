@@ -716,13 +716,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #if 1    
     // Some button with logic
     static bool buttonClicked = false;
-    if (hope_ui_button("Button B", {600, 0, 1000, 1000}))
-        buttonClicked = !buttonClicked;
     if (hope_ui_button("Button A", {0, 0, 300, 100}))
-    {
         buttonClicked = !buttonClicked;
-        printf("Button A clicked\n");
-    }
+    if (hope_ui_button("Button B", {0, 200, 300, 300}))
+        buttonClicked = !buttonClicked;
     if (buttonClicked)
         pushTTFText("button toggle clicked", 960, 540, {1,1,0}, &gFontInfo);
     hope_ui_render();

@@ -221,8 +221,8 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         {
             mouse.x = lParam & 0x0000FFFF;
             mouse.y = (lParam & 0xFFFF0000) >> 16;
-            printf ("MOUSE X: %d\n", mouse.x);
-            printf ("MOUSE Y: %d\n", mouse.y);
+            //printf ("MOUSE X: %d\n", mouse.x);
+            //printf ("MOUSE Y: %d\n", mouse.y);
             // NOTE(Michael): If an application processes this message, it should return zero. (MSDN)
         }
         break;
@@ -242,8 +242,8 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
                     mouse.keycodes[LBUTTON_UP] = 0;
                     mouse.x = lParam & 0x0000FFFF;
                     mouse.y = (lParam & 0xFFFF0000) >> 16;
-                    printf ("MOUSE X: %d\n", mouse.x);
-                    printf ("MOUSE Y: %d\n", mouse.y);
+                    //printf ("MOUSE X: %d\n", mouse.x);
+                    //printf ("MOUSE Y: %d\n", mouse.y);
                 }
                 break;
             }
@@ -252,7 +252,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
         
         case WM_LBUTTONUP:
         {
-            printf("MOUSE BUTTON IS UP\n");
+            //printf("MOUSE BUTTON IS UP\n");
             mouse.keycodes[LBUTTON_UP] = 1;
             mouse.keycodes[LBUTTON_DOWN] = 0;
         }

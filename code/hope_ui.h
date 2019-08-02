@@ -27,16 +27,27 @@ struct HopeUIBinding
     ui_left_mouse_button_pressed * leftMouseButtonPressed;
 };
 
+struct HopeUIColor
+{
+    float r, g, b;
+};
+
 struct HopeUIRect
 {
     int x0, y0;
     int x1, y1;
 };
 
+struct HopeUIButton
+{
+    HopeUIRect rect;
+    HopeUIColor color;
+};
+
 struct HopeUIDrawList
 {
-    HopeUIRect rects[32]; // later: more complex structures of windows, buttons, etc.
-    int rectCount = 0;
+    HopeUIButton buttons[32]; // later: more complex structures of windows, buttons, etc.
+    int buttonCount = 0;
 };
 
 struct HopeUIContext
