@@ -36,13 +36,13 @@ struct HopeUIRect
 struct HopeUIDrawList
 {
     HopeUIRect rects[32]; // later: more complex structures of windows, buttons, etc.
+    int rectCount = 0;
 };
 
 struct HopeUIContext
 {
     HopeUIBinding * binding;
-    int rectCount = 0;
-    HopeUIRect rects[32];
+    bool mouseWasDown = false;
 };
 
 struct HopeUIID
@@ -57,13 +57,12 @@ struct HopeUIWindow
 };
 
 void hope_ui_init(HopeUIBinding binding);
+HopeUIDrawList * hope_ui_get_drawlist();
 void hope_ui_begin();
 void hope_ui_end();
 bool hope_ui_button(char const * name, Rect rect);
 bool hope_ui_hit_region(int x, int y, HopeUIRect rect);
 void hope_ui_render();
-
-
 
 #endif
 

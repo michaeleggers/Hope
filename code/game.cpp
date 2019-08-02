@@ -472,6 +472,8 @@ bool leftMouseButtonDown()
 bool leftMouseButtonPressed()
 {
     Mouse * mouse = gInputDevice->mouse;
+    
+#if 1    
     if (mouse->keycodes[LBUTTON_DOWN] &&
         !mouse->prevKeycodes[LBUTTON_DOWN])
     {
@@ -485,6 +487,8 @@ bool leftMouseButtonPressed()
         return true;
     }
     return false;
+#endif
+    
 }
 
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
@@ -501,7 +505,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     hope_ui_init(&gUiBinding);
     
     // TTF font loading
-    char* ttf_font = gPlatformAPI->readTextFile("C:\\repos\\Hope\\assets\\ttf\\efmi.ttf");
+    char* ttf_font = gPlatformAPI->readTextFile("c:\\windows\\fonts\\arialbd.ttf");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -708,13 +712,23 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushTTFText("Test3\nLinebreak3\0", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
     pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
-    pushFilledRect(0, 0, 300, 300, {0,0,1});
-    pushTTFText("click me!", 150, 150, {1,1,0}, &gFontInfo);
+    
+#if 1    
+    // Some button with logic
     static bool buttonClicked = false;
-    if (hope_ui_button("Button A", {0, 0, 300, 300}))
+    if (hope_ui_button("Button B", {600, 0, 1000, 1000}))
         buttonClicked = !buttonClicked;
+    if (hope_ui_button("Button A", {0, 0, 300, 100}))
+    {
+        buttonClicked = !buttonClicked;
+        printf("Button A clicked\n");
+    }
     if (buttonClicked)
         pushTTFText("button toggle clicked", 960, 540, {1,1,0}, &gFontInfo);
+    hope_ui_render();
+    HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
+    hopeUIImpLAddToDrawList(uiDrawList);
+#endif
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);

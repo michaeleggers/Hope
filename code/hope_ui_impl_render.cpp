@@ -2,12 +2,18 @@
 #include "hope_draw.h"
 #include "ref.h"
 
-void createRenderCmdFromHopeUIDrawList(HopeUIDrawList * in_drawList,
-                                       RenderCommand * out_renderCmd)
-
+void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
 {
-    out_renderCmd->type = RENDER_CMD_FILLED_RECT;
-    out_renderCmd->tint = {0,0,1};
-    // TODO(Michael): we need to separate the creation of rendercommands and
-    // the global draw list, so we can just make a new command independently...
+    HopeUIRect * currRect = uiDrawList->rects;
+    for (int i=0; i<uiDrawList->rectCount; ++i)
+    {
+        float x0 = currRect->x0;
+        float y0 = currRect->y0;
+        float width = currRect->x1 - x0;
+        float height = currRect->y1 - y0;
+        pushFilledRect(x0, y0, width, height, {1.f, 0.f, 0.f});
+        currRect++;
+    }
+    uiDrawList->rectCount = 0;
 }
+

@@ -37,6 +37,7 @@ enum ControllerKeycode
 enum MouseKeycode
 {
     LBUTTON_DOWN,
+    LBUTTON_UP,
     RBUTTON_DOWN,
     MBUTTON_DOWN,
     WHEEL_UP,
