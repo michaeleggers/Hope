@@ -246,6 +246,11 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
                     //printf ("MOUSE Y: %d\n", mouse.y);
                 }
                 break;
+                
+                default:
+                {
+                    mouse.keycodes[LBUTTON_DOWN] = 0;
+                }
             }
         }
         break;

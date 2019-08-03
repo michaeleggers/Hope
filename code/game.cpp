@@ -472,7 +472,6 @@ bool leftMouseButtonDown()
 bool leftMouseButtonPressed()
 {
     Mouse * mouse = gInputDevice->mouse;
-    
 #if 1    
     if (mouse->keycodes[LBUTTON_DOWN] &&
         !mouse->prevKeycodes[LBUTTON_DOWN])
@@ -488,7 +487,6 @@ bool leftMouseButtonPressed()
     }
     return false;
 #endif
-    
 }
 
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
@@ -701,6 +699,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
     pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
+    
     pushLine2D(0.f, 900.f, 10.f, 900.f, {1,1,0},7);
     static float advance = 0.f;
     if (advance > 1080.+120.f)
@@ -715,13 +714,17 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
 #if 1    
     // Some button with logic
+    hope_ui_begin();
     static bool buttonClicked = false;
-    if (hope_ui_button("Button A", {0, 0, 300, 100}))
+    if (hope_ui_button(GUID, "Button A", {0, 0, 300, 100}))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button("Button B", {0, 200, 300, 300}))
+#if 1
+    if (hope_ui_button(GUID, "Button B", {0, 200, 300, 300}))
         buttonClicked = !buttonClicked;
+#endif
     if (buttonClicked)
         pushTTFText("button toggle clicked", 960, 540, {1,1,0}, &gFontInfo);
+    hope_ui_end();
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
     hopeUIImpLAddToDrawList(uiDrawList);

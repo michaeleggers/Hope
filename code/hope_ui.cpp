@@ -11,6 +11,12 @@ void hope_ui_init(HopeUIBinding * binding)
 
 void hope_ui_begin()
 {
+    gContext.mouseWasDown = gContext.mouseDown;
+    gContext.mouseDown = gContext.binding->leftMouseButtonDown();
+    gContext.prevActiveID.intID = gContext.activeID.intID;
+    gContext.prevHotID.intID = gContext.prevHotID.intID;
+    gContext.mouseX = gContext.binding->getMouseX();
+    gContext.mouseY = gContext.binding->getMouseY();
 }
 
 void hope_ui_end()
@@ -22,28 +28,53 @@ HopeUIDrawList * hope_ui_get_drawlist()
     return &gHopeUIDrawList;
 }
 
-bool hope_ui_button(char const * name, HopeUIRect rect)
+bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
 {
     bool result = false;
-    HopeUIColor color = {0.f,0.f,.7f};
-    int mouseX = gContext.binding->getMouseX();
-    int mouseY = gContext.binding->getMouseY();
-    bool inRegion = hope_ui_hit_region(mouseX, mouseY, rect);
-    if (inRegion)
+    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, rect);
+    
+    if (gContext.activeID.intID == guid)
     {
-        // NOTE(Michael): inRegion check *before* lftMBPressed,
-        // because the input update function does update state and
-        // it will have the wrong state for subsequent calls to this function.
-        color = {0.f,0.f,1.f};
-        bool leftMBDown = gContext.binding->leftMouseButtonDown();
-        if (leftMBDown)
-            color = {0.5f,0.f,.1f};
-        bool leftMBPressed = gContext.binding->leftMouseButtonPressed();
-        if (leftMBPressed)
+        if (gContext.mouseWasDown && !gContext.mouseDown)
         {
-            result = true;
+            if (inRegion)
+            {
+                if (gContext.hotID.intID == guid)
+                {
+                    result = true;
+                }
+            }
+            gContext.activeID.intID = -1;
         }
     }
+    else if (gContext.hotID.intID == guid)
+    {
+        if (inRegion)
+        {
+            if (gContext.mouseDown)
+            {
+                gContext.activeID.intID = guid;
+            }
+        }
+        else
+        {
+            gContext.hotID.intID = -1;
+        }
+    }
+    if (inRegion && !gContext.mouseDown)
+    {
+        gContext.hotID.intID = guid;
+    }
+    
+    // define buttons appearance
+    // TODO(Michael): this really should be in ui_render_impl. and just
+    // *define* the appearance via render commands here!
+    HopeUIColor color = {0.f,0.f,.7f};
+    if (gContext.activeID.intID == guid && inRegion)
+        color = {0.0f,1.f,1.f};
+    else if (gContext.hotID.intID == guid)
+        color = {0.f,0.f,1.f};
+    
     gHopeUIDrawList.buttons[gHopeUIDrawList.buttonCount++] = { rect, color };
     return result;
 }

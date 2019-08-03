@@ -1,7 +1,9 @@
 #ifndef HOPE_UI_H
 #define HOPE_UI_H
 
+#define GUID (__LINE__)
 #define HOPE_UI_MAX_BUTTONS    256
+
 
 #define GET_WINDOW_WIDTH(name) int name(void)
 typedef GET_WINDOW_WIDTH(ui_get_window_width);
@@ -50,15 +52,22 @@ struct HopeUIDrawList
     int buttonCount = 0;
 };
 
+struct HopeUIID
+{
+    int intID;
+};
+
 struct HopeUIContext
 {
     HopeUIBinding * binding;
+    HopeUIID hotID;
+    HopeUIID prevHotID;
+    HopeUIID activeID;
+    HopeUIID prevActiveID;
     bool mouseWasDown = false;
-};
-
-struct HopeUIID
-{
-    char const * strid = "";
+    bool mouseDown = false;
+    int mouseX;
+    int mouseY;
 };
 
 struct HopeUIWindow
@@ -71,7 +80,7 @@ void hope_ui_init(HopeUIBinding binding);
 HopeUIDrawList * hope_ui_get_drawlist();
 void hope_ui_begin();
 void hope_ui_end();
-bool hope_ui_button(char const * name, Rect rect);
+bool hope_ui_button(int guid, char const * name, Rect rect);
 bool hope_ui_hit_region(int x, int y, HopeUIRect rect);
 void hope_ui_render();
 
