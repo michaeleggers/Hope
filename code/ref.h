@@ -9,6 +9,7 @@
 #include "hope_math.c"
 #include "platform.h"
 #include "common_render.h"
+#include "stb_truetype.h"
 
 #define MAX_SPRITES             512
 #define MAX_TEXTURES            256

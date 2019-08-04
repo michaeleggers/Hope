@@ -96,16 +96,6 @@ struct InputDevice
     Mouse * mouse;
 };
 
-struct FontInfo
-{
-    Texture * texture;
-    SpriteSheet * spriteSheet;
-    stbtt_packedchar chardata['~'-' '];
-    float fontSize;
-    int numCharsInRange;
-    int firstChar;
-};
-
 struct Quad
 {
     float x0, y0, s0, t0;

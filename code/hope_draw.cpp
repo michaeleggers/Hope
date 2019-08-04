@@ -1,4 +1,5 @@
 #include "hope_draw.h"
+#include "platform.h"
 #include "stb_image.h"
 #include "stb_truetype.h"
 
@@ -15,6 +16,7 @@ global_var SpriteSheet gTilesSpriteSheet;
 global_var SpriteSheet gTTFSpriteSheet;
 global_var Texture *gTTFTexture;
 global_var PlatformAPI* gPlatformAPI;
+global_var FontInfo gFontInfo;
 
 Window createSpriteWindow(Texture *texture,
                           int xOffset, int yOffset,
@@ -375,6 +377,115 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
         c++;
     }
 }
+
+#if 1
+void pushTTFTextInBoundaries(char * text, 
+                             float xPos, float yPos,
+                             HopeDrawRect boundary, v3 tint)
+{
+    RenderCommand *renderCmdPtr = 0;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TTF))
+    {
+        renderCmdPtr = prevRenderCmd;
+    }
+    else
+    {
+        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr->type = RENDER_CMD_TTF;
+        renderCmdPtr->tint = tint;
+        renderCmdPtr->textureID = gFontInfo.texture->texture_id;
+        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->quadCount = 0;
+        Rect windowDimensions = gPlatformAPI->getWindowDimensions();
+        hope_create_ortho_matrix(
+            0.0f, (float)windowDimensions.width,
+            (float)windowDimensions.height, 0.0f,
+            -1.0f, 1.0f,
+            renderCmdPtr->projectionMatrix.c
+            );
+        gDrawList.quadCount = 0;
+        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+        gDrawList.freeIndex++;
+    }
+    
+    int textLength = 0;
+    float yOffsetBoundary = boundary.height/2.0f + gFontInfo.fontSize/2.0f;
+    float xOffset = 0, yOffset = 0;
+    float lineBreakOffset = 0.f;
+    char * c = text;
+    stbtt_aligned_quad quad = {};
+    while (*c != '\0')
+    {
+        textLength++;
+        if (*c == '\n') 
+        { 
+            lineBreakOffset += gFontInfo.fontSize;
+            xOffset = 0.f;
+            yOffset = 0.f;
+            c++; 
+            continue; 
+        }
+        
+        int characterCode = *c;
+        stbtt_GetPackedQuad(gFontInfo.chardata, 
+                            gFontInfo.texture->width, gFontInfo.texture->height,  // same data as above
+                            characterCode - gFontInfo.firstChar,             // character to display
+                            &xOffset, &yOffset,
+                            // pointers to current position in screen pixel space
+                            &quad,      // output: quad to draw
+                            1);
+        
+        // current free pos in global vertex/index buffers
+        Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
+        uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+        
+        vertex[0].position.x =  quad.x0 + xPos;
+        vertex[0].position.y =  quad.y0 + lineBreakOffset + yPos + yOffsetBoundary;
+        vertex[0].position.z = 0.f;
+        vertex[0].UVs.x = quad.s0;
+        vertex[0].UVs.y = quad.t0;
+        vertex[1].position.x =  quad.x0 + xPos;
+        vertex[1].position.y =  quad.y1 + lineBreakOffset + yPos + yOffsetBoundary;
+        vertex[1].position.z = 0.f;
+        vertex[1].UVs.x = quad.s0;
+        vertex[1].UVs.y = quad.t1;
+        vertex[2].position.x =  quad.x1 + xPos;
+        vertex[2].position.y =  quad.y1 + lineBreakOffset + yPos + yOffsetBoundary;
+        vertex[2].position.z = 0.f;
+        vertex[2].UVs.x = quad.s1;
+        vertex[2].UVs.y = quad.t1;
+        vertex[3].position.x =  quad.x1 + xPos;
+        vertex[3].position.y =  quad.y0 + lineBreakOffset + yPos + yOffsetBoundary;
+        vertex[3].position.z = 0.f;
+        vertex[3].UVs.x = quad.s1;
+        vertex[3].UVs.y = quad.t0;
+        
+        index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
+        index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+        vertex += 4;
+        index  += 6;
+        gDrawList.vtxCount += 4;
+        gDrawList.idxCount += 6;
+        gDrawList.quadCount++;
+        renderCmdPtr->quadCount++;
+        c++;
+    }
+    
+    float xOffsetMax = boundary.width / (float)textLength;
+    float xOffsetToCenter = (boundary.width-xOffset)/2.0f;
+    Vertex * vertex = gDrawList.vtxBuffer + renderCmdPtr->vtxBufferOffset;
+    for (int i=0; i<textLength; ++i)
+    {
+        vertex[0].position.x += xOffsetToCenter;
+        vertex[1].position.x += xOffsetToCenter;
+        vertex[2].position.x += xOffsetToCenter;
+        vertex[3].position.x += xOffsetToCenter;
+        vertex += 4;
+    }
+}
+#endif
 
 void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness)
 {

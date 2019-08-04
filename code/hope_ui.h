@@ -44,12 +44,14 @@ struct HopeUIButton
 {
     HopeUIRect rect;
     HopeUIColor color;
+    char text[32];
 };
 
 struct HopeUIDrawList
 {
     HopeUIButton buttons[32]; // later: more complex structures of windows, buttons, etc.
     int buttonCount = 0;
+    float fontSize;
 };
 
 struct HopeUIID

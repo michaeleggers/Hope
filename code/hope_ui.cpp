@@ -75,7 +75,10 @@ bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
     else if (gContext.hotID.intID == guid)
         color = {0.f,0.f,1.f};
     
-    gHopeUIDrawList.buttons[gHopeUIDrawList.buttonCount++] = { rect, color };
+    HopeUIButton * button = &gHopeUIDrawList.buttons[gHopeUIDrawList.buttonCount++];
+    button->rect = rect;
+    button->color = color;
+    strcpy(button->text, name);
     return result;
 }
 
