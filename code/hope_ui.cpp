@@ -7,21 +7,42 @@ static HopeUIDrawList gHopeUIDrawList;
 void hope_ui_init(HopeUIBinding * binding)
 {
     gContext.binding = binding;
+    HopeUIWindow * window = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount++];
+    window->rect = {0,0,400,600};
+    gContext.activeWindow = window;
 }
 
-void hope_ui_begin()
+void hope_ui_begin(int guid)
 {
     gContext.mouseWasDown = gContext.mouseDown;
     gContext.mouseDown = gContext.binding->leftMouseButtonDown();
-    gContext.prevActiveID.intID = gContext.activeID.intID;
-    gContext.prevHotID.intID = gContext.prevHotID.intID;
+    gContext.oldMouseX = gContext.mouseX;
+    gContext.oldMouseY = gContext.mouseY;
     gContext.mouseX = gContext.binding->getMouseX();
     gContext.mouseY = gContext.binding->getMouseY();
+    gContext.windowID.intID = guid;
+    
+    bool mouseInWindowRegion = hope_ui_hit_region(gContext.mouseX,
+                                                  gContext.mouseY,
+                                                  gContext.activeWindow->rect);
+    if (mouseInWindowRegion)
+    {
+        if (gContext.mouseDown)
+        {
+            float mouseDX = gContext.oldMouseX - gContext.mouseX;
+            float mouseDY = gContext.oldMouseY - gContext.mouseY;
+            HopeUIWindow * window = gContext.activeWindow;
+            window->rect.x0 -= mouseDX;
+            window->rect.x1 -= mouseDX;
+            window->rect.y0 -= mouseDY;
+            window->rect.y1 -= mouseDY;
+        }
+    }
 }
 
 void hope_ui_end()
 {
-}
+} 
 
 HopeUIDrawList * hope_ui_get_drawlist()
 {
@@ -31,7 +52,14 @@ HopeUIDrawList * hope_ui_get_drawlist()
 bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
 {
     bool result = false;
-    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, rect);
+    HopeUIWindow * window = gContext.activeWindow;
+    HopeUIRect windowRect = window->rect;
+    HopeUIRect buttonRect = { 
+        rect.x0 += windowRect.x0, 
+        rect.y0 += windowRect.y0,
+        rect.x1 += windowRect.x0,
+        rect.y1 += windowRect.y0};
+    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, buttonRect);
     
     if (gContext.activeID.intID == guid)
     {
@@ -76,7 +104,7 @@ bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
         color = {0.f,0.f,1.f};
     
     HopeUIButton * button = &gHopeUIDrawList.buttons[gHopeUIDrawList.buttonCount++];
-    button->rect = rect;
+    button->rect = buttonRect;
     button->color = color;
     strcpy(button->text, name);
     return result;

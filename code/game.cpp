@@ -502,7 +502,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     hope_ui_init(&gUiBinding);
     
     // TTF font loading
-    char* ttf_font = gPlatformAPI->readTextFile("c:\\windows\\fonts\\arialbd.ttf");
+    char* ttf_font = gPlatformAPI->readTextFile("..\\assets\\ttf\\efmi.ttf");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -712,13 +712,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
     
     // Some button with logic
-    hope_ui_begin();
+    hope_ui_begin(GUID);
     static bool buttonClicked = false;
     if (hope_ui_button(GUID, "Das ist Button A\0", {0, 0, 300, 100}))
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Button B\0", {0, 200, 300, 300}))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Padding fuer den Internet-Sven!\0", {600, 200, 900, 300}))
+    if (hope_ui_button(GUID, "Dieser Text ist etwas zu lang fuer den Button!\0", {600, 200, 900, 300}))
         buttonClicked = !buttonClicked;
     if (buttonClicked)
         pushTTFText("Das ist Button AQ\0", 960, 540, {1,1,1}, &gFontInfo);

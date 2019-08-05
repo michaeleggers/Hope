@@ -47,10 +47,17 @@ struct HopeUIButton
     char text[32];
 };
 
+struct HopeUIWindow
+{
+    HopeUIRect rect;
+};
+
 struct HopeUIDrawList
 {
+    HopeUIWindow windows[32];
     HopeUIButton buttons[32]; // later: more complex structures of windows, buttons, etc.
     int buttonCount = 0;
+    int windowCount = 0;
     float fontSize;
 };
 
@@ -66,16 +73,14 @@ struct HopeUIContext
     HopeUIID prevHotID;
     HopeUIID activeID;
     HopeUIID prevActiveID;
+    HopeUIWindow * activeWindow;
+    HopeUIID windowID;
     bool mouseWasDown = false;
     bool mouseDown = false;
     int mouseX;
     int mouseY;
-};
-
-struct HopeUIWindow
-{
-    HopeUIRect * rects;
-    int rectCount = 0;
+    int oldMouseX;
+    int oldMouseY;
 };
 
 void hope_ui_init(HopeUIBinding binding);
