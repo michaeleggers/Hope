@@ -479,7 +479,9 @@ void pushTTFTextInBoundaries(char * text,
     
     float squeeze = 1.f;
     float padding = 10.f;
-    float xOffsetToCenter = (boundary.width-xOffset)/2.0f;
+    // NOTE(Michael): clamping to full pixels avoids
+    // resampling which will result in a fuzzy font.
+    float xOffsetToCenter = (int) ((boundary.width-xOffset)/2.0f);
     if (xOffset > boundary.width)
     {
         squeeze = (boundary.width - 2*padding)/(xOffset);
