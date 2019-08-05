@@ -529,7 +529,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     // stb_truetype texture baking API
     stbtt_fontinfo font;
     stbtt_InitFont(&font, (uint8_t*)ttf_font, 0);
-    float scale = stbtt_ScaleForMappingEmToPixels(&font, 15);
+    //float scale = stbtt_ScaleForMappingEmToPixels(&font, 15);
     
     stbtt_pack_context spc;
     unsigned char * pixels = (unsigned char *)malloc(sizeof(unsigned char)*1024*1024);
@@ -538,7 +538,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     //stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 36,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 24,
                         ' ', '~'-' ', chardata);
     stbtt_PackEnd(&spc);
     gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
@@ -546,7 +546,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 36.f;
+    gFontInfo.fontSize = 24.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -718,10 +718,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Button B\0", {0, 200, 300, 300}))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Dieser Text ist zu lang fuer den Button!\0", {600, 200, 900, 300}))
+    if (hope_ui_button(GUID, "Padding fuer den Internet-Sven!\0", {600, 200, 900, 300}))
         buttonClicked = !buttonClicked;
     if (buttonClicked)
-        pushTTFText("button toggle clicked", 960, 540, {1,1,0}, &gFontInfo);
+        pushTTFText("Das ist Button AQ\0", 960, 540, {1,1,1}, &gFontInfo);
     hope_ui_end();
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();

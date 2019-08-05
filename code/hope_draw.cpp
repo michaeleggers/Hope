@@ -441,22 +441,26 @@ void pushTTFTextInBoundaries(char * text,
         Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
         uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
         
-        vertex[0].position.x =  quad.x0 + xPos;
+        // NOTE(Michael): xPos is not added yet because the text might not
+        // fit into the boundary in which case the text has to be scaled
+        // down along the x-axis. And that is easier when the text
+        // starts at the x-origin (0.0f).
+        vertex[0].position.x =  quad.x0;
         vertex[0].position.y =  quad.y0 + lineBreakOffset + yPos + yOffsetBoundary;
         vertex[0].position.z = 0.f;
         vertex[0].UVs.x = quad.s0;
         vertex[0].UVs.y = quad.t0;
-        vertex[1].position.x =  quad.x0 + xPos;
+        vertex[1].position.x =  quad.x0;
         vertex[1].position.y =  quad.y1 + lineBreakOffset + yPos + yOffsetBoundary;
         vertex[1].position.z = 0.f;
         vertex[1].UVs.x = quad.s0;
         vertex[1].UVs.y = quad.t1;
-        vertex[2].position.x =  quad.x1 + xPos;
+        vertex[2].position.x =  quad.x1;
         vertex[2].position.y =  quad.y1 + lineBreakOffset + yPos + yOffsetBoundary;
         vertex[2].position.z = 0.f;
         vertex[2].UVs.x = quad.s1;
         vertex[2].UVs.y = quad.t1;
-        vertex[3].position.x =  quad.x1 + xPos;
+        vertex[3].position.x =  quad.x1;
         vertex[3].position.y =  quad.y0 + lineBreakOffset + yPos + yOffsetBoundary;
         vertex[3].position.z = 0.f;
         vertex[3].UVs.x = quad.s1;
@@ -474,19 +478,20 @@ void pushTTFTextInBoundaries(char * text,
     }
     
     float squeeze = 1.f;
+    float padding = 10.f;
     float xOffsetToCenter = (boundary.width-xOffset)/2.0f;
     if (xOffset > boundary.width)
     {
-        squeeze = boundary.width/xOffset;
-        xOffsetToCenter = xPos;
+        squeeze = (boundary.width - 2*padding)/(xOffset);
+        xOffsetToCenter = padding;
     }
     Vertex * vertex = gDrawList.vtxBuffer + renderCmdPtr->vtxBufferOffset;
     for (int i=0; i<textLength; ++i)
     {
-        vertex[0].position.x = (vertex[0].position.x+xOffsetToCenter)*squeeze;
-        vertex[1].position.x = (vertex[1].position.x+xOffsetToCenter)*squeeze;
-        vertex[2].position.x = (vertex[2].position.x+xOffsetToCenter)*squeeze;
-        vertex[3].position.x = (vertex[3].position.x+xOffsetToCenter)*squeeze;
+        vertex[0].position.x = (vertex[0].position.x)*squeeze + xOffsetToCenter + xPos;
+        vertex[1].position.x = (vertex[1].position.x)*squeeze + xOffsetToCenter + xPos;
+        vertex[2].position.x = (vertex[2].position.x)*squeeze + xOffsetToCenter + xPos;
+        vertex[3].position.x = (vertex[3].position.x)*squeeze + xOffsetToCenter + xPos;
         vertex += 4;
     }
 }
