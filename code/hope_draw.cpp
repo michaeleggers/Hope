@@ -473,15 +473,20 @@ void pushTTFTextInBoundaries(char * text,
         c++;
     }
     
-    float xOffsetMax = boundary.width / (float)textLength;
+    float squeeze = 1.f;
     float xOffsetToCenter = (boundary.width-xOffset)/2.0f;
+    if (xOffset > boundary.width)
+    {
+        squeeze = boundary.width/xOffset;
+        xOffsetToCenter = xPos;
+    }
     Vertex * vertex = gDrawList.vtxBuffer + renderCmdPtr->vtxBufferOffset;
     for (int i=0; i<textLength; ++i)
     {
-        vertex[0].position.x += xOffsetToCenter;
-        vertex[1].position.x += xOffsetToCenter;
-        vertex[2].position.x += xOffsetToCenter;
-        vertex[3].position.x += xOffsetToCenter;
+        vertex[0].position.x = (vertex[0].position.x+xOffsetToCenter)*squeeze;
+        vertex[1].position.x = (vertex[1].position.x+xOffsetToCenter)*squeeze;
+        vertex[2].position.x = (vertex[2].position.x+xOffsetToCenter)*squeeze;
+        vertex[3].position.x = (vertex[3].position.x+xOffsetToCenter)*squeeze;
         vertex += 4;
     }
 }
