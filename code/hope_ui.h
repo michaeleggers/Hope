@@ -77,6 +77,7 @@ struct HopeUIContext
     HopeUIID windowID;
     bool mouseWasDown = false;
     bool mouseDown = false;
+    bool clickedInRegion = false;
     int mouseX;
     int mouseY;
     int oldMouseX;
@@ -87,6 +88,7 @@ void hope_ui_init(HopeUIBinding binding);
 HopeUIDrawList * hope_ui_get_drawlist();
 void hope_ui_begin();
 void hope_ui_end();
+void hope_ui_dummy_button(int guid, HopeUIRect rect);
 bool hope_ui_button(int guid, char const * name, Rect rect);
 bool hope_ui_hit_region(int x, int y, HopeUIRect rect);
 void hope_ui_render();

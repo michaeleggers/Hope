@@ -10,6 +10,8 @@ void hope_ui_init(HopeUIBinding * binding)
     HopeUIWindow * window = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount++];
     window->rect = {0,0,400,600};
     gContext.activeWindow = window;
+    gContext.activeID.intID = -1;
+    gContext.hotID.intID = -1;
 }
 
 void hope_ui_begin(int guid)
@@ -22,12 +24,18 @@ void hope_ui_begin(int guid)
     gContext.mouseY = gContext.binding->getMouseY();
     gContext.windowID.intID = guid;
     
-    bool mouseInWindowRegion = hope_ui_hit_region(gContext.mouseX,
-                                                  gContext.mouseY,
-                                                  gContext.activeWindow->rect);
-    if (mouseInWindowRegion)
+    // NOTE(Michael): this dummy_button call is necessary so the
+    // window cannot be dragged when the user moves from outside
+    // of the window's boundaries into it (with mous button down).
+    // Using the call, the window thinks the mouse is over another
+    // widget and hotID is -1.
+    hope_ui_dummy_button(GUID, gContext.activeWindow->rect);
+    bool inRegion = hope_ui_hit_region(gContext.mouseX,
+                                       gContext.mouseY,
+                                       gContext.activeWindow->rect);
+    if (gContext.hotID.intID == -1)
     {
-        if (gContext.mouseDown)
+        if (inRegion && gContext.mouseDown)
         {
             float mouseDX = gContext.oldMouseX - gContext.mouseX;
             float mouseDY = gContext.oldMouseY - gContext.mouseY;
@@ -49,6 +57,41 @@ HopeUIDrawList * hope_ui_get_drawlist()
     return &gHopeUIDrawList;
 }
 
+void hope_ui_dummy_button(int guid, HopeUIRect rect)
+{
+    HopeUIRect buttonRect = { 
+        rect.x0, 
+        rect.y0,
+        rect.x1,
+        rect.y1};
+    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, buttonRect);
+    if (!inRegion && !gContext.mouseDown)
+    {
+        gContext.hotID.intID = guid;
+    }
+    if (gContext.activeID.intID == guid)
+    {
+        if (gContext.mouseWasDown && !gContext.mouseDown)
+        {
+            gContext.activeID.intID = -1;
+        }
+    }
+    else if (gContext.hotID.intID == guid)
+    {
+        if (!inRegion)
+        {
+            if (gContext.mouseDown)
+            {
+                gContext.activeID.intID = guid;
+            }
+        }
+        else
+        {
+            gContext.hotID.intID = -1;
+        }
+    }
+}
+
 bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
 {
     bool result = false;
@@ -60,7 +103,10 @@ bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
         rect.x1 += windowRect.x0,
         rect.y1 += windowRect.y0};
     bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, buttonRect);
-    
+    if (inRegion && !gContext.mouseDown)
+    {
+        gContext.hotID.intID = guid;
+    }
     if (gContext.activeID.intID == guid)
     {
         if (gContext.mouseWasDown && !gContext.mouseDown)
@@ -88,10 +134,6 @@ bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
         {
             gContext.hotID.intID = -1;
         }
-    }
-    if (inRegion && !gContext.mouseDown)
-    {
-        gContext.hotID.intID = guid;
     }
     
     // define buttons appearance
