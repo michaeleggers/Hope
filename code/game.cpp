@@ -488,10 +488,64 @@ bool leftMouseButtonPressed()
 #endif
 }
 
+struct HopeVector
+{
+    void * ptrToArray;
+};
+
+#define hope_vector(type, object) type * object;  \
+object = (type *)malloc(sizeof(type)*123 + 2*sizeof(int)); \
+*(int *)object = 123; \
+*(int *)&object[1] = 0; \
+object = &((type *)object)[2];
+
+#define hope_vector_size(object) \
+*(int *)&(object[-2]);
+
+#define hope_vector_push_back(object, item) \
+object[*(int *)&object[-1]] = item; \
+*(int *)&object[-1] += 1;
+
+struct Foo
+{
+    int a, b;
+};
+
+struct Bar
+{
+    char c;
+};
+
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     gInputDevice = input_device;
+    
+#if 0    
+    std::vector<Foo> fooVec;
+    fooVec.push_back(someObj);
+    fooVec[2];
+#endif
+    
+    hope_vector(Foo, foo);
+    Foo item = {42, 33};
+    int fooSize = hope_vector_size(foo);
+    foo[0] = item;
+    Foo item2 = {66, 99};
+    hope_vector_push_back(foo, item2);
+    hope_vector_push_back(foo, item);
+    hope_vector_push_back(foo, item);
+    
+    hope_vector(Bar, bar);
+    int barSize = hope_vector_size(bar);
+    
+    char a = 'a';
+    char b = 'b';
+    char c = 'c';
+    hope_vector(char, cfoo);
+    hope_vector_push_back(cfoo, a);
+    hope_vector_push_back(cfoo, b);
+    hope_vector_push_back(cfoo, c);
     
     // INIT HOPE UI
     gUiBinding.getWindowWidth = get_window_width;gUiBinding.getWindowHeight = get_window_height;
