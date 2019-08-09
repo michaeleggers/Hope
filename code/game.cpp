@@ -494,32 +494,90 @@ struct HopeVector
 };
 
 #define hope_vector(type, object) type * object; \
-object = (type *)malloc(sizeof(type)*123 + 2*sizeof(int)); \
-*(int *)object = 123; \
+object = (type *)malloc(sizeof(type)*3 + 2*sizeof(int)); \
+*(int *)object = 3; \
 ((int *)object)[1] = 0; \
 object = (type *)&((int *)object)[2];
 
 #define hope_vector_size(object) \
 ((int *)object)[-2];
 
-#define hope_vector_push_back(object, item) \
-object[((int *)object)[-1]] = item; \
-((int *)object)[-1] += 1;
-
 struct Foo
 {
     int a, b;
 };
+
+#define hope_vector_push_back(object, item) \
+hope_vector_create( *((void **)&object)
+/*
+if (object == 0) { \
+    object = (Foo *)malloc(sizeof(item)*3 + 2*sizeof(int)); \
+    *(int *)object = 3; \
+    ((int *)object)[1] = 0; \
+} \
+object = (Foo *)&((int *)object)[2]; \
+object[((int *)object)[-1]] = item; \
+((int *)object)[-1] += 1;
+*/
+
+//if (! ((int *)object)[-2] - ((int *)object)[-1] ) \
+//object = (int *)realloc( (void *)object, ((int *)object)[-2] * 2 * sizeof(object[0]) ); \
+//object[((int *)object)[-1]] = item; \
+//((int *)object)[-1] += 1;
+
 
 struct Bar
 {
     char c;
 };
 
+void * hope_memcpy(void * dest, void * src, int numBytes)
+{
+    int i = numBytes;
+    char * destByte = (char *)dest;
+    char * srcByte  = (char *)src;
+    for (int i=0; i<numBytes; ++i)
+    {
+        destByte[i] = srcByte[i];
+    }
+    return dest;
+}
+
+void push (void ** foothing, int sizeOfItem, void * item)
+{
+    void * cpyLocation = 0;
+    if (0 == *foothing)
+    {
+        *foothing = malloc(10*sizeOfItem * 2*sizeof(int));
+        *((int *)(*foothing)) = 10;
+        ((int *)*foothing)[1] = 0;
+        *foothing = &((int *)*foothing)[2];
+        cpyLocation = *foothing;
+    }
+    else
+    {
+        int currentPos = ((int *)*foothing)[-1];
+        cpyLocation = (char *)*foothing + currentPos*sizeOfItem;
+    }
+    ((int *)*foothing)[-1] += 1;
+    hope_memcpy(cpyLocation, item, sizeOfItem);
+}
+
+#define push_macro(array, item) push((void**)&array, sizeof(item), &item);
+
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     gInputDevice = input_device;
+    
+    Foo fooItem = {1,2};
+    Foo fooItem2 = {999, 888};
+    Foo * myFoo = 0;
+    push_macro(myFoo, fooItem);
+    push_macro(myFoo, fooItem2);
+    Foo getFooItem = myFoo[0];
+    //push((void**)&myFoo, sizeof(fooItem), (void *)&fooItem);
+    //push((void**)&myFoo, sizeof(fooItem2), (void *)&fooItem2);
     
 #if 0    
     std::vector<Foo> fooVec;
@@ -532,14 +590,17 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     ((int *)thing)[1] = 777;
     *(Bar *)&((int *)thing)[2] = {'a'};
     
-    hope_vector(Foo, foo);
-    int fooSize = hope_vector_size(foo);
+    Foo * foo = 0;
+    //int fooSize = hope_vector_size(foo);
     Foo item = {42, 33};
     Foo item2 = {66, 99};
-    foo[0] = item;
-    hope_vector_push_back(foo, item2);
-    hope_vector_push_back(foo, item);
+    //foo[0] = item;
+    //hope_vector_push_back(foo, item);
+    //hope_vector_push_back(foo, item);
+    //hope_vector_push_back(foo, item);
+    //hope_vector_push_back(foo, item2);
     
+#if 0
     hope_vector(Bar, bar);
     int barSize = hope_vector_size(bar);
     Bar barItem = {'Q'};
@@ -547,7 +608,6 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     hope_vector_push_back(bar, {'X'});
     bar[2] = {'Y'};
     
-#if 0
     hope_vector_push_back(foo, item);
     hope_vector_push_back(foo, item);
     
@@ -737,13 +797,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     // render iso-map
     for (int y = 0; y < 100; y++)
     {
-        for (int x = 0; x < 100; x++)
-        {
-            pushTexturedRect(x -y+xOffset, x*(-0.5f) - y*0.5f + yOffset,
-                     1, 1,
-                     {1, 1, 1},
-                     &gTilesSpriteSheet, gIsoMap[100*y + x]);
-        }
+    for (int x = 0; x < 100; x++)
+    {
+    pushTexturedRect(x -y+xOffset, x*(-0.5f) - y*0.5f + yOffset,
+    1, 1,
+    {1, 1, 1},
+    &gTilesSpriteSheet, gIsoMap[100*y + x]);
+    }
     }
     
     pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
