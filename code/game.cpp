@@ -877,20 +877,32 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
     
     // Some button with logic
-    hope_ui_begin(GUID);
     static bool buttonClicked = false;
+#if 0
+    hope_ui_begin(GUID);
     if (hope_ui_button(GUID, "Das ist Button A\0", {0, 0, 300, 100}))
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Button B\0", {0, 200, 300, 300}))
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Dieser Text ist etwas zu lang fuer den Button!\0", {600, 200, 900, 300}))
         buttonClicked = !buttonClicked;
-    if (buttonClicked)
-        pushTTFText("Das ist Button AQ\0", 960, 540, {1,1,1}, &gFontInfo);
+    hope_ui_end();
+#endif
+    
+    hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
+    if (hope_ui_button(GUID, "Das ist Button A\0"))
+        buttonClicked = !buttonClicked;
+    if (hope_ui_button(GUID, "Button B\0"))
+        buttonClicked = !buttonClicked;
+    if (hope_ui_button(GUID, "Another fuckin button\0"))
+        buttonClicked = !buttonClicked;
     hope_ui_end();
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
     hopeUIImpLAddToDrawList(uiDrawList);
+    
+    if (buttonClicked)
+        pushTTFText("Das ist Button AQ\0", 960, 540, {1,1,1}, &gFontInfo);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);

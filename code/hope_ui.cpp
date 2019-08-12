@@ -14,7 +14,7 @@ void hope_ui_init(HopeUIBinding * binding)
     gContext.hotID.intID = -1;
 }
 
-void hope_ui_begin(int guid)
+void hope_ui_begin(int guid, HopeUILayout layout)
 {
     gContext.mouseWasDown = gContext.mouseDown;
     gContext.mouseDown = gContext.binding->leftMouseButtonDown();
@@ -23,6 +23,7 @@ void hope_ui_begin(int guid)
     gContext.mouseX = gContext.binding->getMouseX();
     gContext.mouseY = gContext.binding->getMouseY();
     gContext.windowID.intID = guid;
+    gContext.layout = layout;
     
     // NOTE(Michael): this dummy_button call is necessary so the
     // window cannot be dragged when the user moves from outside
@@ -50,6 +51,7 @@ void hope_ui_begin(int guid)
 
 void hope_ui_end()
 {
+    gContext.yLayoutOffset = 0;
 } 
 
 HopeUIDrawList * hope_ui_get_drawlist()
@@ -90,6 +92,29 @@ void hope_ui_dummy_button(int guid, HopeUIRect rect)
             gContext.hotID.intID = -1;
         }
     }
+}
+
+bool hope_ui_button(int guid, char const * name)
+{
+    HopeUIRect rect = {};
+    HopeUIWindow * window = gContext.activeWindow;
+    HopeUIRect windowRect = window->rect;
+    switch (gContext.layout)
+    {
+        case HOPE_UI_LAYOUT_COLUMNS:
+        {
+            rect = {
+                10,
+                gContext.yLayoutOffset + 10,
+                (windowRect.x1 - windowRect.x0) - 10,
+                gContext.yLayoutOffset + 60
+            };
+            gContext.yLayoutOffset += 60.f;
+        }
+        break;
+    }
+    
+    return hope_ui_button(guid, name, rect);
 }
 
 bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
