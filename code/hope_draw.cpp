@@ -411,7 +411,7 @@ void pushTTFTextInBoundaries(char * text,
     }
     
     int textLength = 0;
-    float yOffsetBoundary = boundary.height/2.0f + gFontInfo.fontSize/2.0f;
+    float yOffsetBoundary = (int)(boundary.height/2.0f + gFontInfo.fontSize/2.0f);
     float xOffset = 0, yOffset = 0;
     float lineBreakOffset = 0.f;
     char * c = text;

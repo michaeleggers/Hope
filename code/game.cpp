@@ -4,6 +4,7 @@
 #include "hope_ui.h"
 #include "hope_ui.cpp"
 #include "hope_ui_impl_render.cpp"
+#include "stretchy_buffer.h"
 
 #include "common_os.h"
 
@@ -545,6 +546,7 @@ void * hope_memcpy(void * dest, void * src, int numBytes)
 
 void push (void ** foothing, int sizeOfItem, void * item)
 {
+#if 1
     void * cpyLocation = 0;
     if (0 == *foothing)
     {
@@ -561,9 +563,23 @@ void push (void ** foothing, int sizeOfItem, void * item)
     }
     ((int *)*foothing)[-1] += 1;
     hope_memcpy(cpyLocation, item, sizeOfItem);
+#endif
 }
 
-#define push_macro(array, item) push((void**)&array, sizeof(item), &item);
+#define push_macro(array, item) push((void **)&array, sizeof(*array), &item);
+
+Foo aFunction()
+{
+    return {666,666};
+}
+
+typedef int (*someFunctionPtr)(void);
+
+int lol(void)
+{
+    printf("L OOOOOO L\n");
+    return 0;
+}
 
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
@@ -572,12 +588,33 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     Foo fooItem = {1,2};
     Foo fooItem2 = {999, 888};
+    Foo fooItem3 = {321, 123};
     Foo * myFoo = 0;
+#if 1
     push_macro(myFoo, fooItem);
     push_macro(myFoo, fooItem2);
+    push_macro(myFoo, fooItem3);
+    push_macro(myFoo, aFunction());
     Foo getFooItem = myFoo[0];
+#endif
+    
+    Foo * anItem = (Foo *)malloc(sizeof(Foo));
+    anItem->a = 777;
+    anItem->b = 89;
+    Foo ** array = 0;
+    push_macro(array, anItem);
+    push_macro(array, anItem);
     //push((void**)&myFoo, sizeof(fooItem), (void *)&fooItem);
     //push((void**)&myFoo, sizeof(fooItem2), (void *)&fooItem2);
+    
+    // This won't work in my implementation
+    someFunctionPtr * funcArray1;
+    push_macro(funcArray1, lol);
+    
+    someFunctionPtr * funcArray = 0;
+    sb_push(funcArray, lol);
+    someFunctionPtr lolFunc = funcArray[0];
+    lolFunc();
     
 #if 0    
     std::vector<Foo> fooVec;
@@ -630,7 +667,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     hope_ui_init(&gUiBinding);
     
     // TTF font loading
-    char* ttf_font = gPlatformAPI->readTextFile("..\\assets\\ttf\\efmi.ttf");
+    char* ttf_font = gPlatformAPI->readTextFile("..\\assets\\ttf\\ProggyClean.ttf");
 #if 0
     // load TTF Font
     stbtt_fontinfo font;
@@ -641,7 +678,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     for (int codePoint = 0; codePoint < 26; ++codePoint)
     {
-        ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 80.0f), codePoint + 65, &w, &h, 0, 0);
+        ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 13.0f), codePoint + 65, &w, &h, 0, 0);
         for (int i = 0; i<h; ++i)
         {
             for (int k = 0; k<w; ++k)
@@ -666,7 +703,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     //stbtt_PackSetOversampling(&spc, 2, 2);
     stbtt_packedchar chardata['~'-' '];
-    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 24,
+    stbtt_PackFontRange(&spc, (unsigned char*)ttf_font, 0, 13,
                         ' ', '~'-' ', chardata);
     stbtt_PackEnd(&spc);
     gTTFTexture = re->createTextureFromBitmap(pixels, 1024, 1024);
@@ -674,7 +711,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     gFontInfo.texture = gTTFTexture;
     memcpy(gFontInfo.chardata, chardata, ('~'-' ')*sizeof(stbtt_packedchar));
-    gFontInfo.fontSize = 24.f;
+    gFontInfo.fontSize = 13.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
@@ -831,7 +868,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     static float advance = 0.f;
     if (advance > 1080.+120.f)
         advance = 0.f;
-    advance += 1.3f;
+    advance += 1.0f;
     pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
     pushTTFText("Test1\nLinebreak1\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
     pushTTFText("Test2\nLinebreak2\0", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
