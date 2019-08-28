@@ -49,7 +49,11 @@ struct HopeUIButton
 
 struct HopeUIWindow
 {
-    HopeUIRect rect;
+    HopeUIRect rect = {0,0,400,600};
+    HopeUIColor color;
+    int depth;
+    int xLayoutOffset = 0;
+    int yLayoutOffset = 0;
 };
 
 struct HopeUIDrawList
@@ -80,10 +84,9 @@ struct HopeUIContext
     HopeUIID activeID;
     HopeUIID prevActiveID;
     HopeUIWindow * activeWindow;
+    HopeUIWindow * currentWindow;
     HopeUIID windowID;
     HopeUILayout layout;
-    int xLayoutOffset = 0;
-    int yLayoutOffset = 0;
     bool mouseWasDown = false;
     bool mouseDown = false;
     bool clickedInRegion = false;

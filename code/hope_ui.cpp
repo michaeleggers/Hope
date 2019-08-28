@@ -7,11 +7,9 @@ static HopeUIDrawList gHopeUIDrawList;
 void hope_ui_init(HopeUIBinding * binding)
 {
     gContext.binding = binding;
-    HopeUIWindow * window = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount++];
-    window->rect = {0,0,400,600};
-    gContext.activeWindow = window;
     gContext.activeID.intID = -1;
     gContext.hotID.intID = -1;
+    gContext.activeWindow = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount];
 }
 
 void hope_ui_begin(int guid, HopeUILayout layout)
@@ -27,20 +25,23 @@ void hope_ui_begin(int guid, HopeUILayout layout)
     
     // NOTE(Michael): this dummy_button call is necessary so the
     // window cannot be dragged when the user moves from outside
-    // of the window's boundaries into it (with mous button down).
+    // of the window's boundaries into it (with mouse button down).
     // Using the call, the window thinks the mouse is over another
     // widget and hotID is -1.
-    hope_ui_dummy_button(GUID, gContext.activeWindow->rect);
+    HopeUIWindow * window = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount++];
+    gContext.currentWindow = window;
+    //hope_ui_dummy_button(GUID, window->rect);
     bool inRegion = hope_ui_hit_region(gContext.mouseX,
                                        gContext.mouseY,
-                                       gContext.activeWindow->rect);
+                                       window->rect);
     if (gContext.hotID.intID == -1)
     {
         if (inRegion && gContext.mouseDown)
         {
             float mouseDX = gContext.oldMouseX - gContext.mouseX;
             float mouseDY = gContext.oldMouseY - gContext.mouseY;
-            HopeUIWindow * window = gContext.activeWindow;
+            gContext.activeWindow = window;
+            gContext.activeID.intID = guid;
             window->rect.x0 -= mouseDX;
             window->rect.x1 -= mouseDX;
             window->rect.y0 -= mouseDY;
@@ -51,7 +52,6 @@ void hope_ui_begin(int guid, HopeUILayout layout)
 
 void hope_ui_end()
 {
-    gContext.yLayoutOffset = 0;
 } 
 
 HopeUIDrawList * hope_ui_get_drawlist()
@@ -97,7 +97,7 @@ void hope_ui_dummy_button(int guid, HopeUIRect rect)
 bool hope_ui_button(int guid, char const * name)
 {
     HopeUIRect rect = {};
-    HopeUIWindow * window = gContext.activeWindow;
+    HopeUIWindow * window = gContext.currentWindow;
     HopeUIRect windowRect = window->rect;
     switch (gContext.layout)
     {
@@ -105,11 +105,11 @@ bool hope_ui_button(int guid, char const * name)
         {
             rect = {
                 10,
-                gContext.yLayoutOffset + 10,
+                window->yLayoutOffset + 10,
                 (windowRect.x1 - windowRect.x0) - 10,
-                gContext.yLayoutOffset + 60
+                window->yLayoutOffset + 60
             };
-            gContext.yLayoutOffset += 60.f;
+            window->yLayoutOffset += 60.f;
         }
         break;
     }
@@ -120,7 +120,7 @@ bool hope_ui_button(int guid, char const * name)
 bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
 {
     bool result = false;
-    HopeUIWindow * window = gContext.activeWindow;
+    HopeUIWindow * window = gContext.currentWindow;
     HopeUIRect windowRect = window->rect;
     HopeUIRect buttonRect = { 
         rect.x0 += windowRect.x0, 

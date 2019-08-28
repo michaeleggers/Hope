@@ -5,12 +5,18 @@
 void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
 {
     HopeUIWindow * window = uiDrawList->windows;
-    HopeUIRect windowRect = window->rect;
-    float x0 = windowRect.x0;
-    float y0 = windowRect.y0;
-    float width = windowRect.x1 - x0;
-    float height = windowRect.y1 - y0;
-    pushFilledRect(x0, y0, width, height, {0,.7f,0});
+    for (int i=0; i<uiDrawList->windowCount; ++i)
+    {
+        HopeUIRect windowRect = window->rect;
+        float x0 = windowRect.x0;
+        float y0 = windowRect.y0;
+        float width = windowRect.x1 - x0;
+        float height = windowRect.y1 - y0;
+        pushFilledRect(x0, y0, width, height, {0,.7f,0});
+        window->yLayoutOffset = 0;
+        window->xLayoutOffset = 0;
+        window++;
+    }
     HopeUIButton * button = uiDrawList->buttons;
     for (int i=0; i<uiDrawList->buttonCount; ++i)
     {
