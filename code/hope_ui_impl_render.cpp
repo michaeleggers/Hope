@@ -15,6 +15,16 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
         pushFilledRect(x0, y0, width, height, {0,.7f,0});
         window->yLayoutOffset = 0;
         window->xLayoutOffset = 0;
+        
+        for (int w=0; w<window->buttonCount; ++w)
+        {
+            HopeUIButton * button = window->buttons[w];
+            button->rect = { 
+                button->rect.x0 + windowRect.x0, 
+                button->rect.y0 + windowRect.y0,
+                button->rect.x1 + windowRect.x0,
+                button->rect.y1 + windowRect.y0};
+        }
         window++;
     }
     HopeUIButton * button = uiDrawList->buttons;

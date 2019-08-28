@@ -54,6 +54,8 @@ struct HopeUIWindow
     int depth;
     int xLayoutOffset = 0;
     int yLayoutOffset = 0;
+    HopeUIButton * buttons[32];
+    int buttonCount = 0;
 };
 
 struct HopeUIDrawList

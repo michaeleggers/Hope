@@ -24,25 +24,18 @@ void hope_ui_begin(int guid, HopeUILayout layout)
     gContext.hotID.intID = -1;
     gContext.layout = layout;
     gContext.windowMoveable = false;
-    
-    // NOTE(Michael): this dummy_button call is necessary so the
-    // window cannot be dragged when the user moves from outside
-    // of the window's boundaries into it (with mouse button down).
-    // Using the call, the window thinks the mouse is over another
-    // widget and hotID is -1.
     HopeUIWindow * window = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount++];
     gContext.currentWindow = window;
+    gContext.currentWindow->buttonCount = 0;
     //hope_ui_dummy_button(GUID, window->rect);
     
     bool inRegion = hope_ui_hit_region(gContext.mouseX,
                                        gContext.mouseY,
                                        window->rect);
-#if 1
     if (inRegion)
     {
         gContext.windowMoveable = true;
     }
-#endif
 }
 
 void hope_ui_end()
@@ -137,13 +130,13 @@ bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
     bool result = false;
     HopeUIWindow * window = gContext.currentWindow;
     HopeUIRect windowRect = window->rect;
-    HopeUIRect buttonRect = { 
-        rect.x0 += windowRect.x0, 
-        rect.y0 += windowRect.y0,
-        rect.x1 += windowRect.x0,
-        rect.y1 += windowRect.y0};
+    HopeUIRect buttonHitRect = { 
+        rect.x0 + windowRect.x0, 
+        rect.y0 + windowRect.y0,
+        rect.x1 + windowRect.x0,
+        rect.y1 + windowRect.y0};
     HopeUIColor color = {0.f,0.f,.7f};
-    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, buttonRect);
+    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, buttonHitRect);
     if (inRegion)
     {
         gContext.windowMoveable = false;
@@ -184,9 +177,10 @@ bool hope_ui_button(int guid, char const * name, HopeUIRect rect)
     }
     
     HopeUIButton * button = &gHopeUIDrawList.buttons[gHopeUIDrawList.buttonCount++];
-    button->rect = buttonRect;
+    button->rect = rect;
     button->color = color;
     strcpy(button->text, name);
+    gContext.currentWindow->buttons[gContext.currentWindow->buttonCount++] = button;
     return result;
 }
 
