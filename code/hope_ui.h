@@ -90,6 +90,7 @@ struct HopeUIContext
     bool mouseWasDown = false;
     bool mouseDown = false;
     bool clickedInRegion = false;
+    bool windowMoveable = false;
     int mouseX;
     int mouseY;
     int oldMouseX;

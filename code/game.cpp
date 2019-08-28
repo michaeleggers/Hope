@@ -898,7 +898,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         buttonClicked = !buttonClicked;
     hope_ui_end();
     
-#if 1    
+#if 0
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Lalala\0"))
         buttonClicked = !buttonClicked;
