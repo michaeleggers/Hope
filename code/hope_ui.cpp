@@ -12,7 +12,7 @@ void hope_ui_init(HopeUIBinding * binding)
     gContext.activeWindow = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount];
 }
 
-void hope_ui_begin(int guid, HopeUILayout layout)
+void hope_ui_start()
 {
     gContext.mouseWasDown = gContext.mouseDown;
     gContext.mouseDown = gContext.binding->leftMouseButtonDown();
@@ -20,6 +20,10 @@ void hope_ui_begin(int guid, HopeUILayout layout)
     gContext.oldMouseY = gContext.mouseY;
     gContext.mouseX = gContext.binding->getMouseX();
     gContext.mouseY = gContext.binding->getMouseY();
+}
+
+void hope_ui_begin(int guid, HopeUILayout layout)
+{
     gContext.windowID.intID = guid;
     gContext.hotID.intID = -1;
     gContext.layout = layout;
@@ -59,6 +63,7 @@ void hope_ui_end()
         gContext.currentWindow->rect.x1 -= mouseDX;
         gContext.currentWindow->rect.y0 -= mouseDY;
         gContext.currentWindow->rect.y1 -= mouseDY;
+        printf("window is being dragged\n");
     }
 }
 

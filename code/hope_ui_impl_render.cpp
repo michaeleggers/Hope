@@ -43,4 +43,3 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
     uiDrawList->buttonCount = 0;
     uiDrawList->windowCount = 0;
 }
-

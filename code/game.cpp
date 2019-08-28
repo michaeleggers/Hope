@@ -878,6 +878,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     // Some button with logic
     static bool buttonClicked = false;
+    static bool showSecondaryWindow = false;
 #if 0
     hope_ui_begin(GUID);
     if (hope_ui_button(GUID, "Das ist Button A\0", {0, 0, 300, 100}))
@@ -889,24 +890,26 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hope_ui_end();
 #endif
     
+    hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-    if (hope_ui_button(GUID, "Das ist Button A\0"))
+    if (hope_ui_button(GUID, "Toggle Text\0"))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Button B\0"))
-        buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Another fuckin button\0"))
-        buttonClicked = !buttonClicked;
+    if (hope_ui_button(GUID, "Toggle Secondary Window\0"))
+        showSecondaryWindow= !showSecondaryWindow;
     hope_ui_end();
     
-#if 0
-    hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-    if (hope_ui_button(GUID, "Lalala\0"))
-        buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Lululu\0"))
-        buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "B U M S !\0"))
-        buttonClicked = !buttonClicked;
-    hope_ui_end();
+#if 1
+    if (showSecondaryWindow)
+    {
+        hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
+        if (hope_ui_button(GUID, "Button 1\0"))
+            buttonClicked = !buttonClicked;
+        if (hope_ui_button(GUID, "Button 2\0"))
+            buttonClicked = !buttonClicked;
+        if (hope_ui_button(GUID, "Close Window\0"))
+            showSecondaryWindow= !showSecondaryWindow;
+        hope_ui_end();
+    }
 #endif
     
     hope_ui_render();

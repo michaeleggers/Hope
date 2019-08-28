@@ -100,6 +100,7 @@ struct HopeUIContext
 };
 
 void hope_ui_init(HopeUIBinding binding);
+void hope_ui_start();
 HopeUIDrawList * hope_ui_get_drawlist();
 void hope_ui_begin(int guid);
 void hope_ui_begin(int guid, HopeUILayout layout);
