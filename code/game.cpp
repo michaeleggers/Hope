@@ -892,7 +892,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-    if (hope_ui_button(GUID, "Toggle Text\0"))
+    if (hope_ui_button(GUID, "Show Text\0"))
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Toggle Secondary Window\0"))
         showSecondaryWindow= !showSecondaryWindow;
@@ -917,7 +917,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hopeUIImpLAddToDrawList(uiDrawList);
     
     if (buttonClicked)
-        pushTTFText("Das ist Button AQ\0", 960, 540, {1,1,1}, &gFontInfo);
+        pushTTFText("Tanya is amazing!!!\0", 960, 540, {1,1,1}, &gFontInfo);
     
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
