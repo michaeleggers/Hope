@@ -67,6 +67,8 @@ struct HopeUIDrawList
     int buttonCount = 0;
     int windowCount = 0;
     float fontSize;
+    HopeUIButton * freeButtons[32];
+    int freeButtonCount = 0;
 };
 
 struct HopeUIID

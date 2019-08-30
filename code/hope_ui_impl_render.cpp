@@ -36,6 +36,19 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
         window++;
     }
     
+    for (int i=0; i<uiDrawList->freeButtonCount; ++i)
+    {
+        HopeUIButton * freeButton = uiDrawList->freeButtons[i];
+        HopeUIRect rect = freeButton->rect;
+        HopeUIColor color = freeButton->color;
+        float x0 = rect.x0;
+        float y0 = rect.y0;
+        float width = rect.x1 - x0;
+        float height = rect.y1 - y0;
+        pushFilledRect(x0, y0, width, height, {color.r, color.g, color.b} );
+        pushTTFTextInBoundaries(freeButton->text, rect.x0, rect.y0, {x0, y0, width, height}, {1.f,1.f,1.f});
+    }
+    
 #if 0
     HopeUIButton * button = uiDrawList->buttons;
     for (int i=0; i<uiDrawList->buttonCount; ++i)
@@ -51,6 +64,8 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
         button++;
     }
 #endif
+    
     uiDrawList->buttonCount = 0;
     uiDrawList->windowCount = 0;
+    uiDrawList->freeButtonCount = 0;
 }

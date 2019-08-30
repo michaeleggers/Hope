@@ -898,7 +898,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         showSecondaryWindow= !showSecondaryWindow;
     hope_ui_end();
     
-#if 1
     if (showSecondaryWindow)
     {
         hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
@@ -907,10 +906,12 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         if (hope_ui_button(GUID, "Button 2\0"))
             buttonClicked = !buttonClicked;
         if (hope_ui_button(GUID, "Close Window\0"))
-            showSecondaryWindow= !showSecondaryWindow;
+            showSecondaryWindow = !showSecondaryWindow;
         hope_ui_end();
     }
-#endif
+    
+    if (hope_ui_button(GUID, "I'm not attached to a window ;)\0", {800, 600, 1200, 800}))
+        showSecondaryWindow = !showSecondaryWindow;
     
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
