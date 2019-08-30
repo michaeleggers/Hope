@@ -56,6 +56,8 @@ struct HopeUIWindow
     int yLayoutOffset = 0;
     HopeUIButton * buttons[32];
     int buttonCount = 0;
+    int renderPrio;
+    bool activeWindow;
 };
 
 struct HopeUIDrawList
@@ -110,6 +112,7 @@ bool hope_ui_button(int guid, char const * name);
 bool hope_ui_button(int guid, char const * name, HopeUIRect rect);
 bool hope_ui_hit_region(int x, int y, HopeUIRect rect);
 void hope_ui_render();
+//int cmpWindows(const void * windowA, const void * windowB);
 
 #endif
 

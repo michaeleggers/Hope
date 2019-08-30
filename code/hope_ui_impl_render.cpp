@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "hope_ui.h"
 #include "hope_draw.h"
 #include "ref.h"
@@ -15,7 +17,6 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
         pushFilledRect(x0, y0, width, height, {0,.7f,0});
         window->yLayoutOffset = 0;
         window->xLayoutOffset = 0;
-        
         for (int w=0; w<window->buttonCount; ++w)
         {
             HopeUIButton * button = window->buttons[w];
@@ -34,6 +35,7 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
         }
         window++;
     }
+    
 #if 0
     HopeUIButton * button = uiDrawList->buttons;
     for (int i=0; i<uiDrawList->buttonCount; ++i)

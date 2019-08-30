@@ -31,7 +31,6 @@ void hope_ui_begin(int guid, HopeUILayout layout)
     HopeUIWindow * window = &gHopeUIDrawList.windows[gHopeUIDrawList.windowCount++];
     gContext.currentWindow = window;
     gContext.currentWindow->buttonCount = 0;
-    //hope_ui_dummy_button(GUID, window->rect);
     
     bool inRegion = hope_ui_hit_region(gContext.mouseX,
                                        gContext.mouseY,
@@ -63,7 +62,6 @@ void hope_ui_end()
         gContext.currentWindow->rect.x1 -= mouseDX;
         gContext.currentWindow->rect.y0 -= mouseDY;
         gContext.currentWindow->rect.y1 -= mouseDY;
-        printf("window is being dragged\n");
     }
 }
 
@@ -199,6 +197,22 @@ bool hope_ui_hit_region(int x, int y, HopeUIRect rect)
 
 void hope_ui_render()
 {
+#if 0
+    HopeUIWindow * window = gHopeUIDrawList.windows;
+    for (int i=0; i<gHopeUIDrawList.windowCount; ++i)
+    {
+        if (window->renderPrio == 0)
+        {
+            if (gHopeUIDrawList.windowCount > 1)
+            {
+                HopeUIWindow lastWindow = gHopeUIDrawList.windows[gHopeUIDrawList.windowCount - 1];
+                gHopeUIDrawList.windows[gHopeUIDrawList.windowCount - 1] = *window;
+                gHopeUIDrawList.windows[i] = lastWindow;
+                break;
+            }
+        }
+    }
+#endif
     
     if (!gContext.mouseDown)
     {
@@ -216,3 +230,12 @@ void hope_ui_render()
     {
     }
 }
+
+/*
+int cmpWindows(const void * windowA, const void * windowB)
+{
+    HopeUIWindow * windowA_ = (HopeUIWindow*)windowA;
+    HopeUIWindow * windowB_ = (HopeUIWindow*)windowB;
+    return windowA_->renderPrio > windowB_->renderPrio;
+}
+*/
