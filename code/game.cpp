@@ -6,6 +6,9 @@
 #include "hope_ui_impl_render.cpp"
 #include "stretchy_buffer.h"
 
+#define JSON_PARSER_IMPLEMENTATION
+#include "json_parser.h"
+
 #include "common_os.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -738,6 +741,32 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         addSpriteFrame(&gTilesSpriteSheet, 0 + i*64, 0, 64, 32);
     }
     
+    gIndySpriteSheet = createSpriteSheet(re,
+                                         "..\\assets\\indy\\indy_walking.png",
+                                         0, 0,
+                                         0, 0);
+    JsonValue indyJson;
+    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking.json");
+    indyJson = parse_json(jsonFile);
+    //JsonValue jsonFrames = json_value(&indyJson, "frames");
+    
+#if 0    
+    for (int i=0; i<jsonFrames.count; ++i)
+    {
+        JsonValue frame = json_value_from_array(&jsonFrames, i);
+        JsonValue dimensions = json_value(&frame, "frame");
+        JsonValue jX = json_value(&dimensions, "x");
+        JsonValue jH = json_value(&dimensions, "y");
+        JsonValue jWidth = json_value(&dimensions, "w");
+        JsonValue jHeight = json_value(&dimensions, "h");
+        int x = json_value_int(jX);
+        int y = json_value_int(jH);
+        int width = json_value_int(jWidth);
+        int height = json_value_int(jHeight);
+        addSpriteFrame(&gIndySpriteSheet, x, y, width, height);
+    }
+#endif
+    
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
     if (!gDrawList.vtxBuffer)
@@ -869,7 +898,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (advance > 1080.+120.f)
         advance = 0.f;
     advance += 1.0f;
+    pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
     pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
+    //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
     pushTTFText("Test1\nLinebreak1\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
     pushTTFText("Test2\nLinebreak2\0", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
     pushTTFText("Test3\nLinebreak3\0", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);

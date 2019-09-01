@@ -14,6 +14,7 @@ global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
 global_var SpriteSheet gTTFSpriteSheet;
+global_var SpriteSheet gIndySpriteSheet;
 global_var Texture *gTTFTexture;
 global_var PlatformAPI* gPlatformAPI;
 global_var FontInfo gFontInfo;

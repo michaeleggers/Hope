@@ -106,6 +106,8 @@ void hope_ui_dummy_button(int guid, HopeUIRect rect)
     }
 }
 
+// NOTE(Michael): only works when user calls hope_ui_begin() before and
+// hope_ui_end() after this!
 bool hope_ui_button(int guid, char const * name)
 {
     HopeUIRect rect = {};
