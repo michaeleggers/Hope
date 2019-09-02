@@ -746,7 +746,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
                                          0, 0,
                                          0, 0);
     JsonValue indyJson;
-    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking.json");
+    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\test.json");
     indyJson = parse_json(jsonFile);
     //JsonValue jsonFrames = json_value(&indyJson, "frames");
     
