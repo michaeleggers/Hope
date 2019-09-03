@@ -14,7 +14,10 @@ enum JsonType
     JSON_STRING,
     JSON_TRUE,
     JSON_FALSE,
-    JSON_NULL
+    JSON_NULL,
+    
+    JSON_OBJECT_CLOSE,
+    JSON_ARRAY_CLOSE
 };
 
 struct JsonValue
@@ -24,30 +27,43 @@ struct JsonValue
     union
     {
         char name[256];
-        bool true_or_false;
         int i_num;
         float f_num;
-        int array_size;
     };
     
-    JsonValue * child;
+    int size;
 };
 
-struct JsonRoot
+struct JsonDocument
 {
     JsonValue * values;
+    JsonType * stack;
+    int stackPos;
+    int capacity;
+    int size;
 };
 
-struct JsonStack
-{
-    JsonValue data[1024];
-    int pos = 0;
-};
-
-static JsonStack json_stack;
-static int indent = 0;
 
 #ifdef JSON_PARSER_IMPLEMENTATION
+
+static int indent = 0;
+static JsonDocument document;
+
+void json_add(JsonValue val)
+{
+    document.values[document.size++] = val;
+}
+
+void json_push(JsonType type)
+{
+    document.stack[document.stackPos++] = type;
+}
+
+void json_pop()
+{
+    JsonValue * val = &document.values[--document.stackPos];
+    val->size = document.size - document.stackPos;
+}
 
 int json_skipWhitespaces(char * buffer)
 {
@@ -65,20 +81,6 @@ void print_indent()
         printf(" ");
 }
 
-void json_push(JsonStack * stack, JsonValue value)
-{
-    //print_indent();
-    indent += 2;
-    stack->data[stack->pos++] = value;
-}
-
-JsonValue json_pop(JsonStack * stack)
-{
-    indent -= 2;
-    //print_indent();
-    return stack->data[stack->pos--];
-}
-
 int skipLine(char * buffer)
 {
     int skipped = 0;
@@ -89,14 +91,11 @@ int skipLine(char * buffer)
 int json_name(char * out_name, char * buffer)
 {
     int length = 0;
-    while (*buffer == '"') {buffer++; length++;}
-    while (*buffer >= 'a' &&
-           *buffer <= 'z' ||
-           *buffer >= 'A' &&
-           *buffer <= 'Z') {
+    while (*buffer != '"') {
         *out_name++ = *buffer++;
         length++;
     }
+    *out_name = '\0';
     while (*buffer == '"') {buffer++; length++;}
     return length;
 }
@@ -114,9 +113,13 @@ int skip_whitespaces_and_linebreaks(char ** buffer)
     return skipped;
 }
 
-JsonValue parse_json(char * buffer)
+JsonDocument parse_json(char * buffer)
 {
-    JsonValue result = {};
+    document.size = 0;
+    document.capacity = 100;
+    document.stackPos = 0;
+    document.values = (JsonValue *)malloc(document.capacity * sizeof(JsonValue));
+    document.stack = (JsonType *)malloc(document.capacity * sizeof(JsonType));
     char * bufferPos = buffer;
     while (*bufferPos != '\0')
     {
@@ -126,93 +129,73 @@ JsonValue parse_json(char * buffer)
         bufferPos++;
     }
     
-#if 1    
+#if 1
     bufferPos = buffer;
-    int pos = 0;
     while (*bufferPos != '\0')
     {
-        pos += json_skipWhitespaces(bufferPos);
+        skip_whitespaces_and_linebreaks(&bufferPos);
         switch (*bufferPos)
         {
             case '{':
             {
-                pos++;
-                JsonValue value;
-                value.type = JSON_OBJECT;
-                value.start = pos;
-                value.end = -1;
-                json_push(&json_stack, value);
-                pos += skip_whitespaces_and_linebreaks(&bufferPos + pos);
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_OBJECT;
+                val.size = 0;
+                json_add(val);
+                json_push(val.type);
             }
             break;
             
             case '}':
             {
-                pos++;
-                //JsonValue * value = &json_pop(&json_stack);
-                //value->end = pos;
-                pos += skip_whitespaces_and_linebreaks(&bufferPos + pos);
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_OBJECT_CLOSE;
+                val.size = 0;
+                json_add(val);
+                json_pop();
             }
             break;
             
             case '[':
             {
-                pos++;
-                JsonValue value;
-                value.type = JSON_ARRAY;
-                value.start = pos;
-                value.end = -1;
-                json_push(&json_stack, value);
-                pos += skip_whitespaces_and_linebreaks(&bufferPos + pos);
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_ARRAY;
+                val.size = 0;
+                json_add(val);
+                json_push(val.type);
             }
             break;
             
             case ']':
             {
-                pos++;
-                //JsonValue * value = &json_pop(&json_stack);
-                //value->end = pos;
-                pos += skip_whitespaces_and_linebreaks(&bufferPos + pos);
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_ARRAY_CLOSE;
+                val.size = 0;
+                json_add(val);
+                json_pop();
             }
             break;
             
             case '"':
             {
-                char tmp[256];
-                int skipped = json_name(tmp, bufferPos + pos);
-                pos += skipped;
-                bufferPos += skipped;
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_STRING;
+                val.size = 0;
+                bufferPos += json_name(val.name, bufferPos);
+                json_add(val);
+                json_push(val.type);
             }
         }
         bufferPos++;
-        pos++;
     }
 #endif
     
-    for (int i=0; i<1024; ++i)
-    {
-        JsonValue value = json_stack.data[i];
-        switch (value.type)
-        {
-            case JSON_OBJECT:
-            {
-                printf("OBJECT\n");
-                printf("start: %d ", value.start);
-                printf("end: %d\n", value.end);
-            }
-            break;
-            
-            case JSON_ARRAY:
-            {
-                printf("ARRAY\n");
-                printf("start: %d ", value.start);
-                printf("end: %d\n", value.end);
-            }
-            break;
-        }
-    }
-    
-    return result;
+    return document;
 }
 
 #endif
