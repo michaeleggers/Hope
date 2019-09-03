@@ -42,6 +42,15 @@ struct JsonDocument
     int size;
 };
 
+struct JsonNode
+{
+    JsonValue * val;
+    JsonNode * child;
+    JsonNode * parent;
+    int count;
+    int capacity;
+};
+
 void print_tokens(JsonDocument * doc);
 
 #ifdef JSON_PARSER_IMPLEMENTATION
@@ -259,11 +268,50 @@ JsonDocument parse_json(char * buffer)
     return document;
 }
 
+JsonNode * new_json_node(JsonNode * node, JsonValue * val)
+{
+    JsonNode newNode;
+    newNode.count = 0;
+    newNode.capacity = 10;
+    newNode.child = (JsonNode *)malloc(newNode.capacity * sizeof(JsonNode));
+    newNode.parent = node;
+    newNode.val = val;
+    if (node->count < node->capacity) {
+        node->child[node->count++] = newNode;
+    }
+    else {
+        JsonNode * newChild = (JsonNode *)realloc(node->child, 2*node->capacity);
+        if (!newChild) {
+            fprintf(stderr, "failed to realloc in %s at line %d\n\n", __FILE__, __LINE__);
+        }
+        else {
+            node->child = newChild;
+            node->capacity *= 2;
+            node->child[node->count++] = newNode;
+        }
+    }
+    
+    if (node->count > 0) {
+        return &node->child[node->count - 1];
+    }
+    else {
+        return &node->child[0];
+    }
+}
+
 void print_tokens(JsonDocument * doc)
 {
+    FILE * graphvizfile = fopen("indy_json_ast.dot", "w");
+    fprintf(graphvizfile, "digraph D {\n");
     int indent = 0;
     JsonValue * value = doc->values;
     printf("document-size: %d\n\n", doc->size);
+    JsonNode rootNode;
+    rootNode.count = 0;
+    rootNode.capacity = 10;
+    rootNode.child = (JsonNode *)malloc(rootNode.capacity * sizeof(JsonNode));
+    rootNode.parent = 0;
+    JsonNode * currentNode = &rootNode;
     for (int i=0; i<doc->size; ++i)
     {
         switch (value->type)
@@ -273,6 +321,8 @@ void print_tokens(JsonDocument * doc)
                 print_indent(indent);
                 printf("OBJECT\n");
                 indent += 2;
+                
+                currentNode = new_json_node(currentNode, value);
             }
             break;
             
@@ -281,6 +331,8 @@ void print_tokens(JsonDocument * doc)
                 indent -= 2;
                 print_indent(indent);
                 printf("OBJECT-CLOSE\n");
+                
+                currentNode = currentNode->parent;
             }
             break;
             
@@ -289,6 +341,8 @@ void print_tokens(JsonDocument * doc)
                 print_indent(indent);
                 printf("ARRAY\n");
                 indent += 2;
+                
+                currentNode = new_json_node(currentNode, value);
             }
             break;
             
@@ -297,6 +351,8 @@ void print_tokens(JsonDocument * doc)
                 indent -= 2;
                 print_indent(indent);
                 printf("ARRAY-CLOSE\n");
+                
+                currentNode = currentNode->parent;
             }
             break;
             
@@ -330,6 +386,7 @@ void print_tokens(JsonDocument * doc)
         }
         value++;
     }
+    fclose(graphvizfile);
 }
 
 #endif
