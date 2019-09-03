@@ -27,7 +27,6 @@ struct JsonValue
     union
     {
         char name[256];
-        int i_num;
         float f_num;
     };
     
@@ -43,10 +42,10 @@ struct JsonDocument
     int size;
 };
 
+void print_tokens(JsonDocument * doc);
 
 #ifdef JSON_PARSER_IMPLEMENTATION
 
-static int indent = 0;
 static JsonDocument document;
 
 void json_add(JsonValue val)
@@ -75,9 +74,9 @@ int json_skipWhitespaces(char * buffer)
     return skipped;
 }
 
-void print_indent()
+void print_indent(int indentationCount)
 {
-    for (int i=0; i<indent; ++i)
+    for (int i=0; i<indentationCount; ++i)
         printf(" ");
 }
 
@@ -100,6 +99,17 @@ int json_name(char * out_name, char * buffer)
     return length;
 }
 
+int json_number(char * out_number, char * buffer)
+{
+    int length = 0;
+    while (*buffer >= '0' && *buffer <= '9') {
+        *out_number++ = *buffer++;
+        length++;
+    }
+    *out_number = '\0';
+    return length;
+}
+
 int skip_whitespaces_and_linebreaks(char ** buffer)
 {
     int skipped = 0;
@@ -107,6 +117,16 @@ int skip_whitespaces_and_linebreaks(char ** buffer)
            **buffer == '\r' ||
            **buffer == ' ' ||
            **buffer == '\t') { 
+        (*buffer)++;
+        skipped++;
+    }
+    return skipped;
+}
+
+int advance_to_next_whitespace(char ** buffer)
+{
+    int skipped = 0;
+    while (**buffer != ' ') {
         (*buffer)++;
         skipped++;
     }
@@ -190,12 +210,126 @@ JsonDocument parse_json(char * buffer)
                 json_add(val);
                 json_push(val.type);
             }
+            break;
+            
+            case 'f':
+            {
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_FALSE;
+                val.size = 0;
+                json_add(val);
+                json_push(val.type);
+                advance_to_next_whitespace(&bufferPos);
+            }
+            break;
+            
+            case 't':
+            {
+                bufferPos++;
+                JsonValue val;
+                val.type = JSON_TRUE;
+                val.size = 0;
+                json_add(val);
+                json_push(val.type);
+                advance_to_next_whitespace(&bufferPos);
+            }
+            break;
+            
+            default:
+            {
+                if (*bufferPos >= '0' && *bufferPos <= '9') {
+                    char asciiNumber[32];
+                    bufferPos += json_number(asciiNumber, bufferPos);
+                    JsonValue val;
+                    val.type = JSON_NUMBER;
+                    val.f_num = atof(asciiNumber);
+                    json_add(val);
+                    json_push(val.type);
+                    advance_to_next_whitespace(&bufferPos);
+                }
+            }
         }
         bufferPos++;
     }
 #endif
     
+    print_tokens(&document);
+    
     return document;
+}
+
+void print_tokens(JsonDocument * doc)
+{
+    int indent = 0;
+    JsonValue * value = doc->values;
+    printf("document-size: %d\n\n", doc->size);
+    for (int i=0; i<doc->size; ++i)
+    {
+        switch (value->type)
+        {
+            case JSON_OBJECT:
+            {
+                print_indent(indent);
+                printf("OBJECT\n");
+                indent += 2;
+            }
+            break;
+            
+            case JSON_OBJECT_CLOSE:
+            {
+                indent -= 2;
+                print_indent(indent);
+                printf("OBJECT-CLOSE\n");
+            }
+            break;
+            
+            case JSON_ARRAY:
+            {
+                print_indent(indent);
+                printf("ARRAY\n");
+                indent += 2;
+            }
+            break;
+            
+            case JSON_ARRAY_CLOSE:
+            {
+                indent -= 2;
+                print_indent(indent);
+                printf("ARRAY-CLOSE\n");
+            }
+            break;
+            
+            case JSON_STRING:
+            {
+                print_indent(indent);
+                printf("%s\n", value->name);
+            }
+            break;
+            
+            case JSON_NUMBER:
+            {
+                print_indent(indent);
+                printf("%f\n", value->f_num);
+            }
+            break;
+            
+            case JSON_TRUE:
+            {
+                print_indent(indent);
+                printf("TRUE\n");
+            }
+            break;
+            
+            case JSON_FALSE:
+            {
+                print_indent(indent);
+                printf("FALSE\n");
+            }
+            break;
+        }
+        value++;
+    }
 }
 
 #endif
