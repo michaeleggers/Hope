@@ -18,7 +18,8 @@ enum JsonType
     JSON_NULL,
     
     JSON_OBJECT_CLOSE,
-    JSON_ARRAY_CLOSE
+    JSON_ARRAY_CLOSE,
+    JSON_COMMA
 };
 
 struct JsonValue
@@ -163,7 +164,6 @@ JsonDocument parse_json(char * buffer)
         {
             case '{':
             {
-                bufferPos++;
                 JsonValue val;
                 val.type = JSON_OBJECT;
                 val.size = 0;
@@ -173,7 +173,6 @@ JsonDocument parse_json(char * buffer)
             
             case '}':
             {
-                bufferPos++;
                 JsonValue val;
                 val.type = JSON_OBJECT_CLOSE;
                 val.size = 0;
@@ -183,7 +182,6 @@ JsonDocument parse_json(char * buffer)
             
             case '[':
             {
-                bufferPos++;
                 JsonValue val;
                 val.type = JSON_ARRAY;
                 val.size = 0;
@@ -193,7 +191,6 @@ JsonDocument parse_json(char * buffer)
             
             case ']':
             {
-                bufferPos++;
                 JsonValue val;
                 val.type = JSON_ARRAY_CLOSE;
                 val.size = 0;
@@ -214,7 +211,6 @@ JsonDocument parse_json(char * buffer)
             
             case 'f':
             {
-                bufferPos++;
                 JsonValue val;
                 val.type = JSON_FALSE;
                 val.size = 0;
@@ -225,9 +221,18 @@ JsonDocument parse_json(char * buffer)
             
             case 't':
             {
-                bufferPos++;
                 JsonValue val;
                 val.type = JSON_TRUE;
+                val.size = 0;
+                json_add(val);
+                advance_to_next_whitespace(&bufferPos);
+            }
+            break;
+            
+            case ',':
+            {
+                JsonValue val;
+                val.type = JSON_COMMA;
                 val.size = 0;
                 json_add(val);
                 advance_to_next_whitespace(&bufferPos);
@@ -300,6 +305,7 @@ void print_tokens(JsonDocument * doc)
     rootNode.count = 0;
     rootNode.capacity = 10;
     rootNode.child = (JsonNode *)malloc(rootNode.capacity * sizeof(JsonNode));
+    memset((void *)rootNode.child, 0, rootNode.capacity * sizeof(JsonNode));
     rootNode.parent = 0;
     JsonNode * currentNode = &rootNode;
     for (int i=0; i<doc->size; ++i)
@@ -350,6 +356,9 @@ void print_tokens(JsonDocument * doc)
             {
                 print_indent(indent);
                 printf("%s\n", value->name);
+#if 0
+                currentNode = new_json_node(currentNode, value);
+#endif
             }
             break;
             
@@ -371,6 +380,13 @@ void print_tokens(JsonDocument * doc)
             {
                 print_indent(indent);
                 printf("FALSE\n");
+            }
+            break;
+            
+            case JSON_COMMA:
+            {
+                print_indent(indent);
+                printf(",\n");
             }
             break;
         }
