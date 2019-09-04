@@ -1,6 +1,7 @@
 #ifndef JSON_PARSER_H
 #define JSON_PARSER_H
 
+#include <stdlib.h>
 
 typedef struct JsonValue JsonValue;
 typedef struct JsonObject JsonObject;
@@ -36,8 +37,6 @@ struct JsonValue
 struct JsonDocument
 {
     JsonValue * values;
-    JsonType * stack;
-    int stackPos;
     int capacity;
     int size;
 };
@@ -59,18 +58,17 @@ static JsonDocument document;
 
 void json_add(JsonValue val)
 {
+    if (document.size >= document.capacity) {
+        JsonValue * newValues = (JsonValue *)realloc(document.values, 2*document.capacity*sizeof(JsonValue));
+        if (!newValues) {
+            fprintf(stderr, "failed to realloc in %s at line %d\n\n", __FILE__, __LINE__);
+        }
+        else {
+            document.values = newValues;
+            document.capacity *= 2;
+        }
+    }
     document.values[document.size++] = val;
-}
-
-void json_push(JsonType type)
-{
-    document.stack[document.stackPos++] = type;
-}
-
-void json_pop()
-{
-    JsonValue * val = &document.values[--document.stackPos];
-    val->size = document.size - document.stackPos;
 }
 
 int json_skipWhitespaces(char * buffer)
@@ -146,9 +144,7 @@ JsonDocument parse_json(char * buffer)
 {
     document.size = 0;
     document.capacity = 100;
-    document.stackPos = 0;
     document.values = (JsonValue *)malloc(document.capacity * sizeof(JsonValue));
-    document.stack = (JsonType *)malloc(document.capacity * sizeof(JsonType));
     char * bufferPos = buffer;
     while (*bufferPos != '\0')
     {
@@ -172,7 +168,6 @@ JsonDocument parse_json(char * buffer)
                 val.type = JSON_OBJECT;
                 val.size = 0;
                 json_add(val);
-                json_push(val.type);
             }
             break;
             
@@ -183,7 +178,6 @@ JsonDocument parse_json(char * buffer)
                 val.type = JSON_OBJECT_CLOSE;
                 val.size = 0;
                 json_add(val);
-                json_pop();
             }
             break;
             
@@ -194,7 +188,6 @@ JsonDocument parse_json(char * buffer)
                 val.type = JSON_ARRAY;
                 val.size = 0;
                 json_add(val);
-                json_push(val.type);
             }
             break;
             
@@ -205,7 +198,6 @@ JsonDocument parse_json(char * buffer)
                 val.type = JSON_ARRAY_CLOSE;
                 val.size = 0;
                 json_add(val);
-                json_pop();
             }
             break;
             
@@ -217,7 +209,6 @@ JsonDocument parse_json(char * buffer)
                 val.size = 0;
                 bufferPos += json_name(val.name, bufferPos);
                 json_add(val);
-                json_push(val.type);
             }
             break;
             
@@ -228,7 +219,6 @@ JsonDocument parse_json(char * buffer)
                 val.type = JSON_FALSE;
                 val.size = 0;
                 json_add(val);
-                json_push(val.type);
                 advance_to_next_whitespace(&bufferPos);
             }
             break;
@@ -240,7 +230,6 @@ JsonDocument parse_json(char * buffer)
                 val.type = JSON_TRUE;
                 val.size = 0;
                 json_add(val);
-                json_push(val.type);
                 advance_to_next_whitespace(&bufferPos);
             }
             break;
@@ -254,7 +243,6 @@ JsonDocument parse_json(char * buffer)
                     val.type = JSON_NUMBER;
                     val.f_num = atof(asciiNumber);
                     json_add(val);
-                    json_push(val.type);
                     advance_to_next_whitespace(&bufferPos);
                 }
             }
@@ -280,7 +268,7 @@ JsonNode * new_json_node(JsonNode * node, JsonValue * val)
         node->child[node->count++] = newNode;
     }
     else {
-        JsonNode * newChild = (JsonNode *)realloc(node->child, 2*node->capacity);
+        JsonNode * newChild = (JsonNode *)realloc(node->child, 2*node->capacity*sizeof(JsonNode));
         if (!newChild) {
             fprintf(stderr, "failed to realloc in %s at line %d\n\n", __FILE__, __LINE__);
         }
@@ -301,8 +289,10 @@ JsonNode * new_json_node(JsonNode * node, JsonValue * val)
 
 void print_tokens(JsonDocument * doc)
 {
-    FILE * graphvizfile = fopen("indy_json_ast.dot", "w");
+#if 0
+    FILE * graphvizfile = fopen("indy_json_ast.dot", "rw");
     fprintf(graphvizfile, "digraph D {\n");
+#endif
     int indent = 0;
     JsonValue * value = doc->values;
     printf("document-size: %d\n\n", doc->size);
@@ -386,7 +376,7 @@ void print_tokens(JsonDocument * doc)
         }
         value++;
     }
-    fclose(graphvizfile);
+    //fclose(graphvizfile);
 }
 
 #endif
