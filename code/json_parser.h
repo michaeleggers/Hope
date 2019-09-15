@@ -143,6 +143,7 @@ int advance_to_next_whitespace(char ** buffer)
 
 JsonDocument parse_json(char * buffer)
 {
+    // TODO(Michael): assert buffer
     document.size = 0;
     document.capacity = 100;
     document.values = (JsonValue *)malloc(document.capacity * sizeof(JsonValue));

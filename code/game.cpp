@@ -589,17 +589,16 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gPlatformAPI = platform_api;
     gInputDevice = input_device;
     
+#if 0
     Foo fooItem = {1,2};
     Foo fooItem2 = {999, 888};
     Foo fooItem3 = {321, 123};
     Foo * myFoo = 0;
-#if 1
     push_macro(myFoo, fooItem);
     push_macro(myFoo, fooItem2);
     push_macro(myFoo, fooItem3);
     push_macro(myFoo, aFunction());
     Foo getFooItem = myFoo[0];
-#endif
     
     Foo * anItem = (Foo *)malloc(sizeof(Foo));
     anItem->a = 777;
@@ -618,12 +617,12 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     sb_push(funcArray, lol);
     someFunctionPtr lolFunc = funcArray[0];
     lolFunc();
+#endif
     
 #if 0    
     std::vector<Foo> fooVec;
     fooVec.push_back(someObj);
     fooVec[2];
-#endif
     
     void * thing = malloc(sizeof(int)*10);
     ((int *)thing)[0] = 999;
@@ -639,6 +638,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     //hope_vector_push_back(foo, item);
     //hope_vector_push_back(foo, item);
     //hope_vector_push_back(foo, item2);
+#endif
     
 #if 0
     hope_vector(Bar, bar);
