@@ -19,6 +19,7 @@ enum JsonType
     
     JSON_OBJECT_CLOSE,
     JSON_ARRAY_CLOSE,
+    JSON_COLON,
     JSON_COMMA
 };
 
@@ -52,6 +53,15 @@ struct JsonNode
 };
 
 void print_tokens(JsonDocument * doc);
+
+
+
+
+
+
+
+
+
 
 #ifdef JSON_PARSER_IMPLEMENTATION
 
@@ -103,7 +113,6 @@ int json_name(char * out_name, char * buffer)
         length++;
     }
     *out_name = '\0';
-    while (*buffer == '"') {buffer++; length++;}
     return length;
 }
 
@@ -141,6 +150,24 @@ int advance_to_next_whitespace(char ** buffer)
     return skipped;
 }
 
+int advance_to_next_char(char ** buffer)
+{
+    (*buffer)++;
+    return skip_whitespaces_and_linebreaks(buffer);
+}
+
+int advance_to_next_non_an(char ** buffer)
+{
+    int skipped = 0;
+    while (   (**buffer >= '0' && **buffer <= '9')
+           || (**buffer >= 'A' && **buffer <= 'Z')
+           || (**buffer >= 'a' && **buffer <= 'z') ) {
+        (*buffer)++;
+        skipped++;
+    }
+    return skipped;
+}
+
 static char * buf;
 static int indent;
 
@@ -154,6 +181,7 @@ JsonToken json_get_token()
         {
             token.type = JSON_OBJECT;
             token.size = 0;
+            buf++;
         }
         break;
         
@@ -161,6 +189,7 @@ JsonToken json_get_token()
         {
             token.type = JSON_OBJECT_CLOSE;
             token.size = 0;
+            buf++;
         }
         break;
         
@@ -168,6 +197,7 @@ JsonToken json_get_token()
         {
             token.type = JSON_ARRAY;
             token.size = 0;
+            buf++;
         }
         break;
         
@@ -175,15 +205,17 @@ JsonToken json_get_token()
         {
             token.type = JSON_ARRAY_CLOSE;
             token.size = 0;
+            buf++;
         }
         break;
         
         case '"':
         {
-            buf++;
+            buf++; // step over opening ' " '
             token.type = JSON_STRING;
             token.size = 0;
             buf += json_name(token.name, buf);
+            buf++; // step over closing ' " '
         }
         break;
         
@@ -191,7 +223,7 @@ JsonToken json_get_token()
         {
             token.type = JSON_FALSE;
             token.size = 0;
-            advance_to_next_whitespace(&buf);
+            advance_to_next_non_an(&buf);
         }
         break;
         
@@ -199,13 +231,21 @@ JsonToken json_get_token()
         {
             token.type = JSON_TRUE;
             token.size = 0;
-            advance_to_next_whitespace(&buf);
+            advance_to_next_non_an(&buf);
         }
         break;
         
         case ',':
         {
             token.type = JSON_COMMA;
+            token.size = 0;
+            advance_to_next_whitespace(&buf);
+        }
+        break;
+        
+        case ':':
+        {
+            token.type = JSON_COLON;
             token.size = 0;
             advance_to_next_whitespace(&buf);
         }
@@ -218,11 +258,11 @@ JsonToken json_get_token()
                 buf += json_number(asciiNumber, buf);
                 token.type = JSON_NUMBER;
                 token.f_num = atof(asciiNumber);
-                advance_to_next_whitespace(&buf);
+                advance_to_next_non_an(&buf);
             }
         }
     }
-    buf++;
+    skip_whitespaces_and_linebreaks(&buf);
     return token;
 }
 
@@ -296,6 +336,13 @@ void print_token(JsonToken * token)
             printf(",\n");
         }
         break;
+        
+        case JSON_COLON:
+        {
+            print_indent(indent);
+            printf(":\n");
+        }
+        break;
     }
 }
 
@@ -318,7 +365,6 @@ void json_parse(char * buffer)
         JsonToken token = json_get_token();
         print_token(&token);
     }
-    
 }
 
 JsonNode * new_json_node(JsonNode * node, JsonToken * val)
@@ -352,108 +398,6 @@ JsonNode * new_json_node(JsonNode * node, JsonToken * val)
     }
 }
 
-void print_tokens(JsonDocument * doc)
-{
-#if 0
-    FILE * graphvizfile = fopen("indy_json_ast.dot", "rw");
-    fprintf(graphvizfile, "digraph D {\n");
-#endif
-    int indent = 0;
-    JsonToken * value = doc->values;
-    printf("document-size: %d\n\n", doc->size);
-    JsonNode rootNode;
-    rootNode.count = 0;
-    rootNode.capacity = 10;
-    rootNode.child = (JsonNode *)malloc(rootNode.capacity * sizeof(JsonNode));
-    memset((void *)rootNode.child, 0, rootNode.capacity * sizeof(JsonNode));
-    rootNode.parent = 0;
-    JsonNode * currentNode = &rootNode;
-    for (int i=0; i<doc->size; ++i)
-    {
-        switch (value->type)
-        {
-            case JSON_OBJECT:
-            {
-                print_indent(indent);
-                printf("OBJECT\n");
-                indent += 2;
-                
-                currentNode = new_json_node(currentNode, value);
-            }
-            break;
-            
-            case JSON_OBJECT_CLOSE:
-            {
-                indent -= 2;
-                print_indent(indent);
-                printf("OBJECT-CLOSE\n");
-                
-                currentNode = currentNode->parent;
-            }
-            break;
-            
-            case JSON_ARRAY:
-            {
-                print_indent(indent);
-                printf("ARRAY\n");
-                indent += 2;
-                
-                currentNode = new_json_node(currentNode, value);
-            }
-            break;
-            
-            case JSON_ARRAY_CLOSE:
-            {
-                indent -= 2;
-                print_indent(indent);
-                printf("ARRAY-CLOSE\n");
-                
-                currentNode = currentNode->parent;
-            }
-            break;
-            
-            case JSON_STRING:
-            {
-                print_indent(indent);
-                printf("%s\n", value->name);
-#if 0
-                currentNode = new_json_node(currentNode, value);
-#endif
-            }
-            break;
-            
-            case JSON_NUMBER:
-            {
-                print_indent(indent);
-                printf("%f\n", value->f_num);
-            }
-            break;
-            
-            case JSON_TRUE:
-            {
-                print_indent(indent);
-                printf("TRUE\n");
-            }
-            break;
-            
-            case JSON_FALSE:
-            {
-                print_indent(indent);
-                printf("FALSE\n");
-            }
-            break;
-            
-            case JSON_COMMA:
-            {
-                print_indent(indent);
-                printf(",\n");
-            }
-            break;
-        }
-        value++;
-    }
-    //fclose(graphvizfile);
-}
 
 #endif
 
