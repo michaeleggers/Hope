@@ -34,6 +34,7 @@ struct JsonToken
         float f_num;
     };
     
+    int lineno;
     int size;
 };
 
@@ -74,6 +75,7 @@ void _json_print_ast(JsonNode * node);
 #ifdef JSON_PARSER_IMPLEMENTATION
 
 static JsonDocument document;
+static int g_lineno;
 
 int json_skipWhitespaces(char * buffer)
 {
@@ -127,6 +129,9 @@ int skip_whitespaces_and_linebreaks(char ** buffer)
            **buffer == '\r' ||
            **buffer == ' ' ||
            **buffer == '\t') { 
+        if (**buffer == '\n' || **buffer == '\r') {
+            g_lineno++;
+        }
         (*buffer)++;
         skipped++;
     }
@@ -417,7 +422,7 @@ JsonNode * new_json_node()
 
 static void syntax_error(char * message)
 {
-    fprintf(stderr, "\n>>> Syntax error %s", message);
+    fprintf(stderr, "\n>>> Syntax error at line %d %s", g_lineno, message);
 }
 
 static void match(JsonType expected_token_type)
@@ -524,6 +529,7 @@ JsonNode * json_array()
     t->child = json_value();
     JsonNode * p = t->child;
     while (g_json_token.type == JSON_COMMA) {
+        match(JSON_COMMA);
         JsonNode * q = json_value();
         p->sibling = q;
         p = q;
@@ -574,6 +580,7 @@ void json_parse(char * buffer)
 {
     // TODO(Michael): assert buffer
     
+#if 0    
     // print buffer to console for debugging
     char * bufferPos = buffer;
     while (*bufferPos != '\0')
@@ -590,6 +597,7 @@ void json_parse(char * buffer)
         g_json_token = json_get_token();
         print_token(&g_json_token);
     }
+#endif
     
     buf = buffer;
     JsonNode * t = 0;
