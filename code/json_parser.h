@@ -4,7 +4,8 @@
 #include <stdlib.h>
 
 typedef struct JsonToken JsonToken;
-typedef struct JsonObject JsonObject;
+typedef struct JsonNode JsonNode;
+
 
 enum JsonType
 {
@@ -45,18 +46,25 @@ struct JsonDocument
 
 struct JsonNode
 {
-    JsonToken * val;
+    JsonToken token;
     JsonNode * child;
-    JsonNode * parent;
+    JsonNode * sibling;
     int count;
     int capacity;
 };
 
 void print_tokens(JsonDocument * doc);
-
-
-
-
+JsonNode * json_start();
+JsonNode * json_object();
+JsonNode * json_string_value();
+JsonNode * json_value();
+JsonNode * json_array();
+JsonNode * json_string();
+JsonNode * json_number();
+JsonNode * json_true();
+JsonNode * json_false();
+void json_print_ast(JsonNode * root);
+void _json_print_ast(JsonNode * node);
 
 
 
@@ -66,21 +74,6 @@ void print_tokens(JsonDocument * doc);
 #ifdef JSON_PARSER_IMPLEMENTATION
 
 static JsonDocument document;
-
-void json_add(JsonToken val)
-{
-    if (document.size >= document.capacity) {
-        JsonToken * newValues = (JsonToken *)realloc(document.values, 2*document.capacity*sizeof(JsonToken));
-        if (!newValues) {
-            fprintf(stderr, "failed to realloc in %s at line %d\n\n", __FILE__, __LINE__);
-        }
-        else {
-            document.values = newValues;
-            document.capacity *= 2;
-        }
-    }
-    document.values[document.size++] = val;
-}
 
 int json_skipWhitespaces(char * buffer)
 {
@@ -170,6 +163,7 @@ int advance_to_next_non_an(char ** buffer)
 
 static char * buf;
 static int indent;
+static JsonToken g_json_token;
 
 JsonToken json_get_token()
 {
@@ -266,6 +260,72 @@ JsonToken json_get_token()
     return token;
 }
 
+void print_token2(JsonToken * token)
+{
+    switch (token->type)
+    {
+        case JSON_OBJECT:
+        {
+            printf("OBJECT\n");
+        }
+        break;
+        
+        case JSON_OBJECT_CLOSE:
+        {
+            printf("OBJECT-CLOSE\n");
+        }
+        break;
+        
+        case JSON_ARRAY:
+        {
+            printf("ARRAY\n");
+        }
+        break;
+        
+        case JSON_ARRAY_CLOSE:
+        {
+            printf("ARRAY-CLOSE\n");
+        }
+        break;
+        
+        case JSON_STRING:
+        {
+            printf("STRING: %s\n", token->name);
+        }
+        break;
+        
+        case JSON_NUMBER:
+        {
+            printf("NUMBER: %f\n", token->f_num);
+        }
+        break;
+        
+        case JSON_TRUE:
+        {
+            printf("TRUE\n");
+        }
+        break;
+        
+        case JSON_FALSE:
+        {
+            printf("FALSE\n");
+        }
+        break;
+        
+        case JSON_COMMA:
+        {
+            printf(",\n");
+        }
+        break;
+        
+        case JSON_COLON:
+        {
+            printf(":\n");
+        }
+        break;
+    }
+}
+
 void print_token(JsonToken * token)
 {
     switch (token->type)
@@ -305,14 +365,14 @@ void print_token(JsonToken * token)
         case JSON_STRING:
         {
             print_indent(indent);
-            printf("%s\n", token->name);
+            printf("STRING: %s\n", token->name);
         }
         break;
         
         case JSON_NUMBER:
         {
             print_indent(indent);
-            printf("%f\n", token->f_num);
+            printf("NUMBER: %f\n", token->f_num);
         }
         break;
         
@@ -346,6 +406,170 @@ void print_token(JsonToken * token)
     }
 }
 
+JsonNode * new_json_node()
+{
+    JsonNode * new_node = (JsonNode *)malloc(sizeof(JsonNode));
+    new_node->child = 0;
+    new_node->sibling = 0;
+    new_node->token = {};
+    return new_node;
+}
+
+static void syntax_error(char * message)
+{
+    fprintf(stderr, "\n>>> Syntax error %s", message);
+}
+
+static void match(JsonType expected_token_type)
+{
+    if (g_json_token.type == expected_token_type) {
+        g_json_token = json_get_token();
+    }
+    else {
+        syntax_error("unexpected token -> ");
+        print_token(&g_json_token);
+    }
+}
+
+JsonNode * json_object()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_OBJECT);
+    t->child = json_string_value();
+    JsonNode * p = t->child;
+    while (g_json_token.type == JSON_COMMA) {
+        match(JSON_COMMA);
+        JsonNode * q = json_string_value();
+        p->sibling = q;
+        p = q;
+    }
+    match(JSON_OBJECT_CLOSE);
+    return t;
+}
+
+JsonNode * json_string_value()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_STRING);
+    match(JSON_COLON);
+    t->child = json_value();
+    return t;
+}
+
+JsonNode * json_value()
+{
+    JsonNode * t = 0;
+    switch(g_json_token.type)
+    {
+        case JSON_OBJECT:
+        {
+            t = json_object();
+        }
+        break;
+        
+        case JSON_ARRAY:
+        {
+            t = json_array();
+        }
+        break;
+        
+        case JSON_STRING:
+        {
+            t = json_string();
+        }
+        break;
+        
+        case JSON_NUMBER:
+        {
+            t = json_number();
+        }
+        break;
+        
+        case JSON_TRUE:
+        {
+            t = json_true();
+        }
+        break;
+        
+        case JSON_FALSE:
+        {
+            t = json_false();
+        }
+        break;
+        
+        case JSON_NULL:
+        {
+            // TODO(Michael): implement
+        }
+        break;
+        
+        default:
+        {
+            syntax_error("unexpected token -> ");
+            print_token(&g_json_token);
+            g_json_token = json_get_token();
+        }
+        break;
+    }
+    return t;
+}
+
+JsonNode * json_array()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_ARRAY);
+    t->child = json_value();
+    JsonNode * p = t->child;
+    while (g_json_token.type == JSON_COMMA) {
+        JsonNode * q = json_value();
+        p->sibling = q;
+        p = q;
+    }
+    match(JSON_ARRAY_CLOSE);
+    return t;
+}
+
+JsonNode * json_string()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_STRING);
+    return t;
+}
+
+JsonNode * json_number()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_NUMBER);
+    return t;
+}
+
+JsonNode * json_true()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_TRUE);
+    return t;
+}
+
+JsonNode * json_false()
+{
+    JsonNode * t = new_json_node();
+    t->token = g_json_token;
+    match(JSON_FALSE);
+    return t;
+}
+
+JsonNode * json_start()
+{
+    JsonNode * t = json_object();
+    return t;
+}
+
 void json_parse(char * buffer)
 {
     // TODO(Michael): assert buffer
@@ -360,44 +584,54 @@ void json_parse(char * buffer)
         bufferPos++;
     }
     
+    // print tokens to console for debugging
     buf = buffer;
     while (*buf != '\0') {
-        JsonToken token = json_get_token();
-        print_token(&token);
-    }
-}
-
-JsonNode * new_json_node(JsonNode * node, JsonToken * val)
-{
-    JsonNode newNode;
-    newNode.count = 0;
-    newNode.capacity = 10;
-    newNode.child = (JsonNode *)malloc(newNode.capacity * sizeof(JsonNode));
-    newNode.parent = node;
-    newNode.val = val;
-    if (node->count < node->capacity) {
-        node->child[node->count++] = newNode;
-    }
-    else {
-        JsonNode * newChild = (JsonNode *)realloc(node->child, 2*node->capacity*sizeof(JsonNode));
-        if (!newChild) {
-            fprintf(stderr, "failed to realloc in %s at line %d\n\n", __FILE__, __LINE__);
-        }
-        else {
-            node->child = newChild;
-            node->capacity *= 2;
-            node->child[node->count++] = newNode;
-        }
+        g_json_token = json_get_token();
+        print_token(&g_json_token);
     }
     
-    if (node->count > 0) {
-        return &node->child[node->count - 1];
-    }
-    else {
-        return &node->child[0];
-    }
+    buf = buffer;
+    JsonNode * t = 0;
+    g_json_token = json_get_token();
+    t = json_start();
+    _json_print_ast(t);
 }
 
+static int indentation;
+void _json_print_ast(JsonNode * tree)
+{
+    indentation += 2;
+    while (tree) {
+        print_indent(indentation);
+        JsonToken token = tree->token;
+        print_token2(&token);
+        if (tree->child) {
+            _json_print_ast(tree->child);
+        }
+        tree = tree->sibling;
+    }
+    indentation -= 2;
+}
+
+void json_print_ast(JsonNode * root)
+{
+    printf("\n\n>>> AST <<<\n\n");
+    int indentation = 0;
+    JsonNode * current_node = root;
+    while (current_node) {
+        JsonToken token = current_node->token;
+        if ( (token.type == JSON_OBJECT) || (token.type == JSON_ARRAY) ) {
+            indentation += 2;
+        }
+        else if ( (token.type == JSON_OBJECT_CLOSE) || (token.type == JSON_ARRAY_CLOSE) ) {
+            indentation -= 2;
+        }
+        print_indent(indentation);
+        print_token2(&token);
+        current_node = current_node->child;
+    }
+}
 
 #endif
 
