@@ -38,13 +38,6 @@ struct JsonToken
     int size;
 };
 
-struct JsonDocument
-{
-    JsonToken * values;
-    int capacity;
-    int size;
-};
-
 struct JsonNode
 {
     JsonToken token;
@@ -54,7 +47,14 @@ struct JsonNode
     int capacity;
 };
 
-void print_tokens(JsonDocument * doc);
+struct JsonDocument
+{
+    JsonNode * tree;
+    JsonToken * values;
+    int capacity;
+    int size;
+};
+
 JsonNode * json_start();
 JsonNode * json_object();
 JsonNode * json_string_value();
@@ -576,7 +576,7 @@ JsonNode * json_start()
     return t;
 }
 
-void json_parse(char * buffer)
+JsonDocument json_parse(char * buffer)
 {
     // TODO(Michael): assert buffer
     
@@ -599,11 +599,14 @@ void json_parse(char * buffer)
     }
 #endif
     
+    JsonDocument document;
     buf = buffer;
     JsonNode * t = 0;
     g_json_token = json_get_token();
     t = json_start();
     _json_print_ast(t);
+    document.tree = t;
+    return document;
 }
 
 static int indentation;
@@ -620,6 +623,57 @@ void _json_print_ast(JsonNode * tree)
         tree = tree->sibling;
     }
     indentation -= 2;
+}
+
+JsonNode * json_get_value_by_name(JsonNode * node, char * name)
+{
+    JsonNode * t = 0;
+    if ( !strcmp(node->child->token.name, name) ) {
+        t = node->child->child;
+    }
+    else {
+        JsonNode * sibling = node->child->sibling;
+        while (sibling) {
+            if ( !strcmp(sibling->token.name, name) ) {
+                t = sibling->child;
+                break;
+            }
+            sibling = sibling->sibling;
+        }
+    }
+    return t;
+}
+
+JsonNode * json_get_child(JsonNode * node)
+{
+    return node->child;
+}
+
+JsonNode * json_get_next_value(JsonNode * node)
+{
+    return node->sibling;
+}
+
+float json_value_float(JsonNode * node)
+{
+    if (node->token.type == JSON_NUMBER) {
+        return node->token.f_num;
+    }
+    else {
+        // TODO(Michael): how to handle this error?
+    }
+    return 0.f;
+}
+
+int json_value_bool(JsonNode * node)
+{
+    if (node->token.type == JSON_TRUE) {
+        return 1;
+    }
+    else if (node->token.type == JSON_FALSE) {
+        return 0;
+    }
+    return -1; // TODO(Michael): what to return in error-case?
 }
 
 void json_print_ast(JsonNode * root)

@@ -745,9 +745,28 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
                                          "..\\assets\\indy\\indy_walking.png",
                                          0, 0,
                                          0, 0);
-    JsonDocument indyJson;
+    
     char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking.json");
-    json_parse(jsonFile);
+    JsonDocument indyJson = json_parse(jsonFile);
+    JsonNode * framesArray = json_get_value_by_name(indyJson.tree, "frames");
+    JsonNode * arrayItem = json_get_child(framesArray);
+    printf("\n\n\tJSON QUERY TEST:\n\n");
+    while (arrayItem) {
+        JsonNode * filenameField = json_get_value_by_name(arrayItem, "filename");
+        JsonNode * frameField = json_get_value_by_name(arrayItem, "frame");
+        JsonNode * xOffset = json_get_value_by_name(frameField, "x");
+        JsonNode * yOffset = json_get_value_by_name(frameField, "y");
+        JsonNode * width = json_get_value_by_name(frameField, "w");
+        JsonNode * height = json_get_value_by_name(frameField, "h");
+        float xOffset_ = json_value_float(xOffset);
+        float yOffset_ = json_value_float(yOffset);
+        float width_ = json_value_float(width);
+        float height_ = json_value_float(height);
+        printf("filename: %s\n", filenameField->token.name);
+        printf("frame: { x:%f, y:%f, w:%f, h:%f }\n", xOffset_, yOffset_, width_, height_);
+        printf("\n");
+        arrayItem = json_get_next_value(arrayItem);
+    }
     //JsonValue jsonFrames = json_value(&indyJson, "frames");
     
 #if 0    
