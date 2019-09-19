@@ -765,8 +765,10 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         printf("filename: %s\n", filenameField->token.name);
         printf("frame: { x:%f, y:%f, w:%f, h:%f }\n", xOffset_, yOffset_, width_, height_);
         printf("\n");
+        addSpriteFrame(&gIndySpriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
         arrayItem = json_get_next_value(arrayItem);
     }
+    JsonNode * metaItem = json_get_value_by_name(indyJson.tree, "meta");
     //JsonValue jsonFrames = json_value(&indyJson, "frames");
     
 #if 0    
@@ -878,6 +880,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (keyDown(inputDevice, ARROW_DOWN))
         yOffset += 0.1f;
     
+    
     /*
     // render iso-map
     for (int y = 0; y < 100; y++)
@@ -917,8 +920,12 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (advance > 1080.+120.f)
         advance = 0.f;
     advance += 1.0f;
-    pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
-    pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
+    static int indyFrame = 0;
+    //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
+    //pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
+    if (indyFrame > 18) indyFrame = 0;
+    if (indyFrame < 0)  indyFrame = 18;
+    pushTexturedRect(-10, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, indyFrame);
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
     pushTTFText("Test1\nLinebreak1\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
     pushTTFText("Test2\nLinebreak2\0", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
@@ -946,6 +953,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Toggle Secondary Window\0"))
         showSecondaryWindow= !showSecondaryWindow;
+    if (hope_ui_button(GUID, "Next Frame\0"))
+        indyFrame++;
+    if (hope_ui_button(GUID, "Previous Frame\0"))
+        indyFrame--;
     hope_ui_end();
     
     if (showSecondaryWindow)

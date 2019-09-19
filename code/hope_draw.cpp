@@ -28,14 +28,8 @@ Window createSpriteWindow(Texture *texture,
     Window window;
     window.width  = (1.0f / (float)textureWidth) * (float)width;
     window.height = (1.0f / (float)textureHeight) * (float)height;
-    if (xOffset > 0)
-        window.x = (1.0f / (float)textureWidth) * (float) (xOffset % textureWidth);
-    else
-        window.x = 0;
-    if (yOffset > 0)
-        window.y = (1.0f / (float)textureHeight) * (float) ((width / textureWidth) * height + yOffset);
-    else
-        window.y = 0;
+    window.x = (1.0f / (float)textureWidth) * (float)xOffset;
+    window.y = (1.0f / (float)textureHeight) * (float)yOffset;
     window.intWidth = width;
     window.intHeight = height;
     
@@ -64,7 +58,7 @@ SpriteSheet createSpriteSheet(refexport_t* re,
     spriteSheet.height = y;
     strcpy(spriteSheet.name, file);
     
-    Window window = createSpriteWindow(texture, 0, 0, x, y);
+    Window window = createSpriteWindow(texture, xOffset, yOffset, x, y);
     spriteSheet.windows[0] = window;
     // no incrementing of freeWindowIndex, because addSpriteFrame will do that.
     return spriteSheet;
@@ -203,12 +197,12 @@ void pushTexturedRect(float xPos, float yPos,
     vertex[0].position.y = yPos;
     vertex[0].position.z = 0.f;
     vertex[0].UVs.x = window.x;
-    vertex[0].UVs.y = window.height;
+    vertex[0].UVs.y = window.y + window.height;
     vertex[1].position.x = xPos + xScale*aspectRatio;
     vertex[1].position.y = yPos;
     vertex[1].position.z = 0.f;
     vertex[1].UVs.x = window.x + window.width;
-    vertex[1].UVs.y = window.height;
+    vertex[1].UVs.y = window.y + window.height;
     vertex[2].position.x = xPos + xScale*aspectRatio;
     vertex[2].position.y = yPos + yScale;
     vertex[2].position.z = 0.f;
