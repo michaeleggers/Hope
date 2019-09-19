@@ -600,10 +600,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         elapsedTime.QuadPart = endingTime.QuadPart - startingTime.QuadPart;
         fps = (float)performanceFrequency.QuadPart / (float)elapsedTime.QuadPart;
         elapsedTime.QuadPart *= 1000000; // microseconds
-        elapsedTime.QuadPart /= performanceFrequency.QuadPart;
+        elapsedTime.QuadPart /= performanceFrequency.QuadPart; // elapsed time is in microseconds now
         
         //printf("%f\n", fps);
         //printf("elapsed time: %f\n", (float)elapsedTime.QuadPart / 1000.0f);
+        
         QueryPerformanceCounter(&startingTime);
         //Sleep(500); // HACK(Michael): artificial time
         

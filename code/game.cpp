@@ -920,7 +920,17 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (advance > 1080.+120.f)
         advance = 0.f;
     advance += 1.0f;
+    
+    static bool updateIndyFrameTime = true;
     static int indyFrame = 0;
+    static float indyFrameTime = 0.f;
+    if (updateIndyFrameTime) {
+        indyFrameTime += dt/1000.f; // dt in milliseconds
+    }
+    if (indyFrameTime >= 100.0f) {
+        indyFrame++;
+        indyFrameTime = 0.f;
+    }
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
     //pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
     if (indyFrame > 18) indyFrame = 0;
@@ -957,6 +967,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         indyFrame++;
     if (hope_ui_button(GUID, "Previous Frame\0"))
         indyFrame--;
+    if (hope_ui_button(GUID, "Play/Pause\0"))
+        updateIndyFrameTime = !updateIndyFrameTime;
     hope_ui_end();
     
     if (showSecondaryWindow)
