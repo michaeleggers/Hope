@@ -16,6 +16,7 @@ global_var GLuint gvtxHandle;
 global_var GLuint gidxHandle;
 global_var GLint gTintLocation;
 global_var GLint gTextureLocation;
+global_var GLuint vaoHandle;
 
 global_var PlatformAPI* gPlatformAPI;
 
@@ -147,6 +148,7 @@ void initShaders()
     gShaders[STANDARD_MESH] = create_shader("..\\code\\standard_mesh_v.glsl", "..\\code\\standard_mesh_f.glsl",
                                             shaderAttribsMesh,
                                             sizeof(shaderAttribsMesh) / sizeof(*shaderAttribsMesh));
+    glGenVertexArrays(1, &vaoHandle);
 }
 
 void printGlErrMsg()
@@ -592,8 +594,8 @@ void gl_endFrame(DrawList* drawList)
     glClearColor(.0f, .0f, .0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    GLuint vaoHandle = 0;
-    glGenVertexArrays(1, &vaoHandle);
+    //GLuint vaoHandle = 0;
+    //glGenVertexArrays(1, &vaoHandle);
     glBindVertexArray(vaoHandle);
     
     glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
@@ -763,7 +765,7 @@ void gl_endFrame(DrawList* drawList)
     drawList->prevRenderCmd = 0;
     drawList->quadCount = 0;
     drawList->lineCount = 0;
-    glDeleteVertexArrays(1, &vaoHandle);
+    //glDeleteVertexArrays(1, &vaoHandle);
     SwapBuffers(gRenderState.deviceContext);
 }
 

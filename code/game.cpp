@@ -742,11 +742,11 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     }
     
     gIndySpriteSheet = createSpriteSheet(re,
-                                         "..\\assets\\indy\\indy_walking.png",
+                                         "..\\assets\\indy\\indy_walking_sheet.png",
                                          0, 0,
                                          0, 0);
     
-    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking.json");
+    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking_sheet.json");
     JsonDocument indyJson = json_parse(jsonFile);
     JsonNode * framesArray = json_get_value_by_name(indyJson.tree, "frames");
     JsonNode * arrayItem = json_get_child(framesArray);
@@ -768,7 +768,24 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         addSpriteFrame(&gIndySpriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
         arrayItem = json_get_next_value(arrayItem);
     }
-    JsonNode * metaItem = json_get_value_by_name(indyJson.tree, "meta");
+    JsonNode * metaInfoNode = json_get_value_by_name(indyJson.tree, "meta");
+    JsonNode * frameTagsArray = json_get_value_by_name(metaInfoNode, "frameTags");
+    JsonNode * nextFrameTag = json_get_child(frameTagsArray);
+    int I = 0;
+    while (nextFrameTag) {
+        int from = (int)json_value_float(json_get_value_by_name(nextFrameTag, "from"));
+        int to = (int)json_value_float(json_get_value_by_name(nextFrameTag, "to"));
+        char * name = json_value_name(json_get_value_by_name(nextFrameTag, "name"));
+        SpriteSequence sequence = {};
+        sequence.start = from;
+        sequence.end = to;
+        sequence.currentFrame = from;
+        strcpy(sequence.name, name);
+        gIndySpriteSheet.sequences[I] = sequence;
+        I++;
+        nextFrameTag = json_get_next_value(nextFrameTag);
+    }
+    gIndySpriteSheet.currentSequence = WALK_FRONT;
     //JsonValue jsonFrames = json_value(&indyJson, "frames");
     
 #if 0    
@@ -915,27 +932,30 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
 #endif
     
-    pushLine2D(0.f, 900.f, 10.f, 900.f, {1,1,0},7);
+    //pushLine2D(0.f, 900.f, 10.f, 900.f, {1,1,0},7);
     static float advance = 0.f;
     if (advance > 1080.+120.f)
         advance = 0.f;
     advance += 1.0f;
     
     static bool updateIndyFrameTime = true;
-    static int indyFrame = 0;
     static float indyFrameTime = 0.f;
     if (updateIndyFrameTime) {
         indyFrameTime += dt/1000.f; // dt in milliseconds
     }
     if (indyFrameTime >= 100.0f) {
-        indyFrame++;
+        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
         indyFrameTime = 0.f;
     }
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
     //pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
-    if (indyFrame > 18) indyFrame = 0;
-    if (indyFrame < 0)  indyFrame = 18;
-    pushTexturedRect(-10, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, indyFrame);
+    int * currentFramePtr = &gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame;
+    int startAnimPtr = gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start;
+    int endAnimPtr = gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end;
+    if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
+    if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
+    pushTexturedRect(-10, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, *currentFramePtr);
+    
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
     pushTTFText("Test1\nLinebreak1\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
     pushTTFText("Test2\nLinebreak2\0", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
@@ -964,9 +984,15 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (hope_ui_button(GUID, "Toggle Secondary Window\0"))
         showSecondaryWindow= !showSecondaryWindow;
     if (hope_ui_button(GUID, "Next Frame\0"))
-        indyFrame++;
+        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
     if (hope_ui_button(GUID, "Previous Frame\0"))
-        indyFrame--;
+        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame--;
+    if (hope_ui_button(GUID, "Animation: walk front"))
+        gIndySpriteSheet.currentSequence = WALK_FRONT;
+    if (hope_ui_button(GUID, "Animation: walk back"))
+        gIndySpriteSheet.currentSequence = WALK_BACK;
+    if (hope_ui_button(GUID, "Animation: walk right"))
+        gIndySpriteSheet.currentSequence = WALK_SIDE_RIGHT;
     if (hope_ui_button(GUID, "Play/Pause\0"))
         updateIndyFrameTime = !updateIndyFrameTime;
     hope_ui_end();

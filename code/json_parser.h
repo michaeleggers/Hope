@@ -676,6 +676,16 @@ int json_value_bool(JsonNode * node)
     return -1; // TODO(Michael): what to return in error-case?
 }
 
+char * json_value_name(JsonNode * node)
+{
+    if (node->token.type == JSON_STRING) {
+        return node->token.name;
+    }
+    else {
+        return 0;
+    }
+}
+
 void json_print_ast(JsonNode * root)
 {
     printf("\n\n>>> AST <<<\n\n");

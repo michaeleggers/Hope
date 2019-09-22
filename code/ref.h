@@ -122,6 +122,25 @@ struct Window
     int intWidth, intHeight;
 };
 
+enum SpriteSequenceType
+{
+    WALK_FRONT,
+    WALK_BACK,
+    WALK_SIDE_LEFT,
+    WALK_SIDE_RIGHT,
+    MAX_SEQUENCE_TYPES
+};
+
+struct SpriteSequence
+{
+    SpriteSequenceType sequenceType;
+    char name[64];
+    int start, end;
+    int currentFrame;
+    bool flipHorizontal;
+    bool flipVertical;
+};
+
 struct SpriteSheet
 {
     Texture * texture;
@@ -131,6 +150,8 @@ struct SpriteSheet
     char name[64];
     Window windows[MAX_SPRITESHEET_WINDOWS];
     int freeWindowIndex;
+    SpriteSequence sequences[MAX_SEQUENCE_TYPES];
+    SpriteSequenceType currentSequence;
 };
 
 struct Mesh
