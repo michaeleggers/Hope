@@ -771,18 +771,26 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     JsonNode * metaInfoNode = json_get_value_by_name(indyJson.tree, "meta");
     JsonNode * frameTagsArray = json_get_value_by_name(metaInfoNode, "frameTags");
     JsonNode * nextFrameTag = json_get_child(frameTagsArray);
-    int I = 0;
     while (nextFrameTag) {
+        char * name = json_value_name(json_get_value_by_name(nextFrameTag, "name"));
         int from = (int)json_value_float(json_get_value_by_name(nextFrameTag, "from"));
         int to = (int)json_value_float(json_get_value_by_name(nextFrameTag, "to"));
-        char * name = json_value_name(json_get_value_by_name(nextFrameTag, "name"));
         SpriteSequence sequence = {};
         sequence.start = from;
         sequence.end = to;
         sequence.currentFrame = from;
         strcpy(sequence.name, name);
-        gIndySpriteSheet.sequences[I] = sequence;
-        I++;
+        if (!strcmp(name, "walk_back")) {
+            gIndySpriteSheet.sequences[WALK_BACK] = sequence;
+        }
+        if (!strcmp(name, "walk_front")) {
+            gIndySpriteSheet.sequences[WALK_FRONT] = sequence;
+        }
+        if (!strcmp(name, "walk_right")) {
+            gIndySpriteSheet.sequences[WALK_SIDE_RIGHT] = sequence;
+            gIndySpriteSheet.sequences[WALK_SIDE_LEFT] = sequence;
+            gIndySpriteSheet.sequences[WALK_SIDE_LEFT].flipHorizontal = true;
+        }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
     gIndySpriteSheet.currentSequence = WALK_FRONT;
@@ -979,7 +987,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-    if (hope_ui_button(GUID, "Show Text\0"))
+    if (hope_ui_button(GUID, "Toggle Animation Info"))
         buttonClicked = !buttonClicked;
     if (hope_ui_button(GUID, "Toggle Secondary Window\0"))
         showSecondaryWindow= !showSecondaryWindow;
@@ -1016,9 +1024,23 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
     hopeUIImpLAddToDrawList(uiDrawList);
     
-    if (buttonClicked)
-        pushTTFText("Tanya is amazing!!!\0", 960, 540, {1,1,1}, &gFontInfo);
-    
+    if (buttonClicked) {
+        pushTTFText("Animation name: ", 960, 540, {1,1,1}, &gFontInfo);
+        pushTTFText(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].name, 1100, 540, {1,1,1}, &gFontInfo);
+        pushTTFText("start: ", 960, 560, {1,1,1}, &gFontInfo);
+        char buf[32];
+        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start, buf, 10);
+        pushTTFText(buf, 1100, 560, {1,1,1}, &gFontInfo);
+        pushTTFText("end: ", 960, 580, {1,1,1}, &gFontInfo);
+        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end, buf, 10);
+        pushTTFText(buf, 1100, 580, {1,1,1}, &gFontInfo);
+        pushTTFText("frame-count: ", 960, 600, {1,1,1}, &gFontInfo);
+        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end - gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start, buf, 10);
+        pushTTFText(buf, 1100, 600, {1,1,1}, &gFontInfo);
+        pushTTFText("current frame: ", 960, 620, {1,1,1}, &gFontInfo);
+        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame, buf, 10);
+        pushTTFText(buf, 1100, 620, {1,1,1}, &gFontInfo);
+    }
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
