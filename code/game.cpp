@@ -22,6 +22,57 @@ global_var InputDevice* gInputDevice;
 global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
+void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
+{
+    JsonDocument indyJson = json_parse(jsonFile);
+    JsonNode * framesArray = json_get_value_by_name(indyJson.tree, "frames");
+    JsonNode * arrayItem = json_get_child(framesArray);
+    printf("\n\n\tJSON QUERY TEST:\n\n");
+    while (arrayItem) {
+        JsonNode * filenameField = json_get_value_by_name(arrayItem, "filename");
+        JsonNode * frameField = json_get_value_by_name(arrayItem, "frame");
+        JsonNode * xOffset = json_get_value_by_name(frameField, "x");
+        JsonNode * yOffset = json_get_value_by_name(frameField, "y");
+        JsonNode * width = json_get_value_by_name(frameField, "w");
+        JsonNode * height = json_get_value_by_name(frameField, "h");
+        float xOffset_ = json_value_float(xOffset);
+        float yOffset_ = json_value_float(yOffset);
+        float width_ = json_value_float(width);
+        float height_ = json_value_float(height);
+        printf("filename: %s\n", filenameField->token.name);
+        printf("frame: { x:%f, y:%f, w:%f, h:%f }\n", xOffset_, yOffset_, width_, height_);
+        printf("\n");
+        addSpriteFrame(&gIndySpriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
+        arrayItem = json_get_next_value(arrayItem);
+    }
+    JsonNode * metaInfoNode = json_get_value_by_name(indyJson.tree, "meta");
+    JsonNode * frameTagsArray = json_get_value_by_name(metaInfoNode, "frameTags");
+    JsonNode * nextFrameTag = json_get_child(frameTagsArray);
+    while (nextFrameTag) {
+        char * name = json_value_name(json_get_value_by_name(nextFrameTag, "name"));
+        int from = (int)json_value_float(json_get_value_by_name(nextFrameTag, "from"));
+        int to = (int)json_value_float(json_get_value_by_name(nextFrameTag, "to"));
+        SpriteSequence sequence = {};
+        sequence.start = from;
+        sequence.end = to;
+        sequence.currentFrame = from;
+        strcpy(sequence.name, name);
+        if (!strcmp(name, "walk_back")) {
+            spriteSheet->sequences[WALK_BACK] = sequence;
+        }
+        if (!strcmp(name, "walk_front")) {
+            spriteSheet->sequences[WALK_FRONT] = sequence;
+        }
+        if (!strcmp(name, "walk_right")) {
+            spriteSheet->sequences[WALK_SIDE_RIGHT] = sequence;
+            spriteSheet->sequences[WALK_SIDE_LEFT] = sequence;
+            spriteSheet->sequences[WALK_SIDE_LEFT].flipHorizontal = true;
+        }
+        nextFrameTag = json_get_next_value(nextFrameTag);
+    }
+    spriteSheet->currentSequence = WALK_FRONT;
+}
+
 Background loadBackground(char * file)
 {
     Background bg;
@@ -745,73 +796,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
                                          "..\\assets\\indy\\indy_walking_sheet.png",
                                          0, 0,
                                          0, 0);
-    
     char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking_sheet.json");
-    JsonDocument indyJson = json_parse(jsonFile);
-    JsonNode * framesArray = json_get_value_by_name(indyJson.tree, "frames");
-    JsonNode * arrayItem = json_get_child(framesArray);
-    printf("\n\n\tJSON QUERY TEST:\n\n");
-    while (arrayItem) {
-        JsonNode * filenameField = json_get_value_by_name(arrayItem, "filename");
-        JsonNode * frameField = json_get_value_by_name(arrayItem, "frame");
-        JsonNode * xOffset = json_get_value_by_name(frameField, "x");
-        JsonNode * yOffset = json_get_value_by_name(frameField, "y");
-        JsonNode * width = json_get_value_by_name(frameField, "w");
-        JsonNode * height = json_get_value_by_name(frameField, "h");
-        float xOffset_ = json_value_float(xOffset);
-        float yOffset_ = json_value_float(yOffset);
-        float width_ = json_value_float(width);
-        float height_ = json_value_float(height);
-        printf("filename: %s\n", filenameField->token.name);
-        printf("frame: { x:%f, y:%f, w:%f, h:%f }\n", xOffset_, yOffset_, width_, height_);
-        printf("\n");
-        addSpriteFrame(&gIndySpriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
-        arrayItem = json_get_next_value(arrayItem);
-    }
-    JsonNode * metaInfoNode = json_get_value_by_name(indyJson.tree, "meta");
-    JsonNode * frameTagsArray = json_get_value_by_name(metaInfoNode, "frameTags");
-    JsonNode * nextFrameTag = json_get_child(frameTagsArray);
-    while (nextFrameTag) {
-        char * name = json_value_name(json_get_value_by_name(nextFrameTag, "name"));
-        int from = (int)json_value_float(json_get_value_by_name(nextFrameTag, "from"));
-        int to = (int)json_value_float(json_get_value_by_name(nextFrameTag, "to"));
-        SpriteSequence sequence = {};
-        sequence.start = from;
-        sequence.end = to;
-        sequence.currentFrame = from;
-        strcpy(sequence.name, name);
-        if (!strcmp(name, "walk_back")) {
-            gIndySpriteSheet.sequences[WALK_BACK] = sequence;
-        }
-        if (!strcmp(name, "walk_front")) {
-            gIndySpriteSheet.sequences[WALK_FRONT] = sequence;
-        }
-        if (!strcmp(name, "walk_right")) {
-            gIndySpriteSheet.sequences[WALK_SIDE_RIGHT] = sequence;
-            gIndySpriteSheet.sequences[WALK_SIDE_LEFT] = sequence;
-            gIndySpriteSheet.sequences[WALK_SIDE_LEFT].flipHorizontal = true;
-        }
-        nextFrameTag = json_get_next_value(nextFrameTag);
-    }
-    gIndySpriteSheet.currentSequence = WALK_FRONT;
-    //JsonValue jsonFrames = json_value(&indyJson, "frames");
-    
-#if 0    
-    for (int i=0; i<jsonFrames.count; ++i)
-    {
-        JsonValue frame = json_value_from_array(&jsonFrames, i);
-        JsonValue dimensions = json_value(&frame, "frame");
-        JsonValue jX = json_value(&dimensions, "x");
-        JsonValue jH = json_value(&dimensions, "y");
-        JsonValue jWidth = json_value(&dimensions, "w");
-        JsonValue jHeight = json_value(&dimensions, "h");
-        int x = json_value_int(jX);
-        int y = json_value_int(jH);
-        int width = json_value_int(jWidth);
-        int height = json_value_int(jHeight);
-        addSpriteFrame(&gIndySpriteSheet, x, y, width, height);
-    }
-#endif
+    initSpriteSheetFromJson(&gIndySpriteSheet, jsonFile);
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
