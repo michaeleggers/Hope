@@ -604,7 +604,7 @@ JsonDocument json_parse(char * buffer)
     JsonNode * t = 0;
     g_json_token = json_get_token();
     t = json_start();
-    _json_print_ast(t);
+    //_json_print_ast(t);
     document.tree = t;
     return document;
 }

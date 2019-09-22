@@ -128,6 +128,10 @@ enum SpriteSequenceType
     WALK_BACK,
     WALK_SIDE_LEFT,
     WALK_SIDE_RIGHT,
+    FIGHT_READY,
+    PUNCH_HIGH,
+    PUNCH_MID,
+    PUNCH_LOW,
     MAX_SEQUENCE_TYPES
 };
 

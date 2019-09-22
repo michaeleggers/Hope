@@ -46,9 +46,9 @@ enum MouseKeycode
 
 enum GameInput
 {
-    TURN_LEFT,
-    TURN_RIGHT,
-    ACCELERATE
+    FACE_LEFT,
+    FACE_RIGHT,
+    PUNCH
 };
 
 struct GenericKeycode

@@ -49,7 +49,7 @@ struct HopeUIButton
 
 struct HopeUIWindow
 {
-    HopeUIRect rect = {0,0,400,600};
+    HopeUIRect rect = {0,0,400,900};
     HopeUIColor color;
     int depth;
     int xLayoutOffset = 0;

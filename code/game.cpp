@@ -64,6 +64,18 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
             spriteSheet->sequences[WALK_SIDE_LEFT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT].flipHorizontal = true;
         }
+        if (!strcmp(name, "fight_ready")) {
+            spriteSheet->sequences[FIGHT_READY] = sequence;
+        }
+        if (!strcmp(name, "punch_high")) {
+            spriteSheet->sequences[PUNCH_HIGH] = sequence;
+        }
+        if (!strcmp(name, "punch_mid")) {
+            spriteSheet->sequences[PUNCH_MID] = sequence;
+        }
+        if (!strcmp(name, "punch_low")) {
+            spriteSheet->sequences[PUNCH_LOW] = sequence;
+        }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
     spriteSheet->currentSequence = WALK_FRONT;
@@ -334,10 +346,10 @@ ControllerKeycode toControllerKeycode(GameInput gameInput)
 {
     switch (gameInput)
     {
-        case TURN_LEFT  : return DPAD_LEFT;
-        case TURN_RIGHT : return DPAD_RIGHT;
-        case ACCELERATE    : return DPAD_A;
-        default          : return DPAD_NONE;
+        case FACE_LEFT  : return DPAD_LEFT;
+        case FACE_RIGHT : return DPAD_RIGHT;
+        case PUNCH      : return DPAD_A;
+        default         : return DPAD_NONE;
     }
 }
 
@@ -345,10 +357,10 @@ Keycode toKeyboardKeycode(GameInput gameInput)
 {
     switch (gameInput)
     {
-        case TURN_LEFT:  return ARROW_LEFT; break;
-        case TURN_RIGHT: return ARROW_RIGHT; break;
-        case ACCELERATE: return ARROW_UP; break;
-        default: return KEYBOARD_NONE;
+        case FACE_LEFT  :  return ARROW_LEFT; break;
+        case FACE_RIGHT : return ARROW_RIGHT; break;
+        case PUNCH      : return ARROW_UP; break;
+        default         : return KEYBOARD_NONE;
     }
 }
 
@@ -789,10 +801,10 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     }
     
     gIndySpriteSheet = createSpriteSheet(re,
-                                         "..\\assets\\indy\\indy_walking_sheet.png",
+                                         "..\\assets\\indy\\indy_animation_project.png",
                                          0, 0,
                                          0, 0);
-    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_walking_sheet.json");
+    char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_animation_project.json");
     initSpriteSheetFromJson(&gIndySpriteSheet, jsonFile);
     
     // init drawlist
@@ -934,9 +946,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         indyFrameTime += dt/1000.f; // dt in milliseconds
     }
     if (indyFrameTime >= 100.0f) {
-        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
+        //gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
+        //gIndySpriteSheet.currentSequence = FIGHT_READY;
         indyFrameTime = 0.f;
     }
+    
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
     //pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
     int * currentFramePtr = &gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame;
@@ -969,6 +983,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hope_ui_end();
 #endif
     
+#if 0
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Toggle Animation Info"))
@@ -987,9 +1002,36 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         gIndySpriteSheet.currentSequence = WALK_SIDE_RIGHT;
     if (hope_ui_button(GUID, "Animation: walk left"))
         gIndySpriteSheet.currentSequence = WALK_SIDE_LEFT;
+    if (hope_ui_button(GUID, "Animation: attack ready"))
+        gIndySpriteSheet.currentSequence = FIGHT_READY;
+    if (hope_ui_button(GUID, "Animation: punch high"))
+        gIndySpriteSheet.currentSequence = PUNCH_HIGH;
+    if (hope_ui_button(GUID, "Animation: punch mid"))
+        gIndySpriteSheet.currentSequence = PUNCH_MID;
+    if (hope_ui_button(GUID, "Animation: punch low"))
+        gIndySpriteSheet.currentSequence = PUNCH_LOW;
     if (hope_ui_button(GUID, "Play/Pause"))
         updateIndyFrameTime = !updateIndyFrameTime;
     hope_ui_end();
+#endif
+    
+    static float cooldown = 0.f;
+    if (keyDown(inputDevice, FACE_RIGHT)) {
+        gIndySpriteSheet.currentSequence = FIGHT_READY;
+    }
+    if (keyPressed(inputDevice, PUNCH)) {
+        if (cooldown <= 0.f) {
+            gIndySpriteSheet.currentSequence = PUNCH_HIGH;
+            cooldown = 300.0f;
+        }
+    }
+    if (cooldown <= 100.f) {
+        gIndySpriteSheet.currentSequence = FIGHT_READY;
+    }
+    cooldown -= dt/1000.f;
+    if (cooldown < 0.f) {
+        cooldown = 0.f;
+    }
     
     if (showSecondaryWindow)
     {
