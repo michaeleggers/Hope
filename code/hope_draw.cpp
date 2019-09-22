@@ -192,27 +192,40 @@ void pushTexturedRect(float xPos, float yPos,
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     
     Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
+    SpriteSequence sequence = spriteSheet->sequences[spriteSheet->currentSequence];
+    int uv0 = 0;
+    int uv1 = 1;
+    int uv2 = 2;
+    int uv3 = 3;
+    if (sequence.flipHorizontal) {
+        int tmp = uv0;
+        uv0 = uv1;
+        uv1 = tmp;
+        tmp = uv2;
+        uv2 = uv3;
+        uv3 = tmp;
+    }
     float aspectRatio = (float)window.intWidth / (float)window.intHeight;
     vertex[0].position.x = xPos;
     vertex[0].position.y = yPos;
     vertex[0].position.z = 0.f;
-    vertex[0].UVs.x = window.x;
-    vertex[0].UVs.y = window.y + window.height;
+    vertex[uv0].UVs.x = window.x;
+    vertex[uv0].UVs.y = window.y + window.height;
     vertex[1].position.x = xPos + xScale*aspectRatio;
     vertex[1].position.y = yPos;
     vertex[1].position.z = 0.f;
-    vertex[1].UVs.x = window.x + window.width;
-    vertex[1].UVs.y = window.y + window.height;
+    vertex[uv1].UVs.x = window.x + window.width;
+    vertex[uv1].UVs.y = window.y + window.height;
     vertex[2].position.x = xPos + xScale*aspectRatio;
     vertex[2].position.y = yPos + yScale;
     vertex[2].position.z = 0.f;
-    vertex[2].UVs.x = window.x + window.width;
-    vertex[2].UVs.y = window.y;
+    vertex[uv2].UVs.x = window.x + window.width;
+    vertex[uv2].UVs.y = window.y;
     vertex[3].position.x = xPos;
     vertex[3].position.y = yPos + yScale;
     vertex[3].position.z = 0.f;
-    vertex[3].UVs.x = window.x;
-    vertex[3].UVs.y = window.y;
+    vertex[uv3].UVs.x = window.x;
+    vertex[uv3].UVs.y = window.y;
     index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
     index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
     vertex += 4;

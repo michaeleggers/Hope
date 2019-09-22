@@ -27,7 +27,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
     JsonDocument indyJson = json_parse(jsonFile);
     JsonNode * framesArray = json_get_value_by_name(indyJson.tree, "frames");
     JsonNode * arrayItem = json_get_child(framesArray);
-    printf("\n\n\tJSON QUERY TEST:\n\n");
     while (arrayItem) {
         JsonNode * filenameField = json_get_value_by_name(arrayItem, "filename");
         JsonNode * frameField = json_get_value_by_name(arrayItem, "frame");
@@ -39,9 +38,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         float yOffset_ = json_value_float(yOffset);
         float width_ = json_value_float(width);
         float height_ = json_value_float(height);
-        printf("filename: %s\n", filenameField->token.name);
-        printf("frame: { x:%f, y:%f, w:%f, h:%f }\n", xOffset_, yOffset_, width_, height_);
-        printf("\n");
         addSpriteFrame(&gIndySpriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
         arrayItem = json_get_next_value(arrayItem);
     }
@@ -951,9 +947,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushTexturedRect(-10, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, *currentFramePtr);
     
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
-    pushTTFText("Test1\nLinebreak1\0", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
-    pushTTFText("Test2\nLinebreak2\0", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
-    pushTTFText("Test3\nLinebreak3\0", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
+    pushTTFText("Test1\nLinebreak1", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
+    pushTTFText("Test2\nLinebreak2", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
+    pushTTFText("Test3\nLinebreak3", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
     pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
     
@@ -962,11 +958,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     static bool showSecondaryWindow = false;
 #if 0
     hope_ui_begin(GUID);
-    if (hope_ui_button(GUID, "Das ist Button A\0", {0, 0, 300, 100}))
+    if (hope_ui_button(GUID, "Das ist Button A", {0, 0, 300, 100}))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Button B\0", {0, 200, 300, 300}))
+    if (hope_ui_button(GUID, "Button B", {0, 200, 300, 300}))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Dieser Text ist etwas zu lang fuer den Button!\0", {600, 200, 900, 300}))
+    if (hope_ui_button(GUID, "Dieser Text ist etwas zu lang fuer den Button!", {600, 200, 900, 300}))
         buttonClicked = !buttonClicked;
     hope_ui_end();
 #endif
@@ -975,11 +971,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Toggle Animation Info"))
         buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Toggle Secondary Window\0"))
+    if (hope_ui_button(GUID, "Toggle Secondary Window"))
         showSecondaryWindow= !showSecondaryWindow;
-    if (hope_ui_button(GUID, "Next Frame\0"))
+    if (hope_ui_button(GUID, "Next Frame"))
         gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
-    if (hope_ui_button(GUID, "Previous Frame\0"))
+    if (hope_ui_button(GUID, "Previous Frame"))
         gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame--;
     if (hope_ui_button(GUID, "Animation: walk front"))
         gIndySpriteSheet.currentSequence = WALK_FRONT;
@@ -987,23 +983,25 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         gIndySpriteSheet.currentSequence = WALK_BACK;
     if (hope_ui_button(GUID, "Animation: walk right"))
         gIndySpriteSheet.currentSequence = WALK_SIDE_RIGHT;
-    if (hope_ui_button(GUID, "Play/Pause\0"))
+    if (hope_ui_button(GUID, "Animation: walk left"))
+        gIndySpriteSheet.currentSequence = WALK_SIDE_LEFT;
+    if (hope_ui_button(GUID, "Play/Pause"))
         updateIndyFrameTime = !updateIndyFrameTime;
     hope_ui_end();
     
     if (showSecondaryWindow)
     {
         hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-        if (hope_ui_button(GUID, "Button 1\0"))
+        if (hope_ui_button(GUID, "Button 1"))
             buttonClicked = !buttonClicked;
-        if (hope_ui_button(GUID, "Button 2\0"))
+        if (hope_ui_button(GUID, "Button 2"))
             buttonClicked = !buttonClicked;
-        if (hope_ui_button(GUID, "Close Window\0"))
+        if (hope_ui_button(GUID, "Close Window"))
             showSecondaryWindow = !showSecondaryWindow;
         hope_ui_end();
     }
     
-    if (hope_ui_button(GUID, "I'm not attached to a window ;)\0", {800, 600, 1200, 800}))
+    if (hope_ui_button(GUID, "I'm not attached to a window ;)", {800, 600, 1200, 800}))
         showSecondaryWindow = !showSecondaryWindow;
     
     hope_ui_render();
