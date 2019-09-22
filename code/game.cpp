@@ -63,7 +63,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
             spriteSheet->sequences[WALK_SIDE_RIGHT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT].flipHorizontal = true;
-            spriteSheet->sequences[WALK_SIDE_LEFT].flipVertical = true;
         }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
@@ -948,11 +947,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     pushTexturedRect(-10, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, *currentFramePtr);
     
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
+#if 0
     pushTTFText("Test1\nLinebreak1", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
     pushTTFText("Test2\nLinebreak2", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
     pushTTFText("Test3\nLinebreak3", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
     pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
     pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
+#endif
     
     // Some button with logic
     static bool buttonClicked = false;
@@ -1002,29 +1003,26 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         hope_ui_end();
     }
     
-    if (hope_ui_button(GUID, "I'm not attached to a window ;)", {800, 600, 1200, 800}))
-        showSecondaryWindow = !showSecondaryWindow;
-    
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
     hopeUIImpLAddToDrawList(uiDrawList);
     
     if (buttonClicked) {
-        pushTTFText("Animation name: ", 960, 540, {1,1,1}, &gFontInfo);
-        pushTTFText(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].name, 1100, 540, {1,1,1}, &gFontInfo);
-        pushTTFText("start: ", 960, 560, {1,1,1}, &gFontInfo);
+        pushTTFText("Animation name: ", 450, 540, {1,1,1}, &gFontInfo);
+        pushTTFText(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].name, 570, 540, {1,1,1}, &gFontInfo);
+        pushTTFText("start: ", 450, 560, {1,1,1}, &gFontInfo);
         char buf[32];
         itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start, buf, 10);
-        pushTTFText(buf, 1100, 560, {1,1,1}, &gFontInfo);
-        pushTTFText("end: ", 960, 580, {1,1,1}, &gFontInfo);
+        pushTTFText(buf, 570, 560, {1,1,1}, &gFontInfo);
+        pushTTFText("end: ", 450, 580, {1,1,1}, &gFontInfo);
         itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end, buf, 10);
-        pushTTFText(buf, 1100, 580, {1,1,1}, &gFontInfo);
-        pushTTFText("frame-count: ", 960, 600, {1,1,1}, &gFontInfo);
+        pushTTFText(buf, 570, 580, {1,1,1}, &gFontInfo);
+        pushTTFText("frame-count: ", 450, 600, {1,1,1}, &gFontInfo);
         itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end - gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start, buf, 10);
-        pushTTFText(buf, 1100, 600, {1,1,1}, &gFontInfo);
-        pushTTFText("current frame: ", 960, 620, {1,1,1}, &gFontInfo);
+        pushTTFText(buf, 570, 600, {1,1,1}, &gFontInfo);
+        pushTTFText("current frame: ", 450, 620, {1,1,1}, &gFontInfo);
         itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame, buf, 10);
-        pushTTFText(buf, 1100, 620, {1,1,1}, &gFontInfo);
+        pushTTFText(buf, 570, 620, {1,1,1}, &gFontInfo);
     }
     gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
