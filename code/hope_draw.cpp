@@ -205,6 +205,14 @@ void pushTexturedRect(float xPos, float yPos,
         uv2 = uv3;
         uv3 = tmp;
     }
+    if (sequence.flipVertical) {
+        int tmp = uv0;
+        uv0 = uv3;
+        uv3 = tmp;
+        tmp = uv1;
+        uv1 = uv2;
+        uv2 = tmp;
+    }
     float aspectRatio = (float)window.intWidth / (float)window.intHeight;
     vertex[0].position.x = xPos;
     vertex[0].position.y = yPos;

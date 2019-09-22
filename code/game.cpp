@@ -63,6 +63,7 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
             spriteSheet->sequences[WALK_SIDE_RIGHT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT].flipHorizontal = true;
+            spriteSheet->sequences[WALK_SIDE_LEFT].flipVertical = true;
         }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
