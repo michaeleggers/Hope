@@ -912,6 +912,18 @@ void update_input(Entity * entities, int entityCount, float dt, InputDevice * in
             entity->spriteSheet->currentSequence = FIGHT_READY;
         }
         
+        if (keyDown(inputDevice, DPAD_RIGHT)) {
+            if (entity->cooldown <= 0.f) {
+                entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
+                entity->xPos += .2f;
+            }
+        }
+        if (keyDown(inputDevice, DPAD_LEFT)) {
+            if (entity->cooldown <= 0.f) {
+                entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
+                entity->xPos -= .2f;
+            }
+        }
         if (keyPressed(inputDevice, DPAD_A)) {
             if (entity->cooldown <= 0.f) {
                 if (keyDown(inputDevice, DPAD_UP)) {
@@ -928,14 +940,7 @@ void update_input(Entity * entities, int entityCount, float dt, InputDevice * in
                 }
             }
         }
-        if (keyDown(inputDevice, DPAD_RIGHT)) {
-            entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
-            entity->xPos += .2f;
-        }
-        if (keyDown(inputDevice, DPAD_LEFT)) {
-            entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
-            entity->xPos -= .2f;
-        }
+        
         
         entity->cooldown -= dt/1000.f;
         if (entity->cooldown < 0.f) {
