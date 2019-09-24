@@ -129,6 +129,8 @@ enum SpriteSequenceType
     WALK_SIDE_LEFT,
     WALK_SIDE_RIGHT,
     FIGHT_READY,
+    FIGHT_WALK_RIGHT,
+    FIGHT_WALK_LEFT,
     PUNCH_HIGH,
     PUNCH_MID,
     PUNCH_LOW,

@@ -64,6 +64,11 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
             spriteSheet->sequences[WALK_SIDE_LEFT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT].flipHorizontal = true;
         }
+        if (!strcmp(name, "fight_walk")) {
+            spriteSheet->sequences[FIGHT_WALK_RIGHT] = sequence;
+            spriteSheet->sequences[FIGHT_WALK_LEFT] = sequence;
+            spriteSheet->sequences[FIGHT_WALK_LEFT].flipHorizontal = true;
+        }
         if (!strcmp(name, "fight_ready")) {
             spriteSheet->sequences[FIGHT_READY] = sequence;
         }
@@ -346,10 +351,10 @@ ControllerKeycode toControllerKeycode(GameInput gameInput)
 {
     switch (gameInput)
     {
-        case FACE_LEFT  : return DPAD_LEFT;
-        case FACE_RIGHT : return DPAD_RIGHT;
-        case PUNCH      : return DPAD_A;
-        default         : return DPAD_NONE;
+        case FACE_LEFT  : return DPAD_LEFT; break;
+        case FACE_RIGHT : return DPAD_RIGHT; break;
+        case PUNCH      : return DPAD_A; break;
+        default         : return DPAD_NONE; break;
     }
 }
 
@@ -410,6 +415,33 @@ bool keyPressed(InputDevice* device, GameInput gameInput)
     }
 }
 
+bool keyPressed(InputDevice* device, ControllerKeycode controllerKeycode)
+{
+    switch (device->deviceType)
+    {
+        case CONTROLLER:
+        {
+            if (controllerKeycode == DPAD_NONE) return false;
+            Controller* controller = device->controller;
+            if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
+            {
+                controller->prevKeycodes[controllerKeycode] = 1;
+                return true;
+            }
+            else if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
+            {
+                controller->prevKeycodes[controllerKeycode] = 0;
+                return false;
+            }
+            return false;
+        }
+        break;
+        
+        default:
+        return false;
+    }
+}
+
 bool keyDown(InputDevice * device, GameInput gameInput)
 {
     switch (device->deviceType)
@@ -447,6 +479,23 @@ bool keyDown(InputDevice * device, Keycode keycode)
         {
             Keyboard* keyboard = device->keyboard;
             if (keyboard->keycodes[keycode])
+                return true;
+            return false;
+        }
+        break;
+        
+        default: return false;
+    }
+}
+
+bool keyDown(InputDevice * device, ControllerKeycode keycode)
+{
+    switch (device->deviceType)
+    {
+        case CONTROLLER:
+        {
+            Controller* controller = device->controller;
+            if (controller->keycodes[keycode])
                 return true;
             return false;
         }
@@ -945,9 +994,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (updateIndyFrameTime) {
         indyFrameTime += dt/1000.f; // dt in milliseconds
     }
-    if (indyFrameTime >= 100.0f) {
-        //gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
-        //gIndySpriteSheet.currentSequence = FIGHT_READY;
+    if (indyFrameTime >= 200.0f) {
+        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
         indyFrameTime = 0.f;
     }
     
@@ -1016,18 +1064,33 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 #endif
     
     static float cooldown = 0.f;
-    if (keyDown(inputDevice, FACE_RIGHT)) {
-        gIndySpriteSheet.currentSequence = FIGHT_READY;
-    }
-    if (keyPressed(inputDevice, PUNCH)) {
+    if (keyPressed(inputDevice, DPAD_A)) {
         if (cooldown <= 0.f) {
-            gIndySpriteSheet.currentSequence = PUNCH_HIGH;
-            cooldown = 300.0f;
+            if (keyDown(inputDevice, DPAD_UP)) {
+                gIndySpriteSheet.currentSequence = PUNCH_HIGH;
+                cooldown = 300.0f;
+            }
+            else if (keyDown(inputDevice, DPAD_DOWN)) {
+                gIndySpriteSheet.currentSequence = PUNCH_LOW;
+                cooldown = 300.0f;
+            }
+            else {
+                gIndySpriteSheet.currentSequence = PUNCH_MID;
+                cooldown = 300.0f;
+            }
         }
     }
     if (cooldown <= 100.f) {
         gIndySpriteSheet.currentSequence = FIGHT_READY;
     }
+    
+    if (keyDown(inputDevice, DPAD_RIGHT)) {
+        gIndySpriteSheet.currentSequence = FIGHT_WALK_RIGHT;
+    }
+    if (keyDown(inputDevice, DPAD_LEFT)) {
+        gIndySpriteSheet.currentSequence = FIGHT_WALK_LEFT;
+    }
+    
     cooldown -= dt/1000.f;
     if (cooldown < 0.f) {
         cooldown = 0.f;

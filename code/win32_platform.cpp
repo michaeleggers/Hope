@@ -567,7 +567,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
                     else
                         controller.keycodes[DPAD_A] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
-                        controller.keycodes[DPAD_A] = 1;
+                        controller.keycodes[DPAD_B] = 1;
                     else
                         controller.keycodes[DPAD_B] = 0;
                     if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
