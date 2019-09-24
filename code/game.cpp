@@ -22,6 +22,8 @@ global_var InputDevice* gInputDevice;
 global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
+global_var Entity gPlayerEntity;
+
 void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
 {
     JsonDocument indyJson = json_parse(jsonFile);
@@ -854,6 +856,9 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
                                          0, 0);
     char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_animation_project.json");
     initSpriteSheetFromJson(&gIndySpriteSheet, jsonFile);
+    gPlayerEntity.xPos = -10.f;
+    gPlayerEntity.yPos = 0.f;
+    gPlayerEntity.spriteSheet = &gIndySpriteSheet;
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
@@ -889,7 +894,6 @@ char* ftoa(float n)
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
     // new rendering API proposal:
-    // beginRender(renderDevice, renderTarget);
     
     // render text
     static float xTextScale = 0.0f;
@@ -899,63 +903,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     if (yTextScale > 10) yTextScale *= -1;
     xTextScale += dt/1000*0.001f;
     yTextScale += dt/1000*0.001f;
-    //pushText("Educating the mind without educating the heart is no education at all.", -19, 0, .5f, 1.f, {1,0,0}, &gFontSpriteSheet);
-    //pushText("H E L L O", 0, 0, 1, 7, {1, 0.4f, 0}, &gFontSpriteSheet);
-    //pushText("and even more bitmap text", xTextScale, yTextScale, 1, 1, {0.1f, 0.7f, 0.2f}, &gFontSpriteSheet);
-    //pushText("moar text!", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     char uiAngleBuffer[256];
     strcpy(uiAngleBuffer, ftoa(-15.1f));
-    //pushText("ship angle: ", -15, 8, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    //pushText(uiAngleBuffer, -15, 7, 1.f, 1.f, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
     
-    // HACK(Michael): 'camera'-controlls to move around the iso-map
-    static float xOffset = 0.0f;
-    static float yOffset = 0.0f;
-    if (keyDown(inputDevice, ARROW_LEFT))
-        xOffset += 0.1f;
-    if (keyDown(inputDevice, ARROW_RIGHT))
-        xOffset -= 0.1f;
-    if (keyDown(inputDevice, ARROW_UP))
-        yOffset -= 0.1f;
-    if (keyDown(inputDevice, ARROW_DOWN))
-        yOffset += 0.1f;
-    
-    
-    /*
-    // render iso-map
-    for (int y = 0; y < 100; y++)
-    {
-    for (int x = 0; x < 100; x++)
-    {
-    pushTexturedRect(x -y+xOffset, x*(-0.5f) - y*0.5f + yOffset,
-    1, 1,
-    {1, 1, 1},
-    &gTilesSpriteSheet, gIsoMap[100*y + x]);
-    }
-    }
-    
-    pushTexturedRect(-18, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 0);
-    pushText("BC", -10, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushTexturedRect(-16, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 19);
-    pushTexturedRect(-14, 5,1, 1,{1, 1, 1},&gTilesSpriteSheet, 20);
-    pushText("DC", -5, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    pushText("EF", 0, -5, abs(sinf(xTextScale)), 1, {0.1f, 0.4f, 0.5f}, &gFontSpriteSheet);
-    */
-#if 0
-    pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
-    pushLine2D(0.f, 1.f, 10.f, 1.f, {1,0,0},3);
-    pushLine2D(0.f, 5.f, 10.f, 5.f, {0,1,0},5);
-    pushLine2D(-10.f, -10.f, 0.f, 0.f, {0,0,1},3);
-    pushLine2D(-10.f, -10.f, 10.f, 0.f, {0,0,1},3);
-    pushText("rendering 10.000 tiles!", -5, 5, 1, 1, {0.8f, 0.1f, 0.1f}, &gFontSpriteSheet);
-    pushRect2D(0.0f, 0.0f, 7.0f, -7.0f, {1,0,0}, 2.5f);
-    //pushTexturedRect(x, y, scale, &bitmapData);
-    pushFilledRect(-5.0f, 0.0f, 3.0f, 5.0f, {1,1,0});
-    pushFilledRect(-10.0f, 0.0f, 1.0f, 4.0f, {1,1,0});
-    pushTexturedRect(-18, 0, 20, 20, {1, 1, 1}, gTTFTexture);
-#endif
-    
-    //pushLine2D(0.f, 900.f, 10.f, 900.f, {1,1,0},7);
     static float advance = 0.f;
     if (advance > 1080.+120.f)
         advance = 0.f;
@@ -967,39 +917,38 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         indyFrameTime += dt/1000.f; // dt in milliseconds
     }
     if (indyFrameTime >= 200.0f) {
-        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
+        gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].currentFrame++;
         indyFrameTime = 0.f;
     }
     
     static float cooldown = 0.f;
-    static float indyXPos = -10.0f;
     if (keyPressed(inputDevice, DPAD_A)) {
         if (cooldown <= 0.f) {
             if (keyDown(inputDevice, DPAD_UP)) {
-                gIndySpriteSheet.currentSequence = PUNCH_HIGH;
+                gPlayerEntity.spriteSheet->currentSequence = PUNCH_HIGH;
                 cooldown = 300.0f;
             }
             else if (keyDown(inputDevice, DPAD_DOWN)) {
-                gIndySpriteSheet.currentSequence = PUNCH_LOW;
+                gPlayerEntity.spriteSheet->currentSequence = PUNCH_LOW;
                 cooldown = 300.0f;
             }
             else {
-                gIndySpriteSheet.currentSequence = PUNCH_MID;
+                gPlayerEntity.spriteSheet->currentSequence = PUNCH_MID;
                 cooldown = 300.0f;
             }
         }
     }
     if (cooldown <= 100.f) {
-        gIndySpriteSheet.currentSequence = FIGHT_READY;
+        gPlayerEntity.spriteSheet->currentSequence = FIGHT_READY;
     }
     
     if (keyDown(inputDevice, DPAD_RIGHT)) {
-        gIndySpriteSheet.currentSequence = FIGHT_WALK_RIGHT;
-        indyXPos += .2f;
+        gPlayerEntity.spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
+        gPlayerEntity.xPos += .2f;
     }
     if (keyDown(inputDevice, DPAD_LEFT)) {
-        gIndySpriteSheet.currentSequence = FIGHT_WALK_LEFT;
-        indyXPos -= .2f;
+        gPlayerEntity.spriteSheet->currentSequence = FIGHT_WALK_LEFT;
+        gPlayerEntity.xPos -= .2f;
     }
     
     cooldown -= dt/1000.f;
@@ -1007,23 +956,12 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         cooldown = 0.f;
     }
     
-    //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
-    //pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
-    int * currentFramePtr = &gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame;
-    int startAnimPtr = gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start;
-    int endAnimPtr = gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end;
+    int * currentFramePtr = &gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].currentFrame;
+    int startAnimPtr = gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].start;
+    int endAnimPtr = gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].end;
     if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
     if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
-    pushTexturedRect(indyXPos, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, *currentFramePtr);
-    
-    //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
-#if 0
-    pushTTFText("Test1\nLinebreak1", 960, advance, {1.f,1.f, 1.f}, &gFontInfo);
-    pushTTFText("Test2\nLinebreak2", 960, advance-80.f, {0.f,1.f, 0.f}, &gFontInfo);
-    pushTTFText("Test3\nLinebreak3", 960, advance-160.f, {0.f,0.f, 1.f}, &gFontInfo);
-    pushFilledRect(0.0f, 0.0f, 1920.0f, 100.0f, {1,0,1});
-    pushFilledRect(0.0f, 80.f, 1920.0f, 20.f, {0.0f, 0, 1.0f});
-#endif
+    pushTexturedRect(gPlayerEntity.xPos, 0, 7, 7, {1, 1, 1}, gPlayerEntity.spriteSheet, *currentFramePtr);
     
     // Some button with logic
     static bool buttonClicked = false;

@@ -104,6 +104,8 @@ struct Quad
 
 struct Entity
 {
+    SpriteSheet * spriteSheet;
+    float xPos, yPos;
 };
 
 // ---------------------------------------
