@@ -3,13 +3,9 @@
 #include "stb_image.h"
 #include "stb_truetype.h"
 
-global_var Entity gSpriteEntityList[MAX_SPRITES];
-global_var Entity gMeshEntityList[MAX_MESHES];
-global_var Entity gPlayerEntity;
 global_var int gNumSpriteEntities;
 global_var int gNumMeshEntities;
 global_var Sprite gBitmapFontSprite;
-global_var Refdef gRefdef;
 global_var DrawList gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;

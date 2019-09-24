@@ -167,6 +167,7 @@ struct Mesh
     Vertex VVVNNNST[1024];
 };
 
+#if 0
 struct Entity
 {
     EntityType entityType;
@@ -179,7 +180,9 @@ struct Entity
     v3 velocity;
     v2 speed;
 };
+#endif
 
+#if 0
 struct Refdef
 {
     int numSpriteEntities;
@@ -188,6 +191,7 @@ struct Refdef
     Entity * meshEntities;
     Entity * playerEntity;
 };
+#endif
 
 struct refexport_t
 {

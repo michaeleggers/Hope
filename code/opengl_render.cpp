@@ -565,6 +565,7 @@ void gl_notify()
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[STANDARD_MESH], "projectionMat");
 }
 
+#if 0
 mat4 updateModelMat(Entity * entity)
 {
     mat4 translationMatrix = hope_translate(
@@ -582,6 +583,7 @@ mat4 updateModelMat(Entity * entity)
     
     return modelMatrix;
 }
+#endif
 
 void gl_renderMesh(GPUMeshData* meshData)
 {

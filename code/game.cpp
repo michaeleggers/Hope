@@ -67,7 +67,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         if (!strcmp(name, "fight_walk")) {
             spriteSheet->sequences[FIGHT_WALK_RIGHT] = sequence;
             spriteSheet->sequences[FIGHT_WALK_LEFT] = sequence;
-            spriteSheet->sequences[FIGHT_WALK_LEFT].flipHorizontal = true;
         }
         if (!strcmp(name, "fight_ready")) {
             spriteSheet->sequences[FIGHT_READY] = sequence;
@@ -865,33 +864,6 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         OutputDebugStringA("failed to create idxBuffer\n");
 }
 
-void addEntity(Entity * entity)
-{
-    switch (entity->entityType)
-    {
-        case SPRITE_E:
-        {
-            if (gNumSpriteEntities >= MAX_SPRITES) return;
-            gSpriteEntityList[gNumSpriteEntities] = *entity;
-            gNumSpriteEntities++;
-        }
-        break;
-        
-        case MESH_E:
-        {
-            if (gNumMeshEntities >= MAX_MESHES) return;
-            gMeshEntityList[gNumMeshEntities] = *entity;
-            gNumMeshEntities++;
-        }
-        
-        case PLAYER_E:
-        {
-            gPlayerEntity = *entity;
-        }
-        break;
-    }
-}
-
 // 1000 0000
 // 8    0 
 char* ftoa(float n)
@@ -999,6 +971,42 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         indyFrameTime = 0.f;
     }
     
+    static float cooldown = 0.f;
+    static float indyXPos = -10.0f;
+    if (keyPressed(inputDevice, DPAD_A)) {
+        if (cooldown <= 0.f) {
+            if (keyDown(inputDevice, DPAD_UP)) {
+                gIndySpriteSheet.currentSequence = PUNCH_HIGH;
+                cooldown = 300.0f;
+            }
+            else if (keyDown(inputDevice, DPAD_DOWN)) {
+                gIndySpriteSheet.currentSequence = PUNCH_LOW;
+                cooldown = 300.0f;
+            }
+            else {
+                gIndySpriteSheet.currentSequence = PUNCH_MID;
+                cooldown = 300.0f;
+            }
+        }
+    }
+    if (cooldown <= 100.f) {
+        gIndySpriteSheet.currentSequence = FIGHT_READY;
+    }
+    
+    if (keyDown(inputDevice, DPAD_RIGHT)) {
+        gIndySpriteSheet.currentSequence = FIGHT_WALK_RIGHT;
+        indyXPos += .2f;
+    }
+    if (keyDown(inputDevice, DPAD_LEFT)) {
+        gIndySpriteSheet.currentSequence = FIGHT_WALK_LEFT;
+        indyXPos -= .2f;
+    }
+    
+    cooldown -= dt/1000.f;
+    if (cooldown < 0.f) {
+        cooldown = 0.f;
+    }
+    
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gTilesSpriteSheet, 5);
     //pushTexturedRect(-advance, 0, 10, 10, {1, 1, 1}, &gTilesSpriteSheet, 0);
     int * currentFramePtr = &gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame;
@@ -1006,7 +1014,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     int endAnimPtr = gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end;
     if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
     if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
-    pushTexturedRect(-10, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, *currentFramePtr);
+    pushTexturedRect(indyXPos, 0, 7, 7, {1, 1, 1}, &gIndySpriteSheet, *currentFramePtr);
     
     //pushTexturedRect(0, 0, 2, 2, {1, 1, 1}, &gIndySpriteSheet, 0);
 #if 0
@@ -1063,39 +1071,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hope_ui_end();
 #endif
     
-    static float cooldown = 0.f;
-    if (keyPressed(inputDevice, DPAD_A)) {
-        if (cooldown <= 0.f) {
-            if (keyDown(inputDevice, DPAD_UP)) {
-                gIndySpriteSheet.currentSequence = PUNCH_HIGH;
-                cooldown = 300.0f;
-            }
-            else if (keyDown(inputDevice, DPAD_DOWN)) {
-                gIndySpriteSheet.currentSequence = PUNCH_LOW;
-                cooldown = 300.0f;
-            }
-            else {
-                gIndySpriteSheet.currentSequence = PUNCH_MID;
-                cooldown = 300.0f;
-            }
-        }
-    }
-    if (cooldown <= 100.f) {
-        gIndySpriteSheet.currentSequence = FIGHT_READY;
-    }
-    
-    if (keyDown(inputDevice, DPAD_RIGHT)) {
-        gIndySpriteSheet.currentSequence = FIGHT_WALK_RIGHT;
-    }
-    if (keyDown(inputDevice, DPAD_LEFT)) {
-        gIndySpriteSheet.currentSequence = FIGHT_WALK_LEFT;
-    }
-    
-    cooldown -= dt/1000.f;
-    if (cooldown < 0.f) {
-        cooldown = 0.f;
-    }
-    
     if (showSecondaryWindow)
     {
         hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
@@ -1129,7 +1104,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame, buf, 10);
         pushTTFText(buf, 570, 620, {1,1,1}, &gFontInfo);
     }
-    gRefdef.playerEntity = &gPlayerEntity;
     re->endFrame(&gDrawList);
 }
 

@@ -102,11 +102,14 @@ struct Quad
     float x1, y1, s1, t1;
 };
 
+struct Entity
+{
+};
+
 // ---------------------------------------
 
 /* local to game.cpp */
 Background loadBackground(char * file);
-void addEntity(Entity * entity);
 Sprite * loadSprite(refexport_t* re,
                     char * textureID,
                     char * texturename,
