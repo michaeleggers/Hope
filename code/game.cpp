@@ -23,6 +23,7 @@ global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gPlayerEntity;
+global_var Entity gEntities[1];
 
 void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
 {
@@ -859,6 +860,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gPlayerEntity.xPos = -10.f;
     gPlayerEntity.yPos = 0.f;
     gPlayerEntity.spriteSheet = &gIndySpriteSheet;
+    gPlayerEntity.cooldown = 0.f;
+    gEntities[0] = gPlayerEntity;
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
@@ -891,6 +894,70 @@ char* ftoa(float n)
     return b;
 }
 
+void update_input(Entity * entities, int entityCount, float dt, InputDevice * inputDevice)
+{
+    Entity * entity = entities;
+    for (int i = 0; i < entityCount; ++i) {
+        
+        static bool updateIndyFrameTime = true;
+        static float indyFrameTime = 0.f;
+        if (updateIndyFrameTime) {
+            indyFrameTime += dt/1000.f; // dt in milliseconds
+        }
+        if (indyFrameTime >= 200.0f) {
+            entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
+            indyFrameTime = 0.f;
+        }
+        if (entity->cooldown <= 100.f) {
+            entity->spriteSheet->currentSequence = FIGHT_READY;
+        }
+        
+        if (keyPressed(inputDevice, DPAD_A)) {
+            if (entity->cooldown <= 0.f) {
+                if (keyDown(inputDevice, DPAD_UP)) {
+                    entity->spriteSheet->currentSequence = PUNCH_HIGH;
+                    entity->cooldown = 300.0f;
+                }
+                else if (keyDown(inputDevice, DPAD_DOWN)) {
+                    entity->spriteSheet->currentSequence = PUNCH_LOW;
+                    entity->cooldown = 300.0f;
+                }
+                else {
+                    entity->spriteSheet->currentSequence = PUNCH_MID;
+                    entity->cooldown = 300.0f;
+                }
+            }
+        }
+        if (keyDown(inputDevice, DPAD_RIGHT)) {
+            entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
+            entity->xPos += .2f;
+        }
+        if (keyDown(inputDevice, DPAD_LEFT)) {
+            entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
+            entity->xPos -= .2f;
+        }
+        
+        entity->cooldown -= dt/1000.f;
+        if (entity->cooldown < 0.f) {
+            entity->cooldown = 0.f;
+        }
+        
+        int * currentFramePtr = &entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame;
+        int startAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].start;
+        int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
+        if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
+        if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
+    }
+}
+
+void render_entities(Entity * entities, int entityCount)
+{
+    Entity * entity = entities;
+    for (int i=0; i<entityCount; i++) {
+        pushTexturedRect(entity->xPos, 0, 7, 7, {1, 1, 1}, entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame);
+    }
+}
+
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
     // new rendering API proposal:
@@ -911,57 +978,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         advance = 0.f;
     advance += 1.0f;
     
-    static bool updateIndyFrameTime = true;
-    static float indyFrameTime = 0.f;
-    if (updateIndyFrameTime) {
-        indyFrameTime += dt/1000.f; // dt in milliseconds
-    }
-    if (indyFrameTime >= 200.0f) {
-        gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].currentFrame++;
-        indyFrameTime = 0.f;
-    }
-    
-    static float cooldown = 0.f;
-    if (keyPressed(inputDevice, DPAD_A)) {
-        if (cooldown <= 0.f) {
-            if (keyDown(inputDevice, DPAD_UP)) {
-                gPlayerEntity.spriteSheet->currentSequence = PUNCH_HIGH;
-                cooldown = 300.0f;
-            }
-            else if (keyDown(inputDevice, DPAD_DOWN)) {
-                gPlayerEntity.spriteSheet->currentSequence = PUNCH_LOW;
-                cooldown = 300.0f;
-            }
-            else {
-                gPlayerEntity.spriteSheet->currentSequence = PUNCH_MID;
-                cooldown = 300.0f;
-            }
-        }
-    }
-    if (cooldown <= 100.f) {
-        gPlayerEntity.spriteSheet->currentSequence = FIGHT_READY;
-    }
-    
-    if (keyDown(inputDevice, DPAD_RIGHT)) {
-        gPlayerEntity.spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
-        gPlayerEntity.xPos += .2f;
-    }
-    if (keyDown(inputDevice, DPAD_LEFT)) {
-        gPlayerEntity.spriteSheet->currentSequence = FIGHT_WALK_LEFT;
-        gPlayerEntity.xPos -= .2f;
-    }
-    
-    cooldown -= dt/1000.f;
-    if (cooldown < 0.f) {
-        cooldown = 0.f;
-    }
-    
-    int * currentFramePtr = &gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].currentFrame;
-    int startAnimPtr = gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].start;
-    int endAnimPtr = gPlayerEntity.spriteSheet->sequences[gPlayerEntity.spriteSheet->currentSequence].end;
-    if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
-    if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
-    pushTexturedRect(gPlayerEntity.xPos, 0, 7, 7, {1, 1, 1}, gPlayerEntity.spriteSheet, *currentFramePtr);
+    update_input(gEntities, 1, dt, inputDevice);
+    render_entities(gEntities, 1);
     
     // Some button with logic
     static bool buttonClicked = false;
