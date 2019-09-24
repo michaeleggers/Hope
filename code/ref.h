@@ -53,6 +53,7 @@ struct RenderCommand
         struct
         {
             uint32_t quadCount;
+            uint32_t alphaColor;
             v3 tint;
         };
         

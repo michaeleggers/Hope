@@ -178,6 +178,7 @@ void pushTexturedRect(float xPos, float yPos,
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->quadCount = 0;
+        renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
         gDrawList.quadCount = 0;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;

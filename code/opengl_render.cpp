@@ -619,12 +619,16 @@ void gl_endFrame(DrawList* drawList)
             case RENDER_CMD_TEXTURED_RECT:
             {
                 v3 tint = renderCmd->tint;
+                uint32_t alphaColor = renderCmd->alphaColor;
+                GLint alphaColorLocation = glGetUniformLocation(gShaders[SPRITE_SHEET].program, "alphaColor");
                 glUseProgram(gShaders[SPRITE_SHEET].program);
                 
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, renderCmd->textureID);
                 glUniform1i(gTextureLocation, 0);
                 glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
+                glUniform1i(alphaColorLocation, alphaColor);
+                
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
                 // positions
