@@ -109,13 +109,30 @@ enum EntityFacingDirection
     FACING_LEFT
 };
 
+enum EntityState
+{
+    ENTITY_STATE_WALK_FRONT,
+    ENTITY_STATE_WALK_BACK,
+    ENTITY_STATE_WALK_SIDE_LEFT,
+    ENTITY_STATE_WALK_SIDE_RIGHT,
+    ENTITY_STATE_FIGHT_READY,
+    ENTITY_STATE_FIGHT_WALK_RIGHT,
+    ENTITY_STATE_FIGHT_WALK_LEFT,
+    ENTITY_STATE_PUNCH_HIGH,
+    ENTITY_STATE_PUNCH_MID,
+    ENTITY_STATE_PUNCH_LOW,
+    MAX_ENTITY_STATES
+};
+
 struct Entity
 {
     SpriteSheet * spriteSheet;
     float xPos, yPos;
     float cooldown;
     float frameTime;
+    int hitpoints;
     EntityFacingDirection facingDirection;
+    EntityState state;
 };
 
 // ---------------------------------------

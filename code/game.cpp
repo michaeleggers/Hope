@@ -847,6 +847,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     playerEntity.spriteSheet = &gIndySpriteSheet;
     playerEntity.cooldown = 0.f;
     playerEntity.frameTime = 0.f;
+    playerEntity.hitpoints = 100;
     playerEntity.facingDirection = FACING_RIGHT;
     gEntities[0] = playerEntity;
     
@@ -862,6 +863,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     fatguyEntity.yPos = 0.f;
     fatguyEntity.cooldown = 0.f;
     fatguyEntity.frameTime = 0.f;
+    fatguyEntity.hitpoints = 100;
     fatguyEntity.facingDirection = FACING_LEFT;
     gEntities[1] = fatguyEntity;
     
@@ -905,37 +907,42 @@ void update_input(Entity * entity, float dt, Controller * controller)
     }
     if (entity->cooldown <= 100.f) {
         entity->spriteSheet->currentSequence = FIGHT_READY;
+        entity->state = ENTITY_STATE_FIGHT_READY;
     }
     
     if (keyDown(controller, DPAD_RIGHT)) {
         if (entity->cooldown <= 0.f) {
             entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
             entity->xPos += .2f;
+            entity->state = ENTITY_STATE_FIGHT_WALK_RIGHT;
         }
     }
     if (keyDown(controller, DPAD_LEFT)) {
         if (entity->cooldown <= 0.f) {
             entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
             entity->xPos -= .2f;
+            entity->state = ENTITY_STATE_FIGHT_WALK_LEFT;
         }
     }
     if (keyPressed(controller, DPAD_A)) {
         if (entity->cooldown <= 0.f) {
             if (keyDown(controller, DPAD_UP)) {
                 entity->spriteSheet->currentSequence = PUNCH_HIGH;
+                entity->state = ENTITY_STATE_PUNCH_HIGH;
                 entity->cooldown = 300.0f;
             }
             else if (keyDown(controller, DPAD_DOWN)) {
                 entity->spriteSheet->currentSequence = PUNCH_LOW;
+                entity->state = ENTITY_STATE_PUNCH_LOW;
                 entity->cooldown = 300.0f;
             }
             else {
                 entity->spriteSheet->currentSequence = PUNCH_MID;
+                entity->state = ENTITY_STATE_PUNCH_LOW;
                 entity->cooldown = 300.0f;
             }
         }
     }
-    
     
     entity->cooldown -= dt/1000.f;
     if (entity->cooldown < 0.f) {
@@ -947,6 +954,20 @@ void update_input(Entity * entity, float dt, Controller * controller)
     int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
     if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
     if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
+}
+
+void check_collision(Entity * entity1, Entity * entity2)
+{
+    if (entity1->xPos+3 > entity2->xPos &&
+        entity1->xPos < entity2->xPos+6) {
+        if (entity1->state == ENTITY_STATE_PUNCH_HIGH) {
+            if (entity2->state == ENTITY_STATE_FIGHT_READY) {
+                entity2->hitpoints -= 10;
+                printf("entity 2 hitpoints: %d\n", entity2->hitpoints);
+            }
+            entity1->state = ENTITY_STATE_FIGHT_READY;
+        }
+    }
 }
 
 void render_entities(Entity * entities, int entityCount)
@@ -993,6 +1014,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         gEntities[0].facingDirection = FACING_RIGHT;
         gEntities[1].facingDirection = FACING_LEFT;
     }
+    check_collision(&gEntities[0], &gEntities[1]);
     render_entities(gEntities, 2);
     
     
