@@ -92,7 +92,8 @@ struct InputDevice
 {
     DeviceType deviceType;
     Keyboard * keyboard;
-    Controller * controller;
+    Controller * controller1;
+    Controller * controller2;
     Mouse * mouse;
 };
 
@@ -102,12 +103,19 @@ struct Quad
     float x1, y1, s1, t1;
 };
 
+enum EntityFacingDirection
+{
+    FACING_RIGHT,
+    FACING_LEFT
+};
+
 struct Entity
 {
     SpriteSheet * spriteSheet;
     float xPos, yPos;
     float cooldown;
     float frameTime;
+    EntityFacingDirection facingDirection;
 };
 
 // ---------------------------------------

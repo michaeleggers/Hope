@@ -470,14 +470,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     XInputInit();
     // XBox Controller state
-    XBoxControllerState controllerState = {};
-    Controller controller = {};
+    XBoxControllerState controllerState1 = {};
+    XBoxControllerState controllerState2 = {};
+    Controller controller1 = {};
+    Controller controller2 = {};
     // Generic input device. Holds pointer to a couple of input deivces such as
     // keyboard, mouse, controller...
-    inputDevice.keyboard   = &keyboard;
-    inputDevice.controller = &controller;
-    inputDevice.mouse      = &mouse;
-    inputDevice.deviceType = KEYBOARD;
+    inputDevice.keyboard    = &keyboard;
+    inputDevice.controller1 = &controller1;
+    inputDevice.controller2 = &controller2;
+    inputDevice.mouse       = &mouse;
+    inputDevice.deviceType  = KEYBOARD;
     
     game_init(&platformAPI, &inputDevice, &re);
     OutputDebugStringA("game init done\n");
@@ -520,74 +523,86 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
             // Simply get the state of the controller from XInput.
             dwResult = XInputGetState( i, &state );
             
+            Controller * controller = 0;
+            XBoxControllerState * controllerState = 0;
             if( dwResult == ERROR_SUCCESS )
             {
                 // Controller is connected 
-                
-                // controller 0
-                if (i == 0)
-                {
-                    if (!controller.connected)
-                        printf("controller connected\n");
-                    controller.connected = 1;
-                    
-                    DWORD currentPacketNumber = state.dwPacketNumber;
-                    DWORD oldPacketNumber = controllerState.packetNumber;
-                    if (oldPacketNumber != currentPacketNumber && inputDevice.deviceType != CONTROLLER)
-                    {
-                        printf("input device: CONTROLLER\n");
-                        inputDevice.deviceType = CONTROLLER;
-                    }
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
-                    {
-                        controller.keycodes[DPAD_UP] = 1;
-                    }
-                    else
-                        controller.keycodes[DPAD_UP] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
-                    {
-                        controller.keycodes[DPAD_DOWN] = 1;
-                    }
-                    else
-                        controller.keycodes[DPAD_DOWN] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
-                    {
-                        controller.keycodes[DPAD_LEFT] = 1;
-                    }
-                    else
-                        controller.keycodes[DPAD_LEFT] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
-                    {
-                        controller.keycodes[DPAD_RIGHT] = 1;
-                    }
-                    else
-                        controller.keycodes[DPAD_RIGHT] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A)
-                        controller.keycodes[DPAD_A] = 1;
-                    else
-                        controller.keycodes[DPAD_A] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
-                        controller.keycodes[DPAD_B] = 1;
-                    else
-                        controller.keycodes[DPAD_B] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
-                        controller.keycodes[DPAD_X] = 1;
-                    else
-                        controller.keycodes[DPAD_X] = 0;
-                    if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y)
-                        controller.keycodes[DPAD_Y] = 1;
-                    else
-                        controller.keycodes[DPAD_Y] = 0;
-                    controllerState.packetNumber = currentPacketNumber;
+                if (i == 0) {
+                    controller = &controller1;
+                    controllerState = &controllerState1;
                 }
+                else if (i == 1) {
+                    controller = &controller2;
+                    controllerState = &controllerState2;
+                }
+                
+                if (!controller->connected) {
+                    printf("controller%d connected\n", i);
+                }
+                controller->connected = 1;
+                
+                DWORD currentPacketNumber = state.dwPacketNumber;
+                DWORD oldPacketNumber = controllerState->packetNumber;
+                if (oldPacketNumber != currentPacketNumber && inputDevice.deviceType != CONTROLLER)
+                {
+                    printf("input device: CONTROLLER\n");
+                    inputDevice.deviceType = CONTROLLER;
+                }
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
+                {
+                    controller->keycodes[DPAD_UP] = 1;
+                }
+                else
+                    controller->keycodes[DPAD_UP] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+                {
+                    controller->keycodes[DPAD_DOWN] = 1;
+                }
+                else
+                    controller->keycodes[DPAD_DOWN] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
+                {
+                    controller->keycodes[DPAD_LEFT] = 1;
+                }
+                else
+                    controller->keycodes[DPAD_LEFT] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
+                {
+                    controller->keycodes[DPAD_RIGHT] = 1;
+                }
+                else
+                    controller->keycodes[DPAD_RIGHT] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A)
+                    controller->keycodes[DPAD_A] = 1;
+                else
+                    controller->keycodes[DPAD_A] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
+                    controller->keycodes[DPAD_B] = 1;
+                else
+                    controller->keycodes[DPAD_B] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
+                    controller->keycodes[DPAD_X] = 1;
+                else
+                    controller->keycodes[DPAD_X] = 0;
+                if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y)
+                    controller->keycodes[DPAD_Y] = 1;
+                else
+                    controller->keycodes[DPAD_Y] = 0;
+                controllerState->packetNumber = currentPacketNumber;
             }
             else
             {
                 // Controller is not connected
-                if (i == 0 && controller.connected)
+                if (i == 0 && controller1.connected)
                 {
-                    printf("controller disconnected\n");
-                    controller.connected = 0;
+                    printf("controller%d disconnected\n", i);
+                    controller1.connected = 0;
+                }
+                if (i == 1 && controller2.connected)
+                {
+                    printf("controller%d disconnected\n", i);
+                    controller2.connected = 0;
                 }
             }
         }

@@ -162,7 +162,8 @@ void pushText(char *text,
 void pushTexturedRect(float xPos, float yPos, 
                       float xScale, float yScale,
                       v3 tint,
-                      SpriteSheet *spriteSheet, int frame)
+                      SpriteSheet *spriteSheet, int frame,
+                      bool flipHorizontally)
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
@@ -197,7 +198,7 @@ void pushTexturedRect(float xPos, float yPos,
     int uv1 = 1;
     int uv2 = 2;
     int uv3 = 3;
-    if (sequence.flipHorizontal) {
+    if ( !(sequence.flipHorizontal && flipHorizontally) && (sequence.flipHorizontal || flipHorizontally) ) {
         int tmp = uv0;
         uv0 = uv1;
         uv1 = tmp;

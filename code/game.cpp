@@ -370,6 +370,7 @@ Keycode toKeyboardKeycode(GameInput gameInput)
     }
 }
 
+#if 0
 bool keyPressed(InputDevice* device, GameInput gameInput)
 {
     switch (device->deviceType)
@@ -415,34 +416,25 @@ bool keyPressed(InputDevice* device, GameInput gameInput)
         return false;
     }
 }
+#endif
 
-bool keyPressed(InputDevice* device, ControllerKeycode controllerKeycode)
+bool keyPressed(Controller * controller, ControllerKeycode controllerKeycode)
 {
-    switch (device->deviceType)
+    if (controllerKeycode == DPAD_NONE) return false;
+    if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
     {
-        case CONTROLLER:
-        {
-            if (controllerKeycode == DPAD_NONE) return false;
-            Controller* controller = device->controller;
-            if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
-            {
-                controller->prevKeycodes[controllerKeycode] = 1;
-                return true;
-            }
-            else if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
-            {
-                controller->prevKeycodes[controllerKeycode] = 0;
-                return false;
-            }
-            return false;
-        }
-        break;
-        
-        default:
+        controller->prevKeycodes[controllerKeycode] = 1;
+        return true;
+    }
+    else if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
+    {
+        controller->prevKeycodes[controllerKeycode] = 0;
         return false;
     }
+    return false;
 }
 
+#if 0
 bool keyDown(InputDevice * device, GameInput gameInput)
 {
     switch (device->deviceType)
@@ -471,6 +463,7 @@ bool keyDown(InputDevice * device, GameInput gameInput)
         default: return false;
     }
 }
+#endif
 
 bool keyDown(InputDevice * device, Keycode keycode)
 {
@@ -489,23 +482,14 @@ bool keyDown(InputDevice * device, Keycode keycode)
     }
 }
 
-bool keyDown(InputDevice * device, ControllerKeycode keycode)
+bool keyDown(Controller * controller, ControllerKeycode keycode)
 {
-    switch (device->deviceType)
-    {
-        case CONTROLLER:
-        {
-            Controller* controller = device->controller;
-            if (controller->keycodes[keycode])
-                return true;
-            return false;
-        }
-        break;
-        
-        default: return false;
-    }
+    if (controller->keycodes[keycode])
+        return true;
+    return false;
 }
 
+#if 0
 bool keyUp(InputDevice * device, GameInput gameInput)
 {
     switch (device->deviceType)
@@ -551,6 +535,7 @@ bool keyUp(InputDevice * device, GameInput gameInput)
         return false;
     }
 }
+#endif
 
 // HOPE UI CALLBACKS
 int get_window_width()
@@ -862,6 +847,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     playerEntity.spriteSheet = &gIndySpriteSheet;
     playerEntity.cooldown = 0.f;
     playerEntity.frameTime = 0.f;
+    playerEntity.facingDirection = FACING_RIGHT;
     gEntities[0] = playerEntity;
     
     char * jsonFileFatGuy = gPlatformAPI->readTextFile("..\\assets\\fatguy\\fatguy.json");
@@ -876,6 +862,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     fatguyEntity.yPos = 0.f;
     fatguyEntity.cooldown = 0.f;
     fatguyEntity.frameTime = 0.f;
+    fatguyEntity.facingDirection = FACING_LEFT;
     gEntities[1] = fatguyEntity;
     
     // init drawlist
@@ -909,68 +896,69 @@ char* ftoa(float n)
     return b;
 }
 
-void update_input(Entity * entities, int entityCount, float dt, InputDevice * inputDevice)
+void update_input(Entity * entity, float dt, Controller * controller)
 {
-    Entity * entity = entities;
-    for (int i = 0; i < entityCount; ++i) {
-        
-        entity->frameTime += dt/1000.f; // dt in milliseconds
-        if (entity->frameTime >= 200.0f) {
-            entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
-            entity->frameTime = 0.f;
-        }
-        if (entity->cooldown <= 100.f) {
-            entity->spriteSheet->currentSequence = FIGHT_READY;
-        }
-        
-        if (keyDown(inputDevice, DPAD_RIGHT)) {
-            if (entity->cooldown <= 0.f) {
-                entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
-                entity->xPos += .2f;
-            }
-        }
-        if (keyDown(inputDevice, DPAD_LEFT)) {
-            if (entity->cooldown <= 0.f) {
-                entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
-                entity->xPos -= .2f;
-            }
-        }
-        if (keyPressed(inputDevice, DPAD_A)) {
-            if (entity->cooldown <= 0.f) {
-                if (keyDown(inputDevice, DPAD_UP)) {
-                    entity->spriteSheet->currentSequence = PUNCH_HIGH;
-                    entity->cooldown = 300.0f;
-                }
-                else if (keyDown(inputDevice, DPAD_DOWN)) {
-                    entity->spriteSheet->currentSequence = PUNCH_LOW;
-                    entity->cooldown = 300.0f;
-                }
-                else {
-                    entity->spriteSheet->currentSequence = PUNCH_MID;
-                    entity->cooldown = 300.0f;
-                }
-            }
-        }
-        
-        
-        entity->cooldown -= dt/1000.f;
-        if (entity->cooldown < 0.f) {
-            entity->cooldown = 0.f;
-        }
-        
-        int * currentFramePtr = &entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame;
-        int startAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].start;
-        int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
-        if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
-        if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
+    entity->frameTime += dt/1000.f; // dt in milliseconds
+    if (entity->frameTime >= 200.0f) {
+        entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
+        entity->frameTime = 0.f;
     }
+    if (entity->cooldown <= 100.f) {
+        entity->spriteSheet->currentSequence = FIGHT_READY;
+    }
+    
+    if (keyDown(controller, DPAD_RIGHT)) {
+        if (entity->cooldown <= 0.f) {
+            entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
+            entity->xPos += .2f;
+        }
+    }
+    if (keyDown(controller, DPAD_LEFT)) {
+        if (entity->cooldown <= 0.f) {
+            entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
+            entity->xPos -= .2f;
+        }
+    }
+    if (keyPressed(controller, DPAD_A)) {
+        if (entity->cooldown <= 0.f) {
+            if (keyDown(controller, DPAD_UP)) {
+                entity->spriteSheet->currentSequence = PUNCH_HIGH;
+                entity->cooldown = 300.0f;
+            }
+            else if (keyDown(controller, DPAD_DOWN)) {
+                entity->spriteSheet->currentSequence = PUNCH_LOW;
+                entity->cooldown = 300.0f;
+            }
+            else {
+                entity->spriteSheet->currentSequence = PUNCH_MID;
+                entity->cooldown = 300.0f;
+            }
+        }
+    }
+    
+    
+    entity->cooldown -= dt/1000.f;
+    if (entity->cooldown < 0.f) {
+        entity->cooldown = 0.f;
+    }
+    
+    int * currentFramePtr = &entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame;
+    int startAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].start;
+    int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
+    if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
+    if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
 }
 
 void render_entities(Entity * entities, int entityCount)
 {
     Entity * entity = entities;
     for (int i=0; i<entityCount; i++) {
-        pushTexturedRect(entity->xPos, 0, 7, 7, {1, 1, 1}, entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame);
+        bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
+        pushTexturedRect(entity->xPos, 0, 
+                         7, 7, 
+                         {1, 1, 1}, 
+                         entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame,
+                         flipHorizontally);
         entity++;
     }
 }
@@ -995,7 +983,16 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         advance = 0.f;
     advance += 1.0f;
     
-    update_input(gEntities, 1, dt, inputDevice);
+    update_input(&gEntities[0], dt, inputDevice->controller1);
+    update_input(&gEntities[1], dt, inputDevice->controller2);
+    if (gEntities[0].xPos > gEntities[1].xPos) {
+        gEntities[0].facingDirection = FACING_LEFT;
+        gEntities[1].facingDirection = FACING_RIGHT;
+    }
+    else {
+        gEntities[0].facingDirection = FACING_RIGHT;
+        gEntities[1].facingDirection = FACING_LEFT;
+    }
     render_entities(gEntities, 2);
     
     
