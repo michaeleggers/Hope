@@ -22,7 +22,7 @@ global_var InputDevice* gInputDevice;
 global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
-global_var Entity gEntities[1];
+global_var Entity gEntities[2];
 
 void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
 {
@@ -856,8 +856,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
                                            "..\\assets\\fatguy\\fatguy.png",
                                            0, 0,
                                            0, 0);
+    initSpriteSheetFromJson(&gFatguySpriteSheet, jsonFileFatGuy);
     fatguyEntity.spriteSheet = &gFatguySpriteSheet;
-    initSpriteSheetFromJson(fatguyEntity.spriteSheet, jsonFileFatGuy);
     fatguyEntity.xPos = 10.f;
     fatguyEntity.yPos = 0.f;
     fatguyEntity.cooldown = 0.f;

@@ -188,6 +188,7 @@ LRESULT CALLBACK WindowProcCallback(HWND windowHandle, UINT uMsg, WPARAM wParam,
             //game_update_and_render(0.0f);
             //SwapBuffers(global_deviceContext);
         }
+        break;
         
         case WM_MOVE:
         {
