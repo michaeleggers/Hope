@@ -22,7 +22,6 @@ global_var InputDevice* gInputDevice;
 global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
-global_var Entity gPlayerEntity;
 global_var Entity gEntities[1];
 
 void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
@@ -41,7 +40,7 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         float yOffset_ = json_value_float(yOffset);
         float width_ = json_value_float(width);
         float height_ = json_value_float(height);
-        addSpriteFrame(&gIndySpriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
+        addSpriteFrame(spriteSheet, (int)xOffset_, (int)yOffset_, (int)width_, (int)height_);
         arrayItem = json_get_next_value(arrayItem);
     }
     JsonNode * metaInfoNode = json_get_value_by_name(indyJson.tree, "meta");
@@ -85,7 +84,7 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
-    spriteSheet->currentSequence = WALK_FRONT;
+    spriteSheet->currentSequence = FIGHT_READY;
 }
 
 Background loadBackground(char * file)
@@ -857,11 +856,27 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
                                          0, 0);
     char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_animation_project.json");
     initSpriteSheetFromJson(&gIndySpriteSheet, jsonFile);
-    gPlayerEntity.xPos = -10.f;
-    gPlayerEntity.yPos = 0.f;
-    gPlayerEntity.spriteSheet = &gIndySpriteSheet;
-    gPlayerEntity.cooldown = 0.f;
-    gEntities[0] = gPlayerEntity;
+    Entity playerEntity = {};
+    playerEntity.xPos = -10.f;
+    playerEntity.yPos = 0.f;
+    playerEntity.spriteSheet = &gIndySpriteSheet;
+    playerEntity.cooldown = 0.f;
+    playerEntity.frameTime = 0.f;
+    gEntities[0] = playerEntity;
+    
+    char * jsonFileFatGuy = gPlatformAPI->readTextFile("..\\assets\\fatguy\\fatguy.json");
+    Entity fatguyEntity = {};
+    gFatguySpriteSheet = createSpriteSheet(re,
+                                           "..\\assets\\fatguy\\fatguy.png",
+                                           0, 0,
+                                           0, 0);
+    fatguyEntity.spriteSheet = &gFatguySpriteSheet;
+    initSpriteSheetFromJson(fatguyEntity.spriteSheet, jsonFileFatGuy);
+    fatguyEntity.xPos = 10.f;
+    fatguyEntity.yPos = 0.f;
+    fatguyEntity.cooldown = 0.f;
+    fatguyEntity.frameTime = 0.f;
+    gEntities[1] = fatguyEntity;
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
@@ -899,14 +914,10 @@ void update_input(Entity * entities, int entityCount, float dt, InputDevice * in
     Entity * entity = entities;
     for (int i = 0; i < entityCount; ++i) {
         
-        static bool updateIndyFrameTime = true;
-        static float indyFrameTime = 0.f;
-        if (updateIndyFrameTime) {
-            indyFrameTime += dt/1000.f; // dt in milliseconds
-        }
-        if (indyFrameTime >= 200.0f) {
+        entity->frameTime += dt/1000.f; // dt in milliseconds
+        if (entity->frameTime >= 200.0f) {
             entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
-            indyFrameTime = 0.f;
+            entity->frameTime = 0.f;
         }
         if (entity->cooldown <= 100.f) {
             entity->spriteSheet->currentSequence = FIGHT_READY;
@@ -960,6 +971,7 @@ void render_entities(Entity * entities, int entityCount)
     Entity * entity = entities;
     for (int i=0; i<entityCount; i++) {
         pushTexturedRect(entity->xPos, 0, 7, 7, {1, 1, 1}, entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame);
+        entity++;
     }
 }
 
@@ -984,7 +996,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     advance += 1.0f;
     
     update_input(gEntities, 1, dt, inputDevice);
-    render_entities(gEntities, 1);
+    render_entities(gEntities, 2);
+    
     
     // Some button with logic
     static bool buttonClicked = false;

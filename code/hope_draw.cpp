@@ -11,6 +11,7 @@ global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
 global_var SpriteSheet gTTFSpriteSheet;
 global_var SpriteSheet gIndySpriteSheet;
+global_var SpriteSheet gFatguySpriteSheet;
 global_var Texture *gTTFTexture;
 global_var PlatformAPI* gPlatformAPI;
 global_var FontInfo gFontInfo;
@@ -165,24 +166,26 @@ void pushTexturedRect(float xPos, float yPos,
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+#if 0
     if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXTURED_RECT))
     {
         renderCmdPtr = prevRenderCmd;
     }
-    else
-    {
-        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-        renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
-        renderCmdPtr->tint = tint;
-        renderCmdPtr->textureID = spriteSheet->texture->texture_id;
-        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
-        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
-        renderCmdPtr->quadCount = 0;
-        renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
-        gDrawList.quadCount = 0;
-        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-        gDrawList.freeIndex++;
-    }
+#endif
+    //else
+    //{
+    renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+    renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
+    renderCmdPtr->tint = tint;
+    renderCmdPtr->textureID = spriteSheet->texture->texture_id;
+    renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
+    renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+    renderCmdPtr->quadCount = 0;
+    renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
+    gDrawList.quadCount = 0;
+    gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+    gDrawList.freeIndex++;
+    //}
     
     // current free pos in global vertex/index buffers
     Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
