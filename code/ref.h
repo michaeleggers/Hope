@@ -138,6 +138,7 @@ enum SpriteSequenceType
     HIT_HIGH,
     HIT_MID,
     KO,
+    DEAD,
     MAX_SEQUENCE_TYPES
 };
 

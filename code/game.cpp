@@ -58,38 +58,41 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         if (!strcmp(name, "walk_back")) {
             spriteSheet->sequences[WALK_BACK] = sequence;
         }
-        if (!strcmp(name, "walk_front")) {
+        else if (!strcmp(name, "walk_front")) {
             spriteSheet->sequences[WALK_FRONT] = sequence;
         }
-        if (!strcmp(name, "walk_right")) {
+        else if (!strcmp(name, "walk_right")) {
             spriteSheet->sequences[WALK_SIDE_RIGHT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT] = sequence;
             spriteSheet->sequences[WALK_SIDE_LEFT].flipHorizontal = true;
         }
-        if (!strcmp(name, "fight_walk")) {
+        else if (!strcmp(name, "fight_walk")) {
             spriteSheet->sequences[FIGHT_WALK_RIGHT] = sequence;
             spriteSheet->sequences[FIGHT_WALK_LEFT] = sequence;
         }
-        if (!strcmp(name, "fight_ready")) {
+        else if (!strcmp(name, "fight_ready")) {
             spriteSheet->sequences[FIGHT_READY] = sequence;
         }
-        if (!strcmp(name, "punch_high")) {
+        else if (!strcmp(name, "punch_high")) {
             spriteSheet->sequences[PUNCH_HIGH] = sequence;
         }
-        if (!strcmp(name, "punch_mid")) {
+        else if (!strcmp(name, "punch_mid")) {
             spriteSheet->sequences[PUNCH_MID] = sequence;
         }
-        if (!strcmp(name, "punch_low")) {
+        else if (!strcmp(name, "punch_low")) {
             spriteSheet->sequences[PUNCH_LOW] = sequence;
         }
-        if (!strcmp(name, "hit_high")) {
+        else if (!strcmp(name, "hit_high")) {
             spriteSheet->sequences[HIT_HIGH] = sequence;
         }
-        if (!strcmp(name, "hit_mid")) {
+        else if (!strcmp(name, "hit_mid")) {
             spriteSheet->sequences[HIT_MID] = sequence;
         }
-        if (!strcmp(name, "ko")) {
+        else if (!strcmp(name, "ko")) {
             spriteSheet->sequences[KO] = sequence;
+        }
+        else if (!strcmp(name, "dead")) {
+            spriteSheet->sequences[DEAD] = sequence;
         }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
@@ -372,7 +375,7 @@ Keycode toKeyboardKeycode(GameInput gameInput)
 {
     switch (gameInput)
     {
-        case FACE_LEFT  :  return ARROW_LEFT; break;
+        case FACE_LEFT  : return ARROW_LEFT; break;
         case FACE_RIGHT : return ARROW_RIGHT; break;
         case PUNCH      : return ARROW_UP; break;
         default         : return KEYBOARD_NONE;
@@ -911,7 +914,16 @@ void update_input(Entity * entity, float dt, Controller * controller)
 {
     entity->frameTime += dt/1000.f; // dt in milliseconds
     if (entity->frameTime >= 200.0f) {
-        entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
+        if (entity->state == ENTITY_STATE_KO) {
+            int * currentFramePtr = &entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame;
+            int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
+            if (*currentFramePtr < endAnimPtr) {
+                entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
+            }
+        }
+        else {
+            entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
+        }
         entity->frameTime = 0.f;
     }
     if (entity->cooldown <= 100.f) {
