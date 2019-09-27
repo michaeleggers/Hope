@@ -135,6 +135,9 @@ enum SpriteSequenceType
     PUNCH_HIGH,
     PUNCH_MID,
     PUNCH_LOW,
+    HIT_HIGH,
+    HIT_MID,
+    KO,
     MAX_SEQUENCE_TYPES
 };
 

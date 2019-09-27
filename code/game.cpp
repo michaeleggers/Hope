@@ -82,6 +82,15 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         if (!strcmp(name, "punch_low")) {
             spriteSheet->sequences[PUNCH_LOW] = sequence;
         }
+        if (!strcmp(name, "hit_high")) {
+            spriteSheet->sequences[HIT_HIGH] = sequence;
+        }
+        if (!strcmp(name, "hit_mid")) {
+            spriteSheet->sequences[HIT_MID] = sequence;
+        }
+        if (!strcmp(name, "ko")) {
+            spriteSheet->sequences[KO] = sequence;
+        }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
     spriteSheet->currentSequence = FIGHT_READY;
@@ -938,7 +947,7 @@ void update_input(Entity * entity, float dt, Controller * controller)
             }
             else {
                 entity->spriteSheet->currentSequence = PUNCH_MID;
-                entity->state = ENTITY_STATE_PUNCH_LOW;
+                entity->state = ENTITY_STATE_PUNCH_MID;
                 entity->cooldown = 300.0f;
             }
         }
@@ -962,11 +971,28 @@ void check_collision(Entity * entity1, Entity * entity2)
         entity1->xPos < entity2->xPos+6) {
         if (entity1->state == ENTITY_STATE_PUNCH_HIGH) {
             if (entity2->state == ENTITY_STATE_FIGHT_READY) {
+                entity2->spriteSheet->currentSequence = HIT_HIGH;
+                entity2->cooldown = 300.f;
                 entity2->hitpoints -= 10;
                 printf("entity 2 hitpoints: %d\n", entity2->hitpoints);
             }
             entity1->state = ENTITY_STATE_FIGHT_READY;
         }
+        if (entity1->state == ENTITY_STATE_PUNCH_MID) {
+            if (entity2->state == ENTITY_STATE_FIGHT_READY) {
+                entity2->spriteSheet->currentSequence = HIT_MID;
+                entity2->cooldown = 300.f;
+                entity2->hitpoints -= 10;
+                printf("entity 2 hitpoints: %d\n", entity2->hitpoints);
+            }
+            entity1->state = ENTITY_STATE_FIGHT_READY;
+        }
+    }
+    
+    if (entity2->hitpoints <= 0) {
+        entity2->state = ENTITY_STATE_KO;
+        entity2->spriteSheet->currentSequence = KO;
+        entity2->cooldown = 300.f;
     }
 }
 
