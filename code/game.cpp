@@ -1045,12 +1045,20 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     update_input(&gEntities[0], dt, inputDevice->controller1);
     update_input(&gEntities[1], dt, inputDevice->controller2);
     if (gEntities[0].xPos > gEntities[1].xPos) {
-        gEntities[0].facingDirection = FACING_LEFT;
-        gEntities[1].facingDirection = FACING_RIGHT;
+        if (gEntities[0].state != ENTITY_STATE_KO) {
+            gEntities[0].facingDirection = FACING_LEFT;
+        }
+        if (gEntities[1].state != ENTITY_STATE_KO) {
+            gEntities[1].facingDirection = FACING_RIGHT;
+        }
     }
     else {
-        gEntities[0].facingDirection = FACING_RIGHT;
-        gEntities[1].facingDirection = FACING_LEFT;
+        if (gEntities[0].state != ENTITY_STATE_KO) {
+            gEntities[0].facingDirection = FACING_RIGHT;
+        }
+        if (gEntities[1].state != ENTITY_STATE_KO) {
+            gEntities[1].facingDirection = FACING_LEFT;
+        }
     }
     check_collision(&gEntities[0], &gEntities[1]);
     render_entities(gEntities, 2);
