@@ -133,6 +133,7 @@ struct Entity
     SpriteSheet * spriteSheet;
     float xPos, yPos;
     float cooldown;
+    float cooldownInit;
     float frameTime;
     int hitpoints;
     EntityFacingDirection facingDirection;

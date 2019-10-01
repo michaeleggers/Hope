@@ -858,6 +858,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     playerEntity.yPos = 0.f;
     playerEntity.spriteSheet = &gIndySpriteSheet;
     playerEntity.cooldown = 0.f;
+    playerEntity.cooldownInit = 300.f;
     playerEntity.frameTime = 0.f;
     playerEntity.hitpoints = 100;
     playerEntity.facingDirection = FACING_RIGHT;
@@ -874,6 +875,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     fatguyEntity.xPos = 10.f;
     fatguyEntity.yPos = 0.f;
     fatguyEntity.cooldown = 0.f;
+    fatguyEntity.cooldownInit = 5000.f;
     fatguyEntity.frameTime = 0.f;
     fatguyEntity.hitpoints = 100;
     fatguyEntity.facingDirection = FACING_LEFT;
@@ -950,17 +952,17 @@ void update_input(Entity * entity, float dt, Controller * controller)
             if (keyDown(controller, DPAD_UP)) {
                 entity->spriteSheet->currentSequence = PUNCH_HIGH;
                 entity->state = ENTITY_STATE_PUNCH_HIGH;
-                entity->cooldown = 300.0f;
+                entity->cooldown = entity->cooldownInit;
             }
             else if (keyDown(controller, DPAD_DOWN)) {
                 entity->spriteSheet->currentSequence = PUNCH_LOW;
                 entity->state = ENTITY_STATE_PUNCH_LOW;
-                entity->cooldown = 300.0f;
+                entity->cooldown = entity->cooldownInit;
             }
             else {
                 entity->spriteSheet->currentSequence = PUNCH_MID;
                 entity->state = ENTITY_STATE_PUNCH_MID;
-                entity->cooldown = 300.0f;
+                entity->cooldown = entity->cooldownInit;
             }
         }
     }
@@ -984,18 +986,16 @@ void check_collision(Entity * entity1, Entity * entity2)
         if (entity1->state == ENTITY_STATE_PUNCH_HIGH) {
             if (entity2->state == ENTITY_STATE_FIGHT_READY) {
                 entity2->spriteSheet->currentSequence = HIT_HIGH;
-                entity2->cooldown = 300.f;
+                entity2->cooldown = entity2->cooldownInit;
                 entity2->hitpoints -= 10;
-                printf("entity 2 hitpoints: %d\n", entity2->hitpoints);
             }
             entity1->state = ENTITY_STATE_FIGHT_READY;
         }
-        if (entity1->state == ENTITY_STATE_PUNCH_MID) {
+        else if (entity1->state == ENTITY_STATE_PUNCH_MID) {
             if (entity2->state == ENTITY_STATE_FIGHT_READY) {
                 entity2->spriteSheet->currentSequence = HIT_MID;
-                entity2->cooldown = 300.f;
+                entity2->cooldown = entity2->cooldownInit;
                 entity2->hitpoints -= 10;
-                printf("entity 2 hitpoints: %d\n", entity2->hitpoints);
             }
             entity1->state = ENTITY_STATE_FIGHT_READY;
         }
@@ -1004,7 +1004,7 @@ void check_collision(Entity * entity1, Entity * entity2)
     if (entity2->hitpoints <= 0) {
         entity2->state = ENTITY_STATE_KO;
         entity2->spriteSheet->currentSequence = KO;
-        entity2->cooldown = 300.f;
+        entity2->cooldown = entity2->cooldownInit;
     }
 }
 
@@ -1061,6 +1061,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     check_collision(&gEntities[0], &gEntities[1]);
+    check_collision(&gEntities[1], &gEntities[0]);
     render_entities(gEntities, 2);
     
     
