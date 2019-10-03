@@ -875,7 +875,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     fatguyEntity.xPos = 10.f;
     fatguyEntity.yPos = 0.f;
     fatguyEntity.cooldown = 0.f;
-    fatguyEntity.cooldownInit = 5000.f;
+    fatguyEntity.cooldownInit = 300.f;
     fatguyEntity.frameTime = 0.f;
     fatguyEntity.hitpoints = 100;
     fatguyEntity.facingDirection = FACING_LEFT;
@@ -1064,86 +1064,21 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     check_collision(&gEntities[1], &gEntities[0]);
     render_entities(gEntities, 2);
     
-    
-    // Some button with logic
-    static bool buttonClicked = false;
-    static bool showSecondaryWindow = false;
-#if 0
-    hope_ui_begin(GUID);
-    if (hope_ui_button(GUID, "Das ist Button A", {0, 0, 300, 100}))
-        buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Button B", {0, 200, 300, 300}))
-        buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Dieser Text ist etwas zu lang fuer den Button!", {600, 200, 900, 300}))
-        buttonClicked = !buttonClicked;
-    hope_ui_end();
-#endif
-    
-#if 0
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-    if (hope_ui_button(GUID, "Toggle Animation Info"))
-        buttonClicked = !buttonClicked;
-    if (hope_ui_button(GUID, "Toggle Secondary Window"))
-        showSecondaryWindow= !showSecondaryWindow;
-    if (hope_ui_button(GUID, "Next Frame"))
-        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame++;
-    if (hope_ui_button(GUID, "Previous Frame"))
-        gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame--;
-    if (hope_ui_button(GUID, "Animation: walk front"))
-        gIndySpriteSheet.currentSequence = WALK_FRONT;
-    if (hope_ui_button(GUID, "Animation: walk back"))
-        gIndySpriteSheet.currentSequence = WALK_BACK;
-    if (hope_ui_button(GUID, "Animation: walk right"))
-        gIndySpriteSheet.currentSequence = WALK_SIDE_RIGHT;
-    if (hope_ui_button(GUID, "Animation: walk left"))
-        gIndySpriteSheet.currentSequence = WALK_SIDE_LEFT;
-    if (hope_ui_button(GUID, "Animation: attack ready"))
-        gIndySpriteSheet.currentSequence = FIGHT_READY;
-    if (hope_ui_button(GUID, "Animation: punch high"))
-        gIndySpriteSheet.currentSequence = PUNCH_HIGH;
-    if (hope_ui_button(GUID, "Animation: punch mid"))
-        gIndySpriteSheet.currentSequence = PUNCH_MID;
-    if (hope_ui_button(GUID, "Animation: punch low"))
-        gIndySpriteSheet.currentSequence = PUNCH_LOW;
-    if (hope_ui_button(GUID, "Play/Pause"))
-        updateIndyFrameTime = !updateIndyFrameTime;
+    if (hope_ui_button(GUID, "Toggle Animation Info")) {}
+    if (hope_ui_button(GUID, "Toggle Secondary Window")) {}
     hope_ui_end();
-#endif
     
-    if (showSecondaryWindow)
-    {
-        hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-        if (hope_ui_button(GUID, "Button 1"))
-            buttonClicked = !buttonClicked;
-        if (hope_ui_button(GUID, "Button 2"))
-            buttonClicked = !buttonClicked;
-        if (hope_ui_button(GUID, "Close Window"))
-            showSecondaryWindow = !showSecondaryWindow;
-        hope_ui_end();
-    }
+    hope_ui_start();
+    hope_ui_progress_bar(GUID, 0, 0, 500, 70, gEntities[0].hitpoints, 100);
+    hope_ui_progress_bar(GUID, 1000, 0, 500, 70, gEntities[1].hitpoints, 100);
+    hope_ui_end();
     
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
     hopeUIImpLAddToDrawList(uiDrawList);
     
-    if (buttonClicked) {
-        pushTTFText("Animation name: ", 450, 540, {1,1,1}, &gFontInfo);
-        pushTTFText(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].name, 570, 540, {1,1,1}, &gFontInfo);
-        pushTTFText("start: ", 450, 560, {1,1,1}, &gFontInfo);
-        char buf[32];
-        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start, buf, 10);
-        pushTTFText(buf, 570, 560, {1,1,1}, &gFontInfo);
-        pushTTFText("end: ", 450, 580, {1,1,1}, &gFontInfo);
-        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end, buf, 10);
-        pushTTFText(buf, 570, 580, {1,1,1}, &gFontInfo);
-        pushTTFText("frame-count: ", 450, 600, {1,1,1}, &gFontInfo);
-        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].end - gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].start, buf, 10);
-        pushTTFText(buf, 570, 600, {1,1,1}, &gFontInfo);
-        pushTTFText("current frame: ", 450, 620, {1,1,1}, &gFontInfo);
-        itoa(gIndySpriteSheet.sequences[gIndySpriteSheet.currentSequence].currentFrame, buf, 10);
-        pushTTFText(buf, 570, 620, {1,1,1}, &gFontInfo);
-    }
     re->endFrame(&gDrawList);
 }
 

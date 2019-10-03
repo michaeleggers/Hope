@@ -49,23 +49,29 @@ void hopeUIImpLAddToDrawList(HopeUIDrawList * uiDrawList)
         pushTTFTextInBoundaries(freeButton->text, rect.x0, rect.y0, {x0, y0, width, height}, {1.f,1.f,1.f});
     }
     
-#if 0
-    HopeUIButton * button = uiDrawList->buttons;
-    for (int i=0; i<uiDrawList->buttonCount; ++i)
-    {
-        HopeUIRect rect = button->rect;
-        HopeUIColor color = button->color;
-        float x0 = rect.x0;
-        float y0 = rect.y0;
-        float width = rect.x1 - x0;
-        float height = rect.y1 - y0;
+    HopeUIProgressBar * progressBar = uiDrawList->progressBars;
+    for (int i=0; i<uiDrawList->progressBarCount; ++i) {
+        HopeUIRect maxProgressRect = progressBar->maxProgressRect;
+        HopeUIRect progressRect = progressBar->progressRect;
+        // max progress
+        float x0 = maxProgressRect.x0;
+        float y0 = maxProgressRect.y0;
+        float width = maxProgressRect.x1 - x0;
+        float height = maxProgressRect.y1 - y0;
+        HopeUIColor color = progressBar->maxProgressColor;
         pushFilledRect(x0, y0, width, height, {color.r, color.g, color.b} );
-        pushTTFTextInBoundaries(button->text, rect.x0, rect.y0, {x0, y0, width, height}, {1.f,1.f,1.f});
-        button++;
+        // current progress
+        x0 = progressRect.x0;
+        y0 = progressRect.y0;
+        width = progressRect.x1 - x0;
+        height = progressRect.y1 - y0;
+        color = progressBar->progressColor;
+        pushFilledRect(x0, y0, width, height, {color.r, color.g, color.b} );
+        progressBar++;
     }
-#endif
     
-    uiDrawList->buttonCount = 0;
-    uiDrawList->windowCount = 0;
-    uiDrawList->freeButtonCount = 0;
+    uiDrawList->buttonCount      = 0;
+    uiDrawList->windowCount      = 0;
+    uiDrawList->progressBarCount = 0;
+    uiDrawList->freeButtonCount  = 0;
 }

@@ -71,39 +71,22 @@ HopeUIDrawList * hope_ui_get_drawlist()
     return &gHopeUIDrawList;
 }
 
-void hope_ui_dummy_button(int guid, HopeUIRect rect)
+void hope_ui_progress_bar(int guid, int posX, int posY, int width, int height, float progress, float maxProgress)
 {
-    HopeUIRect buttonRect = { 
-        rect.x0, 
-        rect.y0,
-        rect.x1,
-        rect.y1};
-    bool inRegion = hope_ui_hit_region(gContext.mouseX, gContext.mouseY, buttonRect);
-    if (!inRegion && !gContext.mouseDown)
-    {
-        gContext.hotID.intID = guid;
-    }
-    if (gContext.activeID.intID == guid)
-    {
-        if (gContext.mouseWasDown && !gContext.mouseDown)
-        {
-            gContext.activeID.intID = -1;
-        }
-    }
-    else if (gContext.hotID.intID == guid)
-    {
-        if (!inRegion)
-        {
-            if (gContext.mouseDown)
-            {
-                gContext.activeID.intID = guid;
-            }
-        }
-        else
-        {
-            gContext.hotID.intID = -1;
-        }
-    }
+    int progressWidth = (progress/maxProgress)*width;
+    HopeUIRect progressRect = {
+        posX, posY,
+        posX + progressWidth, posY + height
+    };
+    HopeUIRect maxProgressRect = {
+        posX, posY,
+        posX + width, posY + height
+    };
+    HopeUIProgressBar progressBar = {
+        progressRect, maxProgressRect,
+        {.5f, 0.f, 7.f}, {1.f, 0.f, 7.f}
+    };
+    gHopeUIDrawList.progressBars[gHopeUIDrawList.progressBarCount++] = progressBar;
 }
 
 // NOTE(Michael): only works when user calls hope_ui_begin() before and

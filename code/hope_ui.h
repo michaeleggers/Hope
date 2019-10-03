@@ -47,6 +47,14 @@ struct HopeUIButton
     char text[32];
 };
 
+struct HopeUIProgressBar
+{
+    HopeUIRect progressRect;
+    HopeUIRect maxProgressRect;
+    HopeUIColor progressColor;
+    HopeUIColor maxProgressColor;
+};
+
 struct HopeUIWindow
 {
     HopeUIRect rect = {0,0,400,900};
@@ -64,8 +72,10 @@ struct HopeUIDrawList
 {
     HopeUIWindow windows[32];
     HopeUIButton buttons[32]; // later: more complex structures of windows, buttons, etc.
+    HopeUIProgressBar progressBars[32];
     int buttonCount = 0;
     int windowCount = 0;
+    int progressBarCount = 0;
     float fontSize;
     HopeUIButton * freeButtons[32];
     int freeButtonCount = 0;
