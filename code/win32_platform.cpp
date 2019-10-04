@@ -7,11 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Mathx.h"
 
 
 #include "platform.h"
-#include "helper.h"
 #include "ref.h"
 
 #define global_var static;

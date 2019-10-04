@@ -4,7 +4,6 @@
 #include "hope_math.h"
 #include "platform.h"
 #include "ref.h"
-#include "scene.h"
 #include "stb_truetype.h"
 
 // Input
@@ -143,7 +142,6 @@ struct Entity
 // ---------------------------------------
 
 /* local to game.cpp */
-Background loadBackground(char * file);
 Sprite * loadSprite(refexport_t* re,
                     char * textureID,
                     char * texturename,

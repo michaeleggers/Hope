@@ -8,7 +8,6 @@
 #include "hope_math.h"
 #include "hope_math.c"
 #include "platform.h"
-#include "common_render.h"
 #include "stb_truetype.h"
 
 #define MAX_SPRITES             512
@@ -170,6 +169,12 @@ struct Mesh
     void * meshHandle;
     int vertexCount;
     Vertex VVVNNNST[1024];
+};
+
+enum Projection_t
+{
+    ORTHO,
+    PERSPECTIVE
 };
 
 #if 0

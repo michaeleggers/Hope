@@ -9,8 +9,6 @@
 #define JSON_PARSER_IMPLEMENTATION
 #include "json_parser.h"
 
-#include "common_os.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -97,38 +95,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
     spriteSheet->currentSequence = FIGHT_READY;
-}
-
-Background loadBackground(char * file)
-{
-    Background bg;
-    // check if file exists!
-    if (!fileExists(file))
-    {
-        bg.imageFile = 0;
-        printf("fuck! Failed to load %s!\n", file);
-    }
-    else
-    {
-        bg.imageFile = file;
-    }
-    return bg;
-}
-
-Object loadObject(char * file)
-{
-    Object obj;
-    // check if file exists!
-    if (!fileExists(file))
-    {
-        obj.imageFile = 0;
-        printf("fuck! Failed to load %s!\n", file);
-    }
-    else
-    {
-        obj.imageFile = file;
-    }
-    return obj;
 }
 
 int nextLine(char* input, char *buffer, int *length)
