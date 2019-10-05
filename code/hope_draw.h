@@ -46,6 +46,7 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint);
 void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness);
 void pushRect2D(float left, float top, float right, float bottom, v3 tint, float thickness);
 void pushFilledRect(float left, float top, float width, float height, v3 tint);
+int newFramebuffer(refexport_t * re, int width, int height);
 
 #endif
 

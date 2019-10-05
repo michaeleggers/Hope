@@ -27,6 +27,7 @@ enum ShaderType
     STANDARD_MESH,
     LINE,
     FILLED_RECT,
+    SHADER_FRAMEBUFFER,
     MAX_SHADERS
 };
 
@@ -110,6 +111,12 @@ global_var PFNGLUNIFORM3FPROC                glUniform3f;
 global_var PFNGLUNIFORM4FPROC                glUniform4f;
 global_var PFNGLDRAWELEMENTSBASEVERTEXPROC   glDrawElementsBaseVertex;
 global_var PFNGLGENERATEMIPMAPPROC           glGenerateMipmap;
+global_var PFNGLGENFRAMEBUFFERSPROC          glGenFramebuffers;
+global_var PFNGLBINDFRAMEBUFFERPROC          glBindFramebuffer;
+global_var PFNGLTEXSTORAGE2DPROC             glTexStorage2D;
+global_var PFNGLFRAMEBUFFERTEXTUREPROC       glFramebufferTexture;
+global_var PFNGLDRAWBUFFERSPROC              glDrawBuffers;
+
 
 void printGlErrMsg();
 void check_shader_error(GLuint shader);

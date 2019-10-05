@@ -134,6 +134,16 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glDrawElementsBaseVertex");
         glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)
             wglGetProcAddress("glGenerateMipmap");
+        glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)
+            wglGetProcAddress("glGenFramebuffers");
+        glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)
+            wglGetProcAddress("glBindFramebuffer");
+        glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
+            wglGetProcAddress("glTexStorage2D");
+        glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREPROC)
+            wglGetProcAddress("glFramebufferTexture");
+        glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
+            wglGetProcAddress("glDrawBuffers");
     }
     
     // create extended DC/RC 
@@ -252,6 +262,7 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     // upload orthographic projection uniform
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SHADER_FRAMEBUFFER], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[TTF], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");

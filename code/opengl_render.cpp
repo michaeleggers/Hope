@@ -2,9 +2,14 @@
 // TODO(Michael): separate sprite size = the size of the sprite on screen
 // from texture size = size of the texture data on GPU
 
+#include "opengl_render.h"
+
+#define MAX_FRAMEBUFFERS 3
+
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
-
+global_var FrameBuffer gFrameBuffers[MAX_FRAMEBUFFERS];
+global_var int gFrameBufferCount;
 global_var GPUSprite gSpritesKnown[MAX_SPRITES]; 
 global_var int gUnknownSpriteIndex;
 global_var Texture gTexturesKnown[MAX_TEXTURES];
@@ -120,10 +125,16 @@ void initShaders()
     char * shaderAttribsLine[] = {
         "vertex_pos",
     };
+    char * shaderAttribsCustomFramebuffer[] = {
+        "vertex_pos"
+    };
     char * shaderAttribsTTF[] = {
         "vertex_pos",
         "texture_pos"
     };
+    gShaders[SHADER_FRAMEBUFFER] = create_shader("..\\code\\framebuffer_v.glsl", "..\\code\\framebuffer_f.glsl",
+                                                 shaderAttribsCustomFramebuffer,
+                                                 sizeof(shaderAttribsCustomFramebuffer) / sizeof(*shaderAttribsCustomFramebuffer));
     gShaders[SPRITE] = create_shader("..\\code\\sprite_v.glsl", "..\\code\\sprite_f.glsl",
                                      shaderAttribs,
                                      sizeof(shaderAttribs) / sizeof(*shaderAttribs));
@@ -206,9 +217,9 @@ Shader create_shader(char const * vs_file,
     
     // load shader text from files
     char * vertCode = gPlatformAPI->readTextFile(vs_file);
-    printf("%s\n\n", vertCode);
+    //printf("%s\n\n", vertCode);
     char * fragCode = gPlatformAPI->readTextFile(fs_file);
-    printf("%s\n\n\n\n", fragCode);
+    //printf("%s\n\n\n\n", fragCode);
     
     // compile shader program
     result.vertexShader = glCreateShader (GL_VERTEX_SHADER);
@@ -534,6 +545,7 @@ void glSetProjection(Projection_t projType)
             set_ortho(rect.right, rect.bottom, &gShaders[FILLED_RECT], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[SPRITE_SHEET], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[TTF], "ortho");
+            set_ortho(rect.right, rect.bottom, &gShaders[SHADER_FRAMEBUFFER], "ortho");
             set_ortho(rect.right, rect.bottom, &gShaders[STANDARD_MESH], "projectionMat");
         }
         break;
@@ -688,6 +700,7 @@ void gl_endFrame(DrawList* drawList)
             
             case RENDER_CMD_FILLED_RECT:
             {
+                gl_bindFramebuffer(0);
                 v3 tint = renderCmd->tint;
                 // cannot use gTintLocation and LINE shader, because nVidia driver somehow "chaches" (?)
                 // and then won't actually update properly. Worked on intel integrated GPU, though...
@@ -705,6 +718,7 @@ void gl_endFrame(DrawList* drawList)
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
                 glDisableVertexAttribArray(0);
+                gl_defaultFramebuffer(0);
             }
             break;
             
@@ -775,6 +789,56 @@ void gl_endFrame(DrawList* drawList)
     SwapBuffers(gRenderState.deviceContext);
 }
 
+int gl_createFramebuffer(int width, int height)
+{
+    if (gFrameBufferCount < MAX_FRAMEBUFFERS) {
+        FrameBuffer framebuffer = {};
+        framebuffer.width = width;
+        framebuffer.height = height;
+        glGenFramebuffers(1, &framebuffer.fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
+        
+        glGenTextures(1, &framebuffer.colorTexture);
+        glBindTexture(GL_TEXTURE_2D, framebuffer.colorTexture);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        glGenTextures(1, &framebuffer.depthTexture);
+        glBindTexture(GL_TEXTURE_2D, framebuffer.depthTexture);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, width, height);
+        
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer.colorTexture, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, framebuffer.depthTexture, 0);
+        
+        GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, drawBuffers);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        gFrameBuffers[gFrameBufferCount] = framebuffer;
+        gFrameBufferCount++;
+        return gFrameBufferCount-1;
+    }
+    return -1;
+}
+
+void gl_bindFramebuffer(int handle)
+{
+    FrameBuffer framebuffer = gFrameBuffers[handle];
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
+    glViewport(0, 0, framebuffer.width, framebuffer.height);
+}
+
+void gl_defaultFramebuffer(int handle)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    Rect windowSize = gPlatformAPI->getWindowDimensions();
+    glViewport(0, 0, windowSize.width, windowSize.height);
+    glBindTexture(GL_TEXTURE_2D, gFrameBuffers[handle].colorTexture);
+}
+
 // init the struct
 refexport_t GetRefAPI(PlatformAPI* platform_api)
 {
@@ -788,6 +852,9 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.createTexture = createTexture;
     re.endFrame = gl_endFrame;
     re.createTextureFromBitmap = createTextureFromBitmap;
+    re.createFramebuffer = gl_createFramebuffer;
+    re.bindFramebuffer = gl_bindFramebuffer;
+    re.defaultFramebuffer = gl_defaultFramebuffer;
     return re;
 }
 

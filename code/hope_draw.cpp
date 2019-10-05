@@ -634,4 +634,18 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
     renderCmdPtr->quadCount++;
 }
 
+// returns handle index into framebuffer slot managed by rendering implementation (OpenGL)
+int newFramebuffer(refexport_t * re, int width, int height)
+{
+    return re->createFramebuffer(width, height);
+}
 
+void useFramebuffer(refexport_t * re, int handle)
+{
+    re->bindFramebuffer(handle);
+}
+
+void defaultFramebuffer(refexport_t * re, int handle)
+{
+    re->defaultFramebuffer(handle);
+}

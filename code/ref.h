@@ -213,6 +213,9 @@ struct refexport_t
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
     Texture * (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
     void (*endFrame)(DrawList* drawList);
+    int (*createFramebuffer)(int width, int height);
+    void (*bindFramebuffer)(int handle);
+    void (*defaultFramebuffer)(int handle);
 };
 
 // creating function pointer type:
