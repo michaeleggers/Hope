@@ -837,6 +837,10 @@ void gl_defaultFramebuffer(int handle)
     Rect windowSize = gPlatformAPI->getWindowDimensions();
     glViewport(0, 0, windowSize.width, windowSize.height);
     glBindTexture(GL_TEXTURE_2D, gFrameBuffers[handle].colorTexture);
+    glUseProgram(gShaders[SHADER_FRAMEBUFFER].program);
+    GLint texture_location = glGetUniformLocation(gShaders[SHADER_FRAMEBUFFER].program, "texture");
+    glUniform1i(texture_location, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 // init the struct
