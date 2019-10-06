@@ -395,7 +395,6 @@ void pushTTFText(char * text, float xPos, float yPos, v3 tint, FontInfo * fontIn
     }
 }
 
-#if 1
 void pushTTFTextInBoundaries(char * text, 
                              float xPos, float yPos,
                              HopeDrawRect boundary, v3 tint)
@@ -514,7 +513,6 @@ void pushTTFTextInBoundaries(char * text,
         vertex += 4;
     }
 }
-#endif
 
 void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness)
 {
@@ -640,12 +638,22 @@ int newFramebuffer(refexport_t * re, int width, int height)
     return re->createFramebuffer(width, height);
 }
 
-void useFramebuffer(refexport_t * re, int handle)
+void useFramebuffer(int handle)
 {
-    re->bindFramebuffer(handle);
+    RenderCommand *renderCmdPtr = 0;
+    renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+    renderCmdPtr->type = RENDER_CMD_SET_FRAMEBUFFER;
+    renderCmdPtr->framebufferHandle = handle;
+    gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+    gDrawList.freeIndex++;
 }
 
-void defaultFramebuffer(refexport_t * re, int handle)
+void defaultFramebuffer(int handle)
 {
-    re->defaultFramebuffer(handle);
+    RenderCommand *renderCmdPtr = 0;
+    renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+    renderCmdPtr->type = RENDER_CMD_SET_DEFAULT_FRAMEBUFFER;
+    renderCmdPtr->framebufferHandle = handle;
+    gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
+    gDrawList.freeIndex++;
 }

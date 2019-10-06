@@ -31,7 +31,9 @@ enum RenderCommandType
     RENDER_CMD_TTF,
     RENDER_CMD_TEXT,
     RENDER_CMD_LINE,
-    RENDER_CMD_FILLED_RECT
+    RENDER_CMD_FILLED_RECT,
+    RENDER_CMD_SET_FRAMEBUFFER,
+    RENDER_CMD_SET_DEFAULT_FRAMEBUFFER
 };
 
 // Every draw call issues a RenderCommand.
@@ -61,6 +63,11 @@ struct RenderCommand
             uint32_t lineCount;
             v3 tint;
             float thickness;
+        };
+        
+        struct
+        {
+            int framebufferHandle;
         };
     };
 };

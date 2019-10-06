@@ -663,7 +663,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gInputDevice = input_device;
     
     // create new framebuffer
-    fbHandle = newFramebuffer(re, 320, 200);
+    fbHandle = newFramebuffer(re, 1920, 1080);
     
 #if 0
     Foo fooItem = {1,2};
@@ -1034,18 +1034,20 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     check_collision(&gEntities[1], &gEntities[0]);
     render_entities(gEntities, 2);
     
+    useFramebuffer(fbHandle);
+    pushFilledRect(300, 300, 100, 100, {1,0,0});
+    defaultFramebuffer(fbHandle);
+    
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Toggle Animation Info")) {}
     if (hope_ui_button(GUID, "Toggle Secondary Window")) {}
     hope_ui_end();
     
-    //useFramebuffer(re, fbHandle);
     hope_ui_start();
     hope_ui_progress_bar(GUID, 0, 0, 500, 70, gEntities[0].hitpoints, 100);
     hope_ui_progress_bar(GUID, 1000, 0, 500, 70, gEntities[1].hitpoints, 100);
     hope_ui_end();
-    //defaultFramebuffer(re);
     
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();

@@ -570,6 +570,7 @@ void gl_notify()
         &windowDimension
         );
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE], "ortho");
+    set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SHADER_FRAMEBUFFER], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[LINE], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[FILLED_RECT], "ortho");
     set_ortho(windowDimension.right, windowDimension.bottom, &gShaders[SPRITE_SHEET], "ortho");
@@ -659,6 +660,7 @@ void gl_endFrame(DrawList* drawList)
                 glDisableVertexAttribArray(0);
                 glDisableVertexAttribArray(1);
                 glDisableVertexAttribArray(2);
+                glUseProgram(0);
             }
             break;
             
@@ -695,12 +697,12 @@ void gl_endFrame(DrawList* drawList)
                                          renderCmd->vtxBufferOffset);
                 glDisableVertexAttribArray(0);
                 glDisableVertexAttribArray(1);
+                glUseProgram(0);
             }
             break;
             
             case RENDER_CMD_FILLED_RECT:
             {
-                gl_bindFramebuffer(0);
                 v3 tint = renderCmd->tint;
                 // cannot use gTintLocation and LINE shader, because nVidia driver somehow "chaches" (?)
                 // and then won't actually update properly. Worked on intel integrated GPU, though...
@@ -718,7 +720,7 @@ void gl_endFrame(DrawList* drawList)
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
                 glDisableVertexAttribArray(0);
-                gl_defaultFramebuffer(0);
+                glUseProgram(0);
             }
             break;
             
@@ -753,6 +755,7 @@ void gl_endFrame(DrawList* drawList)
                 glDisableVertexAttribArray(0);
                 glDisableVertexAttribArray(1);
                 glDisableVertexAttribArray(2);
+                glUseProgram(0);
             }
             break;
             
@@ -772,11 +775,22 @@ void gl_endFrame(DrawList* drawList)
                                          GL_UNSIGNED_SHORT, (GLvoid *)(renderCmd->idxBufferOffset*sizeof(uint16_t)),
                                          renderCmd->vtxBufferOffset);
                 glDisableVertexAttribArray(0);
+                glUseProgram(0);
+            }
+            break;
+            
+            case RENDER_CMD_SET_FRAMEBUFFER:
+            {
+                gl_bindFramebuffer(renderCmd->framebufferHandle);
+            }
+            break;
+            
+            case RENDER_CMD_SET_DEFAULT_FRAMEBUFFER:
+            {
+                gl_defaultFramebuffer(renderCmd->framebufferHandle);
             }
             break;
         }
-        
-        glUseProgram(0);
         ++renderCmd;
     }
     drawList->vtxCount = 0;
@@ -840,6 +854,14 @@ void gl_defaultFramebuffer(int handle)
     glUseProgram(gShaders[SHADER_FRAMEBUFFER].program);
     GLint texture_location = glGetUniformLocation(gShaders[SHADER_FRAMEBUFFER].program, "texture");
     glUniform1i(texture_location, 0);
+    mat4 projectionMatrix = {};
+    hope_create_ortho_matrix(
+        0.0f, (float)windowSize.width,
+        (float)windowSize.height, 0.0f,
+        -1.0f, 1.0f,
+        projectionMatrix.c
+        );
+    setUniformMat4fv(&gShaders[SHADER_FRAMEBUFFER], "ortho", projectionMatrix.c);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
