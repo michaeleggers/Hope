@@ -126,7 +126,7 @@ void initShaders()
         "vertex_pos",
     };
     char * shaderAttribsCustomFramebuffer[] = {
-        "vertex_pos"
+        "UVs"
     };
     char * shaderAttribsTTF[] = {
         "vertex_pos",
