@@ -663,7 +663,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gInputDevice = input_device;
     
     // create new framebuffer
-    fbHandle = newFramebuffer(re, 1920, 1080);
+    fbHandle = newFramebuffer(re, 320, 200);
     
 #if 0
     Foo fooItem = {1,2};
@@ -1035,9 +1035,11 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     render_entities(gEntities, 2);
     
     useFramebuffer(fbHandle);
-    pushFilledRect(300, 300, 100, 100, {1,0,0});
+    pushFilledRect(0, 0, 100, 100, {1,0,0});
+    pushFilledRect(220, 100, 100, 100, {0,1,0});
     defaultFramebuffer(fbHandle);
     
+#if 0    
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Toggle Animation Info")) {}
@@ -1048,6 +1050,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hope_ui_progress_bar(GUID, 0, 0, 500, 70, gEntities[0].hitpoints, 100);
     hope_ui_progress_bar(GUID, 1000, 0, 500, 70, gEntities[1].hitpoints, 100);
     hope_ui_end();
+#endif
     
     hope_ui_render();
     HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();

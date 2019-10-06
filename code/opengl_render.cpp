@@ -126,7 +126,7 @@ void initShaders()
         "vertex_pos",
     };
     char * shaderAttribsCustomFramebuffer[] = {
-        "UVs"
+        "texture_pos"
     };
     char * shaderAttribsTTF[] = {
         "vertex_pos",
@@ -816,8 +816,8 @@ int gl_createFramebuffer(int width, int height)
         glBindTexture(GL_TEXTURE_2D, framebuffer.colorTexture);
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
         
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         
         glGenTextures(1, &framebuffer.depthTexture);
         glBindTexture(GL_TEXTURE_2D, framebuffer.depthTexture);
@@ -847,21 +847,14 @@ void gl_bindFramebuffer(int handle)
 
 void gl_defaultFramebuffer(int handle)
 {
+    FrameBuffer framebuffer = gFrameBuffers[handle];
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     Rect windowSize = gPlatformAPI->getWindowDimensions();
     glViewport(0, 0, windowSize.width, windowSize.height);
-    glBindTexture(GL_TEXTURE_2D, gFrameBuffers[handle].colorTexture);
+    glBindTexture(GL_TEXTURE_2D, framebuffer.colorTexture);
     glUseProgram(gShaders[SHADER_FRAMEBUFFER].program);
     GLint texture_location = glGetUniformLocation(gShaders[SHADER_FRAMEBUFFER].program, "texture");
     glUniform1i(texture_location, 0);
-    mat4 projectionMatrix = {};
-    hope_create_ortho_matrix(
-        0.0f, (float)windowSize.width,
-        (float)windowSize.height, 0.0f,
-        -1.0f, 1.0f,
-        projectionMatrix.c
-        );
-    setUniformMat4fv(&gShaders[SHADER_FRAMEBUFFER], "ortho", projectionMatrix.c);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
