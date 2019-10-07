@@ -144,6 +144,8 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
             wglGetProcAddress("glFramebufferTexture");
         glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
             wglGetProcAddress("glDrawBuffers");
+        glClearBufferfv = (PFNGLCLEARBUFFERFVPROC)
+            wglGetProcAddress("glClearBufferfv");
     }
     
     // create extended DC/RC 

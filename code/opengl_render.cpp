@@ -843,6 +843,13 @@ void gl_bindFramebuffer(int handle)
     FrameBuffer framebuffer = gFrameBuffers[handle];
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
     glViewport(0, 0, framebuffer.width, framebuffer.height);
+    
+    // this is dumb. in C99 the following code would be valid:
+    // glClearBufferfv(GL_COLOR, 0, &(0,1,0,1));
+    float white[] = { 1.f, 1.f, 1.f, 0.f };
+    float one[] = { 1.f, 1.f, 1.f, 1.f };
+    glClearBufferfv(GL_COLOR, 0, white);
+    glClearBufferfv(GL_DEPTH, 0, one);
 }
 
 void gl_defaultFramebuffer(int handle)

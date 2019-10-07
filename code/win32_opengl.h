@@ -116,7 +116,7 @@ global_var PFNGLBINDFRAMEBUFFERPROC          glBindFramebuffer;
 global_var PFNGLTEXSTORAGE2DPROC             glTexStorage2D;
 global_var PFNGLFRAMEBUFFERTEXTUREPROC       glFramebufferTexture;
 global_var PFNGLDRAWBUFFERSPROC              glDrawBuffers;
-
+global_var PFNGLCLEARBUFFERFVPROC            glClearBufferfv;
 
 void printGlErrMsg();
 void check_shader_error(GLuint shader);

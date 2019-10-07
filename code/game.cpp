@@ -1035,8 +1035,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     render_entities(gEntities, 2);
     
     useFramebuffer(fbHandle);
-    pushFilledRect(0, 0, 100, 100, {1,0,0});
-    pushFilledRect(220, 100, 100, 100, {0,1,0});
+    pushFilledRect(0, 0, 20, 20, {1,0,0});
+    pushFilledRect(300, 180, 20, 20, {0,1,0});
     defaultFramebuffer(fbHandle);
     
 #if 0    
