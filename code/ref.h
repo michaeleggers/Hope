@@ -224,6 +224,8 @@ struct refexport_t
     void (*bindFramebuffer)(int handle);
     void (*defaultFramebuffer)(int handle);
     void (*set_ortho_matrix)(float orthoMatrix[]);
+    int (*get_framebuffer_width)(int fbHandle);
+    int (*get_framebuffer_height)(int fbHandle);
 };
 
 // creating function pointer type:

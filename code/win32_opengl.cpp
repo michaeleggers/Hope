@@ -273,10 +273,10 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     
     
     // backface/frontface culling (creates less shaders if enabled)
-    //glEnable (GL_CULL_FACE); // cull face
-    glDisable(GL_CULL_FACE);
-    //glCullFace (GL_BACK); // cull back face
     glFrontFace (GL_CCW); // GL_CCW is default
+    glEnable (GL_CULL_FACE); // cull face
+    //glDisable(GL_CULL_FACE);
+    glCullFace (GL_BACK); // cull back face
     
     // enable alpha blending
     glEnable(GL_BLEND);

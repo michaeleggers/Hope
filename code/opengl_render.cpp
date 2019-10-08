@@ -874,6 +874,16 @@ void gl_defaultFramebuffer(int handle)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+int gl_get_framebuffer_width(int fbHandle)
+{
+    return gFrameBuffers[fbHandle].width;
+}
+
+int gl_get_framebuffer_height(int fbHandle)
+{
+    return gFrameBuffers[fbHandle].height;
+}
+
 // init the struct
 refexport_t GetRefAPI(PlatformAPI* platform_api)
 {
@@ -891,6 +901,8 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.bindFramebuffer = gl_bindFramebuffer;
     re.defaultFramebuffer = gl_defaultFramebuffer;
     re.set_ortho_matrix = gl_set_ortho_matrix;
+    re.get_framebuffer_width = gl_get_framebuffer_width;
+    re.get_framebuffer_height = gl_get_framebuffer_height;
     return re;
 }
 

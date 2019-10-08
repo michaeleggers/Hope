@@ -843,7 +843,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     initSpriteSheetFromJson(&gFatguySpriteSheet, jsonFileFatGuy);
     fatguyEntity.spriteSheet = &gFatguySpriteSheet;
     fatguyEntity.xPos = 10.f;
-    fatguyEntity.yPos = 10.f;
+    fatguyEntity.yPos = 0.f;
     fatguyEntity.cooldown = 0.f;
     fatguyEntity.cooldownInit = 300.f;
     fatguyEntity.frameTime = 0.f;
@@ -906,14 +906,28 @@ void update_input(Entity * entity, float dt, Controller * controller)
     if (keyDown(controller, DPAD_RIGHT)) {
         if (entity->cooldown <= 0.f) {
             entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
-            entity->xPos += .2f;
+            entity->xPos += 10;
             entity->state = ENTITY_STATE_FIGHT_WALK_RIGHT;
         }
     }
     if (keyDown(controller, DPAD_LEFT)) {
         if (entity->cooldown <= 0.f) {
             entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
-            entity->xPos -= .2f;
+            entity->xPos -= 10;
+            entity->state = ENTITY_STATE_FIGHT_WALK_LEFT;
+        }
+    }
+    if (keyDown(controller, DPAD_UP)) {
+        if (entity->cooldown <= 0.f) {
+            entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
+            entity->yPos += 10;
+            entity->state = ENTITY_STATE_FIGHT_WALK_RIGHT;
+        }
+    }
+    if (keyDown(controller, DPAD_DOWN)) {
+        if (entity->cooldown <= 0.f) {
+            entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
+            entity->yPos -= 10;
             entity->state = ENTITY_STATE_FIGHT_WALK_LEFT;
         }
     }
@@ -978,14 +992,28 @@ void check_collision(Entity * entity1, Entity * entity2)
     }
 }
 
+int compare_entities_y_pos(void const * a, void const * b) 
+{
+    return ((Entity*)a)->yPos < ((Entity*)b)->yPos;
+}
+
 void render_entities(Entity * entities, int entityCount)
 {
-    Entity * entity = entities;
+    Entity sorted_entities[2];
+    memcpy(sorted_entities, entities, 2*sizeof(Entity));
+    qsort(sorted_entities, 2, sizeof(Entity), compare_entities_y_pos);
+    Entity * entity = sorted_entities;
     for (int i=0; i<entityCount; i++) {
         bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
-        pushTexturedRect(entity->xPos, 0, 
+#if 0
+        Rect window_dimensions = gPlatformAPI->getWindowDimensions();
+        float scale = 1.f;
+        scale = entity->yPos/(float)window_dimensions.height;
+        scale = (scale-1)*(-1.f);
+#endif
+        pushTexturedRect(entity->xPos, entity->yPos,
                          500, 500,
-                         {1, 1, 1}, 
+                         {1, 1, 1},
                          entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame,
                          flipHorizontally);
         entity++;
@@ -1037,16 +1065,16 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(
         0.0f, (float)windowDimensions.width,
-        (float)windowDimensions.height, 0.0f,
-        -1.0f, 1.0f,
+        0.0f, (float)windowDimensions.height,
+        -1.f, 1.0f,
         ortho_matrix
         );
     set_orthographic_projection(re, ortho_matrix);
-    useFramebuffer(fbHandle);
+    //useFramebuffer(fbHandle);
     render_entities(gEntities, 2);
-    pushFilledRect(0, 0, 100, 100, {1,0,0});
-    pushFilledRect(300, 180, 100, 100, {0,1,0});
-    defaultFramebuffer(fbHandle);
+    pushFilledRect(0, 0, 20, 20, {1,0,0});
+    pushFilledRect(300, 180, 20, 20, {0,1,0});
+    //defaultFramebuffer(fbHandle);
     
 #if 0    
     hope_ui_start();

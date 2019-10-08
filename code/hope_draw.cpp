@@ -666,3 +666,13 @@ void set_orthographic_projection(refexport_t * re, float ortho_matrix[])
 {
     re->set_ortho_matrix(ortho_matrix);
 }
+
+int get_framebuffer_width(refexport_t * re, int handle)
+{
+    return re->get_framebuffer_width(handle);
+}
+
+int get_framebuffer_height(refexport_t * re, int handle)
+{
+    return re->get_framebuffer_height(handle);
+}
