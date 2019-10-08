@@ -183,13 +183,6 @@ void pushTexturedRect(float xPos, float yPos,
     renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
     renderCmdPtr->quadCount = 0;
     renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
-    Rect windowDimensions = gPlatformAPI->getWindowDimensions();
-    hope_create_ortho_matrix(
-        0.0f, 320.f,
-        200.f, 0.0f,
-        -1.0f, 1.0f,
-        renderCmdPtr->projectionMatrix.c
-        );
     gDrawList.quadCount = 0;
     gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
     gDrawList.freeIndex++;
@@ -603,13 +596,15 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
         renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
         renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
         renderCmdPtr->quadCount = 0;
+#if 0
         Rect windowDimensions = gPlatformAPI->getWindowDimensions();
         hope_create_ortho_matrix(
-            0.0f, 320.f,
-            200.f, 0.0f,
+            0.0f, (float)windowDimensions.width,
+            (float)windowDimensions.height, 0.0f,
             -1.0f, 1.0f,
             renderCmdPtr->projectionMatrix.c
             );
+#endif
         gDrawList.quadCount = 0;
         gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
         gDrawList.freeIndex++;
@@ -665,4 +660,9 @@ void defaultFramebuffer(int handle)
     renderCmdPtr->framebufferHandle = handle;
     gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
     gDrawList.freeIndex++;
+}
+
+void set_orthographic_projection(refexport_t * re, float ortho_matrix[])
+{
+    re->set_ortho_matrix(ortho_matrix);
 }

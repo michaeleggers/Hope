@@ -984,7 +984,7 @@ void render_entities(Entity * entities, int entityCount)
     for (int i=0; i<entityCount; i++) {
         bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
         pushTexturedRect(entity->xPos, 0, 
-                         50, 50,
+                         500, 500,
                          {1, 1, 1}, 
                          entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame,
                          flipHorizontally);
@@ -1033,9 +1033,17 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     check_collision(&gEntities[0], &gEntities[1]);
     check_collision(&gEntities[1], &gEntities[0]);
     
+    float ortho_matrix[16];
+    Rect windowDimensions = gPlatformAPI->getWindowDimensions();
+    hope_create_ortho_matrix(
+        0.0f, (float)windowDimensions.width,
+        (float)windowDimensions.height, 0.0f,
+        -1.0f, 1.0f,
+        ortho_matrix
+        );
+    set_orthographic_projection(re, ortho_matrix);
     useFramebuffer(fbHandle);
     render_entities(gEntities, 2);
-    
     pushFilledRect(0, 0, 100, 100, {1,0,0});
     pushFilledRect(300, 180, 100, 100, {0,1,0});
     defaultFramebuffer(fbHandle);

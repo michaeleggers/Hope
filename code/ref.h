@@ -223,6 +223,7 @@ struct refexport_t
     int (*createFramebuffer)(int width, int height);
     void (*bindFramebuffer)(int handle);
     void (*defaultFramebuffer)(int handle);
+    void (*set_ortho_matrix)(float orthoMatrix[]);
 };
 
 // creating function pointer type:

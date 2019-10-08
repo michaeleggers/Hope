@@ -22,6 +22,8 @@ global_var GLuint gidxHandle;
 global_var GLint gTintLocation;
 global_var GLint gTextureLocation;
 global_var GLuint vaoHandle;
+global_var float gOrthoMatrix[16];
+
 
 global_var PlatformAPI* gPlatformAPI;
 
@@ -486,6 +488,11 @@ void set_ortho(int width, int height, Shader * shader, char * location)
     setUniformMat4fv(shader, location, orthoMatrix);
 }
 
+void gl_set_ortho_matrix(float orthoMatrix[])
+{
+    memcpy(gOrthoMatrix, orthoMatrix, 16*sizeof(float));
+}
+
 void set_model(GLfloat modelMatrix[], Shader * shader, char * location)
 {
     setUniformMat4fv(shader, location, modelMatrix);
@@ -642,7 +649,7 @@ void gl_endFrame(DrawList* drawList)
                 glUniform1i(gTextureLocation, 0);
                 glUniform3f(gTintLocation, tint.x, tint.y, tint.z);
                 glUniform1i(alphaColorLocation, alphaColor);
-                setUniformMat4fv(&gShaders[SPRITE_SHEET], "ortho", renderCmd->projectionMatrix.c);
+                setUniformMat4fv(&gShaders[SPRITE_SHEET], "ortho", gOrthoMatrix);
                 
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
@@ -711,7 +718,7 @@ void gl_endFrame(DrawList* drawList)
                 glUseProgram(gShaders[FILLED_RECT].program);
                 GLuint tintLocation = glGetUniformLocation(gShaders[FILLED_RECT].program, "tint");
                 glUniform3f(tintLocation, tint.x, tint.y, tint.z);
-                setUniformMat4fv(&gShaders[FILLED_RECT], "ortho", renderCmd->projectionMatrix.c);
+                setUniformMat4fv(&gShaders[FILLED_RECT], "ortho", gOrthoMatrix);
                 // 0 1 2 | 3 4 5 | 6  7
                 // v v v | n n n | uv uv
                 // positions
@@ -883,6 +890,7 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.createFramebuffer = gl_createFramebuffer;
     re.bindFramebuffer = gl_bindFramebuffer;
     re.defaultFramebuffer = gl_defaultFramebuffer;
+    re.set_ortho_matrix = gl_set_ortho_matrix;
     return re;
 }
 
