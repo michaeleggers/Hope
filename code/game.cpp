@@ -824,7 +824,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_animation_project.json");
     initSpriteSheetFromJson(&gIndySpriteSheet, jsonFile);
     Entity playerEntity = {};
-    playerEntity.xPos = -10.f;
+    playerEntity.xPos = 0.f;
     playerEntity.yPos = 0.f;
     playerEntity.spriteSheet = &gIndySpriteSheet;
     playerEntity.cooldown = 0.f;
@@ -843,7 +843,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     initSpriteSheetFromJson(&gFatguySpriteSheet, jsonFileFatGuy);
     fatguyEntity.spriteSheet = &gFatguySpriteSheet;
     fatguyEntity.xPos = 10.f;
-    fatguyEntity.yPos = 0.f;
+    fatguyEntity.yPos = 10.f;
     fatguyEntity.cooldown = 0.f;
     fatguyEntity.cooldownInit = 300.f;
     fatguyEntity.frameTime = 0.f;
@@ -984,7 +984,7 @@ void render_entities(Entity * entities, int entityCount)
     for (int i=0; i<entityCount; i++) {
         bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
         pushTexturedRect(entity->xPos, 0, 
-                         7, 7, 
+                         50, 50,
                          {1, 1, 1}, 
                          entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame,
                          flipHorizontally);
@@ -1032,9 +1032,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     }
     check_collision(&gEntities[0], &gEntities[1]);
     check_collision(&gEntities[1], &gEntities[0]);
-    render_entities(gEntities, 2);
     
     useFramebuffer(fbHandle);
+    render_entities(gEntities, 2);
+    
     pushFilledRect(0, 0, 100, 100, {1,0,0});
     pushFilledRect(300, 180, 100, 100, {0,1,0});
     defaultFramebuffer(fbHandle);

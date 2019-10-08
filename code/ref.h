@@ -214,7 +214,7 @@ struct refexport_t
 {
     int (*init)(HWND* windowHandle, WNDCLASS* windowClass);
     void (*setViewport)(int xLeft, int yBottom, int width, int height);
-    void (*setProjection)(Projection_t projType);
+    //void (*setProjection)(Projection_t projType);
     void* (*registerMesh)(Vertex * vertices, int count);
     void (*notify)(void);
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
