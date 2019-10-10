@@ -32,6 +32,17 @@ v3 v3normalize(v3 v)
     };
 }
 
+v2 v2normalize(v2 v)
+{
+    float length = v2length(v);
+    return { v.x / length, v.y / length };
+}
+
+float v2dot(v2 a, v2 b)
+{
+    return a.x*b.x + a.y*b.y;
+}
+
 v3 v3cross(v3 lhs, v3 rhs)
 {
     return {

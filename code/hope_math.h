@@ -29,6 +29,8 @@ void printMat4(mat4 mat);
 mat4 mat4x4(mat4 lhs, mat4 rhs);
 v3 v3cross(v3 lhs, v3 rhs);
 v3 v3normalize(v3 v);
+v2 v2normalize(v2 v);
+float v2dot(v2 a, v2 b);
 float v2length(v2 v);
 float v3length(v3 v);
 v3 v3add(v3 lhs, v3 rhs);

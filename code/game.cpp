@@ -4,6 +4,7 @@
 #include "hope_ui.h"
 #include "hope_ui.cpp"
 #include "hope_ui_impl_render.cpp"
+#include "input.h"
 #include "stretchy_buffer.h"
 
 #define JSON_PARSER_IMPLEMENTATION
@@ -15,13 +16,11 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-global_var InputDevice* gInputDevice;
-
 global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gEntities[2];
-#define MAX_ENTITIES 100
+#define MAX_ENTITIES 5
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
@@ -101,423 +100,12 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
     }
 }
 
-int nextLine(char* input, char *buffer, int *length)
-{
-    int l = 0;
-    int lineFeedLength = 0;
-    while (*input != '\0')
-    {
-        if (*input == '\r')
-        {
-            lineFeedLength++;
-            input++;
-            if (*input == '\0')
-            {
-            }
-            else if (*input == '\n')
-            {
-                lineFeedLength++;
-            }
-            break;
-        }
-        else if (*input == '\n')
-        {
-            lineFeedLength++;
-            break;
-        }
-        *buffer = *input;
-        input++;
-        buffer++;
-        l++;
-    }
-    *buffer = '\0';
-    *length = l;
-    
-    return lineFeedLength;
-}
-
-void getValue(char *input, char *buffer, int *length)
-{
-    int l = 0;
-    while (*input != '\0' && (*input != ' ' && *input != '\t'))
-    {
-        *buffer = *input;
-        input++;
-        buffer++;
-        l++;
-    }
-    *buffer = '\0';
-    *length = l;
-}
-
-int skipWhitespaces(char* buffer)
-{
-    int skipped = 0;
-    while (*buffer != '\0' && (*buffer == ' ' || *buffer == '\t'))
-    {
-        buffer++;
-        skipped++;
-    }
-    return skipped;
-}
-
-Mesh loadMeshFromOBJ(char * objfile)
-{
-    Mesh mesh = {};
-    char * objData = gPlatformAPI->readTextFile(objfile);
-    char* c = objData;
-    int vCount = 0;
-    int nCount = 0;
-    int stCount = 0;
-    int iCount = 0;
-    v3 positions[256];
-    v3 normals[256];
-    v2 UVs[256];
-    v2 indices[256];
-    while (*c != '\0')
-    {
-        char buffer[256];
-        int length;
-        int lineFeedLength = nextLine(c, buffer, &length);
-        int pos = 0;
-        pos += skipWhitespaces(&buffer[pos]);
-        // TODO(Michael): trim whitespaces
-        if (pos < length)
-        {
-            if (buffer[pos] == '#') // comment
-            {}
-            else
-            {
-                if (buffer[pos] == 'v') // vertex or normal
-                {
-                    int v3Count = 0;
-                    float floatValue[3];
-                    bool isVertex = false;
-                    pos++; // advance over 'v' char
-                    if (pos < length && buffer[pos] == 'n') // normal
-                    {
-                        printf("normal data (%d): ", nCount); 
-                        pos++; // advance over 'n' char
-                    }
-                    else // vertex (position)
-                    {
-                        isVertex = true;
-                        printf("vertex data (%d): ", vCount);
-                    }
-                    while (pos < length)
-                    {
-                        int skipped = skipWhitespaces(&buffer[pos]);
-                        char valueBuffer[256];
-                        int valueLength;
-                        pos += skipped;
-                        getValue(&buffer[pos], valueBuffer, &valueLength);
-                        printf ("%s ", valueBuffer);
-                        pos += valueLength;
-                        float value = atof(valueBuffer);
-                        floatValue[v3Count] = value;
-                        v3Count++;
-                        //printf("( %f ), ", value);
-                    }
-                    if (isVertex)
-                    {
-                        positions[vCount].x = floatValue[0];
-                        positions[vCount].y = floatValue[1];
-                        positions[vCount].z = floatValue[2];
-                        vCount++;
-                    }
-                    else
-                    {
-                        normals[nCount].x = floatValue[0];
-                        normals[nCount].y = floatValue[1];
-                        normals[nCount].z = floatValue[2];
-                        nCount++;
-                    }
-                    printf("\n");
-                }
-                else if (buffer[pos] == 'f') // indices
-                {
-                    int posIndex = 0;
-                    int normalIndex = 0;
-                    while (pos < length)
-                    {
-                        pos++; // advance over 'f' char
-                        int skipped = skipWhitespaces(&buffer[pos]);
-                        char valueBuffer[256];
-                        int valueLength;
-                        pos += skipped;
-                        getValue(&buffer[pos], valueBuffer, &valueLength);
-                        pos += valueLength;
-                        
-                        printf("%s ", valueBuffer);
-                        
-                        // extract index from value buffer, twice.
-                        int lengthOfNumber;
-                        posIndex = extractIndex(valueBuffer, valueLength, &lengthOfNumber);
-                        valueLength -= lengthOfNumber;
-                        normalIndex  = extractIndex(&valueBuffer[lengthOfNumber], valueLength, &lengthOfNumber); 
-                        // TODO(Michael): check multiple versions of this shit
-                        // for now just vertexPos // vertexNormal version
-                        
-                        // obj starts counting at 1
-                        printf("(%d, ", posIndex-1);
-                        printf("%d) ", normalIndex-1);
-                        indices[iCount].x = posIndex-1; 
-                        indices[iCount].y = normalIndex-1;
-                        iCount++;
-                    }
-                    printf("\n");
-                    
-                }
-                else
-                    pos += length;
-            }
-        }
-        c += length+lineFeedLength;
-    }
-    // done parsing
-    
-    // create buffer, that can be drawn by opengl.
-    for (int i = 0; i < iCount; ++i)
-    {
-        int vertexIndex = indices[i].x;
-        int normalIndex = indices[i].y;
-        mesh.VVVNNNST[i] = 
-        { 
-            { positions[vertexIndex] },
-            { normals[normalIndex] },
-            { 0.f, 0.f }
-        };
-    }
-    mesh.vertexCount = iCount;
-    
-    return mesh;
-}
-
-int extractIndex(char * input, int length, int * outLength)
-{
-    int result = 0;
-    char * c = input;
-    char buffer[256];
-    char * b = buffer;
-    int ol = 0;
-    // skip all the non numerical chars first
-    while (*c != '\0' &&
-           *c < '0' || *c > '9')
-        c++;
-    // then try to get the number
-    while (*c != '\0')
-    {
-        if (*c >= '0' && *c <= '9')
-        {
-            *b = *c;
-            b++;
-            ol++;
-        }
-        else
-            break;
-        c++;
-    }
-    *b = '\0';
-    result = atoi(buffer);
-    *outLength = ol;
-    return result;
-}
-
 inline float randBetween(float lowerBound, float upperBound)
 {
     float offset = lowerBound - 0.0f;
     float range = upperBound - lowerBound;
     return range/1.0f * (rand()/(float)RAND_MAX) + lowerBound;
 }
-
-ControllerKeycode toControllerKeycode(GameInput gameInput)
-{
-    switch (gameInput)
-    {
-        case FACE_LEFT  : return DPAD_LEFT; break;
-        case FACE_RIGHT : return DPAD_RIGHT; break;
-        case PUNCH      : return DPAD_A; break;
-        default         : return DPAD_NONE; break;
-    }
-}
-
-Keycode toKeyboardKeycode(GameInput gameInput)
-{
-    switch (gameInput)
-    {
-        case FACE_LEFT  : return ARROW_LEFT; break;
-        case FACE_RIGHT : return ARROW_RIGHT; break;
-        case PUNCH      : return ARROW_UP; break;
-        default         : return KEYBOARD_NONE;
-    }
-}
-
-#if 0
-bool keyPressed(InputDevice* device, GameInput gameInput)
-{
-    switch (device->deviceType)
-    {
-        case KEYBOARD:
-        {
-            Keycode keycode = toKeyboardKeycode(gameInput);
-            Keyboard* keyboard = device->keyboard;
-            if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
-            {
-                keyboard->prevKeycodes[keycode] = 1;
-                return true;
-            }
-            else if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
-            {
-                keyboard->prevKeycodes[keycode] = 0;
-                return false;
-            }
-            return false;
-        }
-        break;
-        
-        case CONTROLLER:
-        {
-            ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
-            if (controllerKeycode == DPAD_NONE) return false;
-            Controller* controller = device->controller;
-            if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
-            {
-                controller->prevKeycodes[controllerKeycode] = 1;
-                return true;
-            }
-            else if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
-            {
-                controller->prevKeycodes[controllerKeycode] = 0;
-                return false;
-            }
-            return false;
-        }
-        break;
-        
-        default:
-        return false;
-    }
-}
-#endif
-
-bool keyPressed(Controller * controller, ControllerKeycode controllerKeycode)
-{
-    if (controllerKeycode == DPAD_NONE) return false;
-    if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
-    {
-        controller->prevKeycodes[controllerKeycode] = 1;
-        return true;
-    }
-    else if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
-    {
-        controller->prevKeycodes[controllerKeycode] = 0;
-        return false;
-    }
-    return false;
-}
-
-#if 0
-bool keyDown(InputDevice * device, GameInput gameInput)
-{
-    switch (device->deviceType)
-    {
-        case KEYBOARD:
-        {
-            Keycode keycode = toKeyboardKeycode(gameInput);
-            Keyboard* keyboard = device->keyboard;
-            if (keyboard->keycodes[keycode])
-                return true;
-            return false;
-        }
-        break;
-        
-        case CONTROLLER:
-        {
-            ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
-            if (controllerKeycode == DPAD_NONE) return false;
-            Controller* controller = device->controller;
-            if (controller->keycodes[controllerKeycode])
-                return true;
-            return false;
-        }
-        break;
-        
-        default: return false;
-    }
-}
-#endif
-
-bool keyDown(InputDevice * device, Keycode keycode)
-{
-    switch (device->deviceType)
-    {
-        case KEYBOARD:
-        {
-            Keyboard* keyboard = device->keyboard;
-            if (keyboard->keycodes[keycode])
-                return true;
-            return false;
-        }
-        break;
-        
-        default: return false;
-    }
-}
-
-bool keyDown(Controller * controller, ControllerKeycode keycode)
-{
-    if (controller->keycodes[keycode])
-        return true;
-    return false;
-}
-
-#if 0
-bool keyUp(InputDevice * device, GameInput gameInput)
-{
-    switch (device->deviceType)
-    {
-        case KEYBOARD:
-        {
-            Keycode keycode = toKeyboardKeycode(gameInput);
-            Keyboard* keyboard = device->keyboard;
-            if (!keyboard->keycodes[keycode] && keyboard->prevKeycodes[keycode])
-            {
-                keyboard->prevKeycodes[keycode] = 0;
-                return true;
-            }
-            else if (keyboard->keycodes[keycode] && !keyboard->prevKeycodes[keycode])
-            {
-                keyboard->prevKeycodes[keycode] = 1;
-                return false;
-            }
-            return false;
-        }
-        break;
-        
-        case CONTROLLER:
-        {
-            ControllerKeycode controllerKeycode = toControllerKeycode(gameInput);
-            if (controllerKeycode == DPAD_NONE) return false;
-            Controller* controller = device->controller;
-            if (!controller->keycodes[controllerKeycode] && controller->prevKeycodes[controllerKeycode])
-            {
-                controller->prevKeycodes[controllerKeycode] = 0;
-                return true;
-            }
-            else if (controller->keycodes[controllerKeycode] && !controller->prevKeycodes[controllerKeycode])
-            {
-                controller->prevKeycodes[controllerKeycode] = 1;
-                return false;
-            }
-            return false;
-        }
-        break;
-        
-        default:
-        return false;
-    }
-}
-#endif
 
 // HOPE UI CALLBACKS
 int get_window_width()
@@ -528,44 +116,6 @@ int get_window_width()
 int get_window_height()
 {
     return gPlatformAPI->getWindowDimensions().height;
-}
-
-int get_mouse_x()
-{
-    return gInputDevice->mouse->x;
-}
-
-int get_mouse_y()
-{
-    return gInputDevice->mouse->y;
-}
-
-bool leftMouseButtonDown()
-{
-    Mouse * mouse = gInputDevice->mouse;
-    if (mouse->keycodes[LBUTTON_DOWN])
-        return true;
-    return false;
-}
-
-bool leftMouseButtonPressed()
-{
-    Mouse * mouse = gInputDevice->mouse;
-#if 1    
-    if (mouse->keycodes[LBUTTON_DOWN] &&
-        !mouse->prevKeycodes[LBUTTON_DOWN])
-    {
-        mouse->prevKeycodes[LBUTTON_DOWN] = 1;
-        return false;
-    }
-    else if (!mouse->keycodes[LBUTTON_DOWN] &&
-             mouse->prevKeycodes[LBUTTON_DOWN])
-    {
-        mouse->prevKeycodes[LBUTTON_DOWN] = 0;
-        return true;
-    }
-    return false;
-#endif
 }
 
 struct HopeVector
@@ -671,17 +221,18 @@ Entity create_entity(int  spritesheet_id, float x_pos, float y_pos)
     entity.frameTime = 0.f;
     entity.hitpoints = 100;
     entity.facingDirection = FACING_RIGHT;
-    int sequence_id = (int)randBetween(0, MAX_SEQUENCE_TYPES);
-    entity.currentSequence = (SpriteSequenceType)sequence_id;
+    entity.currentSequence = WALK_SIDE_RIGHT;
     SpriteSheet * spritesheet = get_spritesheet_from_id(spritesheet_id);
     entity.currentFrame = spritesheet->sequences[entity.currentSequence].start;
+    entity.direction = { };
+    entity.velocity = 1.0f;
     return entity;
 }
 
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
-    gInputDevice = input_device;
+    init_input(input_device);
     
     // create new framebuffer
     fbHandle = newFramebuffer(re, 320, 200);
@@ -768,29 +319,6 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     // TTF font loading
     char* ttf_font = gPlatformAPI->readTextFile("..\\assets\\ttf\\ProggyClean.ttf");
-#if 0
-    // load TTF Font
-    stbtt_fontinfo font;
-    unsigned char *ttfBitmap = 0;
-    stbtt_InitFont(&font, (uint8_t*)ttf_font, stbtt_GetFontOffsetForIndex((uint8_t*)ttf_font, 0));
-    int w, h;
-    unsigned char * ttfTexture = (unsigned char *)malloc(sizeof(unsigned char)*1024*1024);
-    
-    for (int codePoint = 0; codePoint < 26; ++codePoint)
-    {
-        ttfBitmap = stbtt_GetCodepointBitmap(&font, 0, stbtt_ScaleForPixelHeight(&font, 13.0f), codePoint + 65, &w, &h, 0, 0);
-        for (int i = 0; i<h; ++i)
-        {
-            for (int k = 0; k<w; ++k)
-            {
-                ttfTexture[ (codePoint*64/1024)*64*1024+i*1024 + (k+(codePoint%16)*64)] = ttfBitmap[(h-i)*w+k];
-            }
-        }
-    }
-    gTTFTexture = re->createTextureFromBitmap(ttfTexture, 1024, 1024);
-    free(ttfTexture);
-#endif
-    
     // stb_truetype texture baking API
     stbtt_fontinfo font;
     stbtt_InitFont(&font, (uint8_t*)ttf_font, 0);
@@ -814,6 +342,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gFontInfo.fontSize = 13.f;
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
+    // ! TTF FONT LOADING 
+    
     
     // entity creation
     int indy_spritesheet = createSpriteSheet(re,
@@ -836,11 +366,15 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     Rect window_dimensions = gPlatformAPI->getWindowDimensions();
     for (int i=0; i<MAX_ENTITIES; ++i) {
-        float x_pos = randBetween(0, window_dimensions.width);
-        float y_pos = randBetween(0, window_dimensions.height);
-        gFatguys[i] = create_entity(indy_spritesheet, x_pos, y_pos);
-        gFatguys[i].state = ENTITY_STATE_FIGHT_WALK_RIGHT;
+        float x_pos = randBetween(100, window_dimensions.width-100);
+        float y_pos = randBetween(100, window_dimensions.height-100);
+        Entity fatguy = create_entity(indy_spritesheet, x_pos, y_pos);
+        fatguy.state = ENTITY_STATE_FIGHT_WALK_RIGHT;
+        fatguy.direction = { randBetween(-1.f, 1.f), randBetween(-1.f, 1.f) };
+        fatguy.direction = v2normalize(fatguy.direction);
+        gFatguys[i] = fatguy;
     }
+    // ! ENTITY CREATION
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
@@ -875,11 +409,6 @@ void update_input(Entity * entity, float dt, Controller * controller)
     update_entity_animation(entity, dt);
 }
 
-void check_collision(Entity * entity1, Entity * entity2)
-{
-    
-}
-
 int compare_entities_y_pos(void const * a, void const * b) 
 {
     return ((Entity*)a)->yPos < ((Entity*)b)->yPos;
@@ -892,7 +421,10 @@ void render_entities(Entity * entities, int entityCount)
     qsort(sorted_entities, 2, sizeof(Entity), compare_entities_y_pos);
     Entity * entity = sorted_entities;
     for (int i=0; i<entityCount; i++) {
-        bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
+        bool flipHorizontally = false;
+        if (entity->currentSequence == WALK_SIDE_LEFT) {
+            flipHorizontally = true;
+        }
 #if 1
         Rect window_dimensions = gPlatformAPI->getWindowDimensions();
         float scale = 1.f;
@@ -914,7 +446,10 @@ void render_entities_ex(Entity * entities, int entityCount)
     
     Entity * entity = entities;
     for (int i=0; i<entityCount; i++) {
-        bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
+        bool flipHorizontally = false;
+        if (entity->currentSequence == WALK_SIDE_LEFT) {
+            flipHorizontally = true;
+        }
 #if 1
         Rect window_dimensions = gPlatformAPI->getWindowDimensions();
         float scale = 1.f;
@@ -935,25 +470,54 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
     // new rendering API proposal:
     
-    // render text
-    static float xTextScale = 0.0f;
-    static float yTextScale = 0.0f;
-    float multiplicator = 1;
-    if (xTextScale > 10) xTextScale *= -1;
-    if (yTextScale > 10) yTextScale *= -1;
-    xTextScale += dt/1000*0.001f;
-    yTextScale += dt/1000*0.001f;
-    char uiAngleBuffer[256];
-    
-    static float advance = 0.f;
-    if (advance > 1080.+120.f)
-        advance = 0.f;
-    advance += 1.0f;
-    
     update_input(&gEntities[0], dt, inputDevice->controller1);
     update_input(&gEntities[1], dt, inputDevice->controller2);
+    Rect win_dimensions = gPlatformAPI->getWindowDimensions();
+    int win_width = win_dimensions.width;
+    int win_height = win_dimensions.height;
     for (int i=0; i<MAX_ENTITIES; ++i) {
         Entity * entity = &gFatguys[i];
+        if (entity->xPos > win_width) {
+            entity->direction.x *= -1;
+            //entity->direction.y = randBetween(-1.f, 1.f);
+        }
+        else if (entity->xPos < 0) {
+            entity->direction.x *= -1;
+            //entity->direction.y = randBetween(-1.f, 1.f);
+        }
+        if (entity->yPos > win_height) {
+            entity->direction.y *= -1;
+            //entity->direction.x = randBetween(-1.f, 1.f);
+        }
+        else if (entity->yPos < 0) {
+            entity->direction.y *= -1;
+            //entity->direction.x = randBetween(-1.f, 1.f);
+        }
+        entity->xPos += entity->direction.x*entity->velocity;
+        entity->yPos += entity->direction.y*entity->velocity;
+        v2 direction = entity->direction;
+        float theta = acos( (v2dot(direction, {1.f, 0.f})) / (v2length(direction)) );
+        if (direction.y < 0) {
+            if (direction.x < 0) {
+                theta += PI/2.f;
+            }
+            else {
+                theta += (6.f/4.f)*PI;
+            }
+        }
+        float theta_in_deg = 180.f/PI*theta;
+        if (theta > (7.f/4.f)*PI && theta <= PI/4.f) {
+            entity->currentSequence = WALK_SIDE_RIGHT;
+        }
+        else if (theta > PI/4.f && theta <= (3.f/4.f)*PI) {
+            entity->currentSequence = WALK_FRONT;
+        }
+        else if (theta > (3.f/4.f)*PI && theta <= (5.f/4.f)*PI) {
+            entity->currentSequence = WALK_SIDE_LEFT;
+        }
+        else if (theta >  (5.f/4.f)*PI && theta < (7.f/4.f)*PI) {
+            entity->currentSequence = WALK_BACK;
+        }
         update_entity_animation(entity, dt);
     }
     if (gEntities[0].xPos > gEntities[1].xPos) {
@@ -972,8 +536,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             gEntities[1].facingDirection = FACING_LEFT;
         }
     }
-    check_collision(&gEntities[0], &gEntities[1]);
-    check_collision(&gEntities[1], &gEntities[0]);
     
     float ortho_matrix[16];
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();

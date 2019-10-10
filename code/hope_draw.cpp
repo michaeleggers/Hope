@@ -207,13 +207,11 @@ void pushTexturedRect(float xPos, float yPos,
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     
     Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
-    //SpriteSequence sequence = spriteSheet->sequences[spriteSheet->currentSequence];
     int uv0 = 0;
     int uv1 = 1;
     int uv2 = 2;
     int uv3 = 3;
-#if 0
-    if ( !(sequence.flipHorizontal && flipHorizontally) && (sequence.flipHorizontal || flipHorizontally) ) {
+    if ( flipHorizontally ) {
         int tmp = uv0;
         uv0 = uv1;
         uv1 = tmp;
@@ -221,6 +219,7 @@ void pushTexturedRect(float xPos, float yPos,
         uv2 = uv3;
         uv3 = tmp;
     }
+#if 0
     if (sequence.flipVertical) {
         int tmp = uv0;
         uv0 = uv3;

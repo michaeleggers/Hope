@@ -501,7 +501,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     
     while (running)
     {
-        if (keyDown(&inputDevice, ESCAPE))
+        if (keyDown(ESCAPE))
             running = 0;
         // Run the message loop.
         MSG msg = { };
