@@ -92,13 +92,6 @@ struct DrawList
     uint32_t          lineCount;
 };
 
-enum EntityType
-{
-    SPRITE_E,
-    MESH_E,
-    PLAYER_E
-};
-
 struct Transform
 {
     float modelMat[16];
@@ -153,7 +146,6 @@ struct SpriteSequence
     SpriteSequenceType sequenceType;
     char name[64];
     int start, end;
-    int currentFrame;
     bool flipHorizontal;
     bool flipVertical;
 };
@@ -161,14 +153,12 @@ struct SpriteSequence
 struct SpriteSheet
 {
     Texture * texture;
-    int currentFrame;
     int frameCount;
     int width, height; // width, height of sprite. init to image width, height
     char name[64];
     Window windows[MAX_SPRITESHEET_WINDOWS];
     int freeWindowIndex;
     SpriteSequence sequences[MAX_SEQUENCE_TYPES];
-    SpriteSequenceType currentSequence;
 };
 
 struct Mesh
@@ -183,32 +173,6 @@ enum Projection_t
     ORTHO,
     PERSPECTIVE
 };
-
-#if 0
-struct Entity
-{
-    EntityType entityType;
-    Transform transform;
-    union
-    {
-        Sprite sprite;
-        Mesh mesh;
-    };
-    v3 velocity;
-    v2 speed;
-};
-#endif
-
-#if 0
-struct Refdef
-{
-    int numSpriteEntities;
-    Entity * spriteEntities;
-    int numMeshEntities;
-    Entity * meshEntities;
-    Entity * playerEntity;
-};
-#endif
 
 struct refexport_t
 {

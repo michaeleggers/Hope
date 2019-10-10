@@ -16,6 +16,10 @@ global_var Texture *gTTFTexture;
 global_var PlatformAPI* gPlatformAPI;
 global_var FontInfo gFontInfo;
 
+#define MAX_SPRITESHEETS 32
+global_var SpriteSheet gSpriteSheets[MAX_SPRITESHEETS];
+global_var int spritesheet_count;
+
 Window createSpriteWindow(Texture *texture,
                           int xOffset, int yOffset,
                           int width, int height)
@@ -33,10 +37,18 @@ Window createSpriteWindow(Texture *texture,
     return window;
 }
 
-SpriteSheet createSpriteSheet(refexport_t* re,
-                              char * file,
-                              int xOffset, int yOffset,
-                              int windowWidth, int windowHeight)
+SpriteSheet * get_spritesheet_from_id(int spritesheet_id)
+{
+    if (spritesheet_id < MAX_SPRITESHEETS) {
+        return &gSpriteSheets[spritesheet_id];
+    }
+    return 0;
+}
+
+int createSpriteSheet(refexport_t* re,
+                      char * file,
+                      int xOffset, int yOffset,
+                      int windowWidth, int windowHeight)
 {
     int x, y, n;
     unsigned char * bitmapData = 0;
@@ -45,10 +57,9 @@ SpriteSheet createSpriteSheet(refexport_t* re,
     // else
     // TODO(Michael): what to do on failure???
     
-    SpriteSheet spriteSheet;
+    SpriteSheet spriteSheet = {};
     Texture *texture = re->createTexture(file, bitmapData, x, y);
     spriteSheet.texture = texture;
-    spriteSheet.currentFrame = 0;
     spriteSheet.frameCount = 0;
     spriteSheet.freeWindowIndex = 0;
     spriteSheet.width = x;
@@ -58,7 +69,10 @@ SpriteSheet createSpriteSheet(refexport_t* re,
     Window window = createSpriteWindow(texture, xOffset, yOffset, x, y);
     spriteSheet.windows[0] = window;
     // no incrementing of freeWindowIndex, because addSpriteFrame will do that.
-    return spriteSheet;
+    int current_spritesheet_count = spritesheet_count;
+    gSpriteSheets[current_spritesheet_count] = spriteSheet;
+    spritesheet_count++;
+    return current_spritesheet_count;
 }
 
 void addSpriteFrame(SpriteSheet *spriteSheet,
@@ -193,11 +207,12 @@ void pushTexturedRect(float xPos, float yPos,
     uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
     
     Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
-    SpriteSequence sequence = spriteSheet->sequences[spriteSheet->currentSequence];
+    //SpriteSequence sequence = spriteSheet->sequences[spriteSheet->currentSequence];
     int uv0 = 0;
     int uv1 = 1;
     int uv2 = 2;
     int uv3 = 3;
+#if 0
     if ( !(sequence.flipHorizontal && flipHorizontally) && (sequence.flipHorizontal || flipHorizontally) ) {
         int tmp = uv0;
         uv0 = uv1;
@@ -214,24 +229,27 @@ void pushTexturedRect(float xPos, float yPos,
         uv1 = uv2;
         uv2 = tmp;
     }
+#endif
     float aspectRatio = (float)window.intWidth / (float)window.intHeight;
+    int width = window.intWidth;
+    int height = window.intHeight;
     vertex[0].position.x = xPos;
-    vertex[0].position.y = yPos;
+    vertex[0].position.y = yPos+yScale*height;
     vertex[0].position.z = 0.f;
     vertex[uv0].UVs.x = window.x;
     vertex[uv0].UVs.y = window.y + window.height;
-    vertex[1].position.x = xPos + xScale*aspectRatio;
-    vertex[1].position.y = yPos;
+    vertex[1].position.x = xPos + xScale*width;
+    vertex[1].position.y = yPos + yScale*height;
     vertex[1].position.z = 0.f;
     vertex[uv1].UVs.x = window.x + window.width;
     vertex[uv1].UVs.y = window.y + window.height;
-    vertex[2].position.x = xPos + xScale*aspectRatio;
-    vertex[2].position.y = yPos + yScale;
+    vertex[2].position.x = xPos + xScale*width;
+    vertex[2].position.y = yPos;
     vertex[2].position.z = 0.f;
     vertex[uv2].UVs.x = window.x + window.width;
     vertex[uv2].UVs.y = window.y;
     vertex[3].position.x = xPos;
-    vertex[3].position.y = yPos + yScale;
+    vertex[3].position.y = yPos;
     vertex[3].position.z = 0.f;
     vertex[uv3].UVs.x = window.x;
     vertex[uv3].UVs.y = window.y;

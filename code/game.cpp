@@ -21,6 +21,11 @@ global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gEntities[2];
+#define MAX_ENTITIES 100
+global_var Entity gFatguys[MAX_ENTITIES];
+global_var int entity_count_fatguys;
+
+
 global_var int fbHandle;
 
 void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
@@ -52,7 +57,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         SpriteSequence sequence = {};
         sequence.start = from;
         sequence.end = to;
-        sequence.currentFrame = from;
         strcpy(sequence.name, name);
         if (!strcmp(name, "walk_back")) {
             spriteSheet->sequences[WALK_BACK] = sequence;
@@ -95,7 +99,6 @@ void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
         }
         nextFrameTag = json_get_next_value(nextFrameTag);
     }
-    spriteSheet->currentSequence = FIGHT_READY;
 }
 
 int nextLine(char* input, char *buffer, int *length)
@@ -657,6 +660,24 @@ int lol(void)
     return 0;
 }
 
+Entity create_entity(int  spritesheet_id, float x_pos, float y_pos)
+{
+    Entity entity = {};
+    entity.xPos = x_pos;
+    entity.yPos = y_pos;
+    entity.spritesheet = spritesheet_id;
+    entity.cooldown = 0.f;
+    entity.cooldownInit = 300.f;
+    entity.frameTime = 0.f;
+    entity.hitpoints = 100;
+    entity.facingDirection = FACING_RIGHT;
+    int sequence_id = (int)randBetween(0, MAX_SEQUENCE_TYPES);
+    entity.currentSequence = (SpriteSequenceType)sequence_id;
+    SpriteSheet * spritesheet = get_spritesheet_from_id(spritesheet_id);
+    entity.currentFrame = spritesheet->sequences[entity.currentSequence].start;
+    return entity;
+}
+
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
@@ -794,62 +815,32 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gFontInfo.numCharsInRange = '~' - ' ';
     gFontInfo.firstChar = ' ';
     
-    // init resources for new rendering API
-    gFontSpriteSheet = createSpriteSheet(re, 
-                                         "..\\assets\\kromagrad_16x16.png",
-                                         0, 0,
-                                         0, 0);
-    for (int i = 0;
-         i < 944/16; // number of glyphs
-         i++)
-    {
-        addSpriteFrame(&gFontSpriteSheet, 0 + i*16, 0, 16, 16);
-    }
-    
-    gTilesSpriteSheet = createSpriteSheet(re,
-                                          "..\\assets\\dungeon_iso_tiles.png",
-                                          0, 0,
-                                          0, 0);
-    for (int i = 0;
-         i < 1536/64; // number of tiles
-         i++)
-    {
-        addSpriteFrame(&gTilesSpriteSheet, 0 + i*64, 0, 64, 32);
-    }
-    
-    gIndySpriteSheet = createSpriteSheet(re,
-                                         "..\\assets\\indy\\indy_animation_project.png",
-                                         0, 0,
-                                         0, 0);
+    // entity creation
+    int indy_spritesheet = createSpriteSheet(re,
+                                             "..\\assets\\indy\\indy_animation_project.png",
+                                             0, 0,
+                                             0, 0);
     char * jsonFile = gPlatformAPI->readTextFile("..\\assets\\indy\\indy_animation_project.json");
-    initSpriteSheetFromJson(&gIndySpriteSheet, jsonFile);
-    Entity playerEntity = {};
-    playerEntity.xPos = 0.f;
-    playerEntity.yPos = 0.f;
-    playerEntity.spriteSheet = &gIndySpriteSheet;
-    playerEntity.cooldown = 0.f;
-    playerEntity.cooldownInit = 300.f;
-    playerEntity.frameTime = 0.f;
-    playerEntity.hitpoints = 100;
-    playerEntity.facingDirection = FACING_RIGHT;
+    initSpriteSheetFromJson(get_spritesheet_from_id(indy_spritesheet), jsonFile);
+    Entity playerEntity = create_entity(indy_spritesheet, 0, 0);
     gEntities[0] = playerEntity;
     
     char * jsonFileFatGuy = gPlatformAPI->readTextFile("..\\assets\\fatguy\\fatguy.json");
-    Entity fatguyEntity = {};
-    gFatguySpriteSheet = createSpriteSheet(re,
-                                           "..\\assets\\fatguy\\fatguy.png",
-                                           0, 0,
-                                           0, 0);
-    initSpriteSheetFromJson(&gFatguySpriteSheet, jsonFileFatGuy);
-    fatguyEntity.spriteSheet = &gFatguySpriteSheet;
-    fatguyEntity.xPos = 10.f;
-    fatguyEntity.yPos = 0.f;
-    fatguyEntity.cooldown = 0.f;
-    fatguyEntity.cooldownInit = 300.f;
-    fatguyEntity.frameTime = 0.f;
-    fatguyEntity.hitpoints = 100;
-    fatguyEntity.facingDirection = FACING_LEFT;
+    int fatguy_spritesheet = createSpriteSheet(re,
+                                               "..\\assets\\fatguy\\fatguy.png",
+                                               0, 0,
+                                               0, 0);
+    initSpriteSheetFromJson(get_spritesheet_from_id(fatguy_spritesheet), jsonFileFatGuy);
+    Entity fatguyEntity = create_entity(fatguy_spritesheet, 10, 0);
     gEntities[1] = fatguyEntity;
+    
+    Rect window_dimensions = gPlatformAPI->getWindowDimensions();
+    for (int i=0; i<MAX_ENTITIES; ++i) {
+        float x_pos = randBetween(0, window_dimensions.width);
+        float y_pos = randBetween(0, window_dimensions.height);
+        gFatguys[i] = create_entity(indy_spritesheet, x_pos, y_pos);
+        gFatguys[i].state = ENTITY_STATE_FIGHT_WALK_RIGHT;
+    }
     
     // init drawlist
     gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
@@ -860,136 +851,33 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         OutputDebugStringA("failed to create idxBuffer\n");
 }
 
-// 1000 0000
-// 8    0 
-char* ftoa(float n)
+void update_entity_animation(Entity * entity, float dt)
 {
-    int decimalPart = (int)n;
-    static char b[32] = {};
-    int i = 0;
-    if (decimalPart < 0)
-    {
-        b[i] = '-';
-        decimalPart *= -1;
-        i++;
+    entity->frameTime += dt/1000.f; // dt in milliseconds
+    SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
+    if (entity->frameTime >= 100.0f) {
+        int * currentFramePtr = &entity->currentFrame;
+        int endAnimPtr = spritesheet->sequences[entity->currentSequence].end;
+        if (*currentFramePtr < endAnimPtr) {
+            entity->currentFrame++;
+        }
+        else {
+            entity->currentFrame = spritesheet->sequences[entity->currentSequence].start;
+            
+        }
+        entity->frameTime = 0.f;
     }
-    for (; decimalPart != 0; i++)
-    {
-        b[i] = (char)((decimalPart % 10) + '0');
-        decimalPart /= 10;
-    }
-    
-    return b;
 }
 
 void update_input(Entity * entity, float dt, Controller * controller)
 {
-    entity->frameTime += dt/1000.f; // dt in milliseconds
-    if (entity->frameTime >= 200.0f) {
-        if (entity->state == ENTITY_STATE_KO) {
-            int * currentFramePtr = &entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame;
-            int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
-            if (*currentFramePtr < endAnimPtr) {
-                entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
-            }
-        }
-        else {
-            entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame++;
-        }
-        entity->frameTime = 0.f;
-    }
-    if (entity->cooldown <= 100.f) {
-        entity->spriteSheet->currentSequence = FIGHT_READY;
-        entity->state = ENTITY_STATE_FIGHT_READY;
-    }
-    
-    if (keyDown(controller, DPAD_RIGHT)) {
-        if (entity->cooldown <= 0.f) {
-            entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
-            entity->xPos += 10;
-            entity->state = ENTITY_STATE_FIGHT_WALK_RIGHT;
-        }
-    }
-    if (keyDown(controller, DPAD_LEFT)) {
-        if (entity->cooldown <= 0.f) {
-            entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
-            entity->xPos -= 10;
-            entity->state = ENTITY_STATE_FIGHT_WALK_LEFT;
-        }
-    }
-    if (keyDown(controller, DPAD_UP)) {
-        if (entity->cooldown <= 0.f) {
-            entity->spriteSheet->currentSequence = FIGHT_WALK_RIGHT;
-            entity->yPos += 10;
-            entity->state = ENTITY_STATE_FIGHT_WALK_RIGHT;
-        }
-    }
-    if (keyDown(controller, DPAD_DOWN)) {
-        if (entity->cooldown <= 0.f) {
-            entity->spriteSheet->currentSequence = FIGHT_WALK_LEFT;
-            entity->yPos -= 10;
-            entity->state = ENTITY_STATE_FIGHT_WALK_LEFT;
-        }
-    }
-    if (keyPressed(controller, DPAD_A)) {
-        if (entity->cooldown <= 0.f) {
-            if (keyDown(controller, DPAD_UP)) {
-                entity->spriteSheet->currentSequence = PUNCH_HIGH;
-                entity->state = ENTITY_STATE_PUNCH_HIGH;
-                entity->cooldown = entity->cooldownInit;
-            }
-            else if (keyDown(controller, DPAD_DOWN)) {
-                entity->spriteSheet->currentSequence = PUNCH_LOW;
-                entity->state = ENTITY_STATE_PUNCH_LOW;
-                entity->cooldown = entity->cooldownInit;
-            }
-            else {
-                entity->spriteSheet->currentSequence = PUNCH_MID;
-                entity->state = ENTITY_STATE_PUNCH_MID;
-                entity->cooldown = entity->cooldownInit;
-            }
-        }
-    }
-    
-    entity->cooldown -= dt/1000.f;
-    if (entity->cooldown < 0.f) {
-        entity->cooldown = 0.f;
-    }
-    
-    int * currentFramePtr = &entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame;
-    int startAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].start;
-    int endAnimPtr = entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].end;
-    if (*currentFramePtr > endAnimPtr) *currentFramePtr = startAnimPtr;
-    if (*currentFramePtr < startAnimPtr)  *currentFramePtr = endAnimPtr;
+    SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
+    update_entity_animation(entity, dt);
 }
 
 void check_collision(Entity * entity1, Entity * entity2)
 {
-    if (entity1->xPos+3 > entity2->xPos &&
-        entity1->xPos < entity2->xPos+6) {
-        if (entity1->state == ENTITY_STATE_PUNCH_HIGH) {
-            if (entity2->state == ENTITY_STATE_FIGHT_READY) {
-                entity2->spriteSheet->currentSequence = HIT_HIGH;
-                entity2->cooldown = entity2->cooldownInit;
-                entity2->hitpoints -= 10;
-            }
-            entity1->state = ENTITY_STATE_FIGHT_READY;
-        }
-        else if (entity1->state == ENTITY_STATE_PUNCH_MID) {
-            if (entity2->state == ENTITY_STATE_FIGHT_READY) {
-                entity2->spriteSheet->currentSequence = HIT_MID;
-                entity2->cooldown = entity2->cooldownInit;
-                entity2->hitpoints -= 10;
-            }
-            entity1->state = ENTITY_STATE_FIGHT_READY;
-        }
-    }
     
-    if (entity2->hitpoints <= 0) {
-        entity2->state = ENTITY_STATE_KO;
-        entity2->spriteSheet->currentSequence = KO;
-        entity2->cooldown = entity2->cooldownInit;
-    }
 }
 
 int compare_entities_y_pos(void const * a, void const * b) 
@@ -1005,16 +893,39 @@ void render_entities(Entity * entities, int entityCount)
     Entity * entity = sorted_entities;
     for (int i=0; i<entityCount; i++) {
         bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
-#if 0
+#if 1
         Rect window_dimensions = gPlatformAPI->getWindowDimensions();
         float scale = 1.f;
         scale = entity->yPos/(float)window_dimensions.height;
         scale = (scale-1)*(-1.f);
 #endif
+        SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
         pushTexturedRect(entity->xPos, entity->yPos,
-                         500, 500,
+                         3, 3,
                          {1, 1, 1},
-                         entity->spriteSheet, entity->spriteSheet->sequences[entity->spriteSheet->currentSequence].currentFrame,
+                         spritesheet, entity->currentFrame,
+                         flipHorizontally);
+        entity++;
+    }
+}
+
+void render_entities_ex(Entity * entities, int entityCount)
+{
+    
+    Entity * entity = entities;
+    for (int i=0; i<entityCount; i++) {
+        bool flipHorizontally = entity->facingDirection == FACING_RIGHT ? false : true;
+#if 1
+        Rect window_dimensions = gPlatformAPI->getWindowDimensions();
+        float scale = 1.f;
+        scale = entity->yPos/(float)window_dimensions.height;
+        scale = (scale-1)*(-1.f);
+#endif
+        SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
+        pushTexturedRect(entity->xPos, entity->yPos,
+                         3, 3,
+                         {1, 1, 1},
+                         spritesheet, entity->currentFrame,
                          flipHorizontally);
         entity++;
     }
@@ -1033,7 +944,6 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     xTextScale += dt/1000*0.001f;
     yTextScale += dt/1000*0.001f;
     char uiAngleBuffer[256];
-    strcpy(uiAngleBuffer, ftoa(-15.1f));
     
     static float advance = 0.f;
     if (advance > 1080.+120.f)
@@ -1042,6 +952,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     update_input(&gEntities[0], dt, inputDevice->controller1);
     update_input(&gEntities[1], dt, inputDevice->controller2);
+    for (int i=0; i<MAX_ENTITIES; ++i) {
+        Entity * entity = &gFatguys[i];
+        update_entity_animation(entity, dt);
+    }
     if (gEntities[0].xPos > gEntities[1].xPos) {
         if (gEntities[0].state != ENTITY_STATE_KO) {
             gEntities[0].facingDirection = FACING_LEFT;
@@ -1065,18 +979,19 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(
         0.0f, (float)windowDimensions.width,
-        0.0f, (float)windowDimensions.height,
+        (float)windowDimensions.height, 0.f,
         -1.f, 1.0f,
         ortho_matrix
         );
     set_orthographic_projection(re, ortho_matrix);
     //useFramebuffer(fbHandle);
     render_entities(gEntities, 2);
+    render_entities_ex(gFatguys, MAX_ENTITIES);
     pushFilledRect(0, 0, 20, 20, {1,0,0});
     pushFilledRect(300, 180, 20, 20, {0,1,0});
     //defaultFramebuffer(fbHandle);
     
-#if 0    
+#if 1    
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Toggle Animation Info")) {}

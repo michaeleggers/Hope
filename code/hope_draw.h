@@ -20,10 +20,10 @@ struct FontInfo
 Window createSpriteWindow(Texture *texture,
                           int xOffset, int yOffset,
                           int width, int height);
-SpriteSheet createSpriteSheet(refexport_t* re,
-                              char * file,
-                              int xOffset, int yOffset,
-                              int windowWidth, int windowHeight);
+int createSpriteSheet(refexport_t* re,
+                      char * file,
+                      int xOffset, int yOffset,
+                      int windowWidth, int windowHeight);
 void addSpriteFrame(SpriteSheet *spriteSheet,
                     int xOffset, int yOffset,
                     int width, int height);

@@ -127,9 +127,15 @@ enum EntityState
     MAX_ENTITY_STATES
 };
 
+enum EntityType
+{
+    ENTITY_TYPE_PLAYER,
+    ENTITY_TYPE_FATGUY
+};
+
 struct Entity
 {
-    SpriteSheet * spriteSheet;
+    int spritesheet;
     float xPos, yPos;
     float cooldown;
     float cooldownInit;
@@ -137,6 +143,8 @@ struct Entity
     int hitpoints;
     EntityFacingDirection facingDirection;
     EntityState state;
+    SpriteSequenceType currentSequence;
+    int currentFrame;
 };
 
 // ---------------------------------------

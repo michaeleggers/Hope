@@ -104,7 +104,6 @@ mat4 hope_rotate_around_z(float angle)
     return result;
 }
 
-
 void hope_create_ortho_matrix(float left, float right, float bottom, float top, float nearVal, float farVal, float * out_m)
 {
     float tx = -((right + left) / (right - left));
