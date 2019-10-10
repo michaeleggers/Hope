@@ -21,7 +21,7 @@ global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gEntities[2];
-#define MAX_ENTITIES 5
+#define MAX_ENTITIES 1000
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
@@ -459,7 +459,7 @@ void render_entities_ex(Entity * entities, int entityCount)
 #endif
         SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
         pushTexturedRect(entity->xPos, entity->yPos,
-                         3, 3,
+                         1, 1,
                          {1, 1, 1},
                          spritesheet, entity->currentFrame,
                          flipHorizontally);
@@ -478,6 +478,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     int win_height = win_dimensions.height;
     for (int i=0; i<MAX_ENTITIES; ++i) {
         Entity * entity = &gFatguys[i];
+        entity->direction = v2normalize({entity->xPos-(float)get_mouse_x(), entity->yPos-(float)get_mouse_y()});
         if (entity->xPos > win_width) {
             entity->direction.x *= -1;
             //entity->direction.y = randBetween(-1.f, 1.f);
@@ -507,17 +508,27 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
             }
         }
         float theta_in_deg = 180.f/PI*theta;
-        if (theta > (7.f/4.f)*PI && theta <= PI/4.f) {
-            entity->currentSequence = WALK_SIDE_RIGHT;
+        if (direction.y > 0) {
+            if (theta_in_deg < 45) {
+                entity->currentSequence = WALK_SIDE_RIGHT;
+            }
+            else if (theta_in_deg >= 45 && theta_in_deg < 135) {
+                entity->currentSequence = WALK_FRONT;
+            }
+            else {
+                entity->currentSequence = WALK_SIDE_LEFT;
+            }
         }
-        else if (theta > PI/4.f && theta <= (3.f/4.f)*PI) {
-            entity->currentSequence = WALK_FRONT;
-        }
-        else if (theta > (3.f/4.f)*PI && theta <= (5.f/4.f)*PI) {
-            entity->currentSequence = WALK_SIDE_LEFT;
-        }
-        else if (theta >  (5.f/4.f)*PI && theta < (7.f/4.f)*PI) {
-            entity->currentSequence = WALK_BACK;
+        else {
+            if (theta_in_deg < 225) {
+                entity->currentSequence = WALK_SIDE_LEFT;
+            }
+            else if (theta_in_deg >= 225 && theta_in_deg < 315) {
+                entity->currentSequence = WALK_BACK;
+            }
+            else {
+                entity->currentSequence = WALK_SIDE_RIGHT;
+            }
         }
         update_entity_animation(entity, dt);
     }

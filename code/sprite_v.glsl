@@ -12,5 +12,7 @@ void main ()
 {
     texturePosForFrag = texture_pos;
     //gl_Position = ortho * model * vec4(vertex_pos, 1.0);
-    gl_Position = ortho*vec4(vertex_pos, 1.0);
+    float z = vertex_pos.y;
+    //gl_Position = ortho*vec4(vertex_pos.xy, z, 1.0);
+    gl_Position = ortho*vec4(vertex_pos.xyz, 1.0);
 }

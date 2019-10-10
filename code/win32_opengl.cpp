@@ -288,6 +288,10 @@ int win32_initGL(HWND* windowHandle, WNDCLASS* windowClass)
     // multisampling
     glEnable(GL_MULTISAMPLE);
     
+#if 0
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+#endif
     
     OutputDebugStringA("end init ogl\n");
     return 0;
