@@ -5,6 +5,7 @@
 #include "hope_ui.cpp"
 #include "hope_ui_impl_render.cpp"
 #include "input.h"
+#include "input.cpp"
 #include "stretchy_buffer.h"
 
 #define JSON_PARSER_IMPLEMENTATION
