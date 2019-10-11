@@ -898,8 +898,6 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.endFrame = gl_endFrame;
     re.createTextureFromBitmap = createTextureFromBitmap;
     re.createFramebuffer = gl_createFramebuffer;
-    re.bindFramebuffer = gl_bindFramebuffer;
-    re.defaultFramebuffer = gl_defaultFramebuffer;
     re.set_ortho_matrix = gl_set_ortho_matrix;
     re.get_framebuffer_width = gl_get_framebuffer_width;
     re.get_framebuffer_height = gl_get_framebuffer_height;

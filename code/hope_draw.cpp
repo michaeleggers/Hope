@@ -659,7 +659,7 @@ int newFramebuffer(refexport_t * re, int width, int height)
     return re->createFramebuffer(width, height);
 }
 
-void useFramebuffer(int handle)
+void set_render_target(int handle)
 {
     RenderCommand *renderCmdPtr = 0;
     renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
@@ -669,7 +669,7 @@ void useFramebuffer(int handle)
     gDrawList.freeIndex++;
 }
 
-void defaultFramebuffer(int handle)
+void set_render_target_default(int handle)
 {
     RenderCommand *renderCmdPtr = 0;
     renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];

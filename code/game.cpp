@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "game.h"
 #include "hope_draw.h"
 #include "hope_draw.cpp"
@@ -21,7 +23,7 @@ global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gEntities[2];
-#define MAX_ENTITIES 1000
+#define MAX_ENTITIES 100
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
@@ -236,7 +238,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     init_input(input_device);
     
     // create new framebuffer
-    fbHandle = newFramebuffer(re, 320, 200);
+    fbHandle = newFramebuffer(re, 2560, 1440);
     
 #if 0
     Foo fooItem = {1,2};
@@ -311,7 +313,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
 #endif
     
     // INIT HOPE UI
-    gUiBinding.getWindowWidth = get_window_width;gUiBinding.getWindowHeight = get_window_height;
+    gUiBinding.getWindowWidth = get_window_width;
+    gUiBinding.getWindowHeight = get_window_height;
     gUiBinding.getMouseX = get_mouse_x;
     gUiBinding.getMouseY = get_mouse_y;
     gUiBinding.leftMouseButtonDown = leftMouseButtonDown;
@@ -459,7 +462,7 @@ void render_entities_ex(Entity * entities, int entityCount)
 #endif
         SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
         pushTexturedRect(entity->xPos, entity->yPos,
-                         1, 1,
+                         3, 3,
                          {1, 1, 1},
                          spritesheet, entity->currentFrame,
                          flipHorizontally);
@@ -478,7 +481,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     int win_height = win_dimensions.height;
     for (int i=0; i<MAX_ENTITIES; ++i) {
         Entity * entity = &gFatguys[i];
-        entity->direction = v2normalize({entity->xPos-(float)get_mouse_x(), entity->yPos-(float)get_mouse_y()});
+        if ( (abs((int)entity->xPos-get_mouse_x()) < 300) &&
+            (abs((int)entity->yPos-get_mouse_y()) < 300)) {
+            entity->direction = v2normalize({entity->xPos-(float)get_mouse_x(), entity->yPos-(float)get_mouse_y()});
+        }
         if (entity->xPos > win_width) {
             entity->direction.x *= -1;
             //entity->direction.y = randBetween(-1.f, 1.f);
@@ -550,20 +556,30 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     }
     
     float ortho_matrix[16];
+    hope_create_ortho_matrix(
+        0.0f, (float)get_framebuffer_width(re, fbHandle),
+        (float)get_framebuffer_height(re, fbHandle), 0.f,
+        -1.f, 1.0f,
+        ortho_matrix
+        );
+    //set_orthographic_projection_framebuffer(re, fbHandle, ortho_matrix);
+    set_orthographic_projection(re, ortho_matrix);
+    //useFramebuffer(fbHandle);
+    set_render_target(fbHandle);
+    render_entities(gEntities, 2);
+    render_entities_ex(gFatguys, MAX_ENTITIES);
+    //pushFilledRect(0, 0, 20, 20, {1,0,0});
+    //pushFilledRect(300, 180, 20, 20, {0,1,0});
+    set_render_target_default(fbHandle);
+    
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(
         0.0f, (float)windowDimensions.width,
-        (float)windowDimensions.height, 0.f,
+        windowDimensions.height, 0.f,
         -1.f, 1.0f,
         ortho_matrix
         );
     set_orthographic_projection(re, ortho_matrix);
-    //useFramebuffer(fbHandle);
-    render_entities(gEntities, 2);
-    render_entities_ex(gFatguys, MAX_ENTITIES);
-    pushFilledRect(0, 0, 20, 20, {1,0,0});
-    pushFilledRect(300, 180, 20, 20, {0,1,0});
-    //defaultFramebuffer(fbHandle);
     
 #if 1    
     hope_ui_start();
