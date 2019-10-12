@@ -33,7 +33,8 @@ enum RenderCommandType
     RENDER_CMD_LINE,
     RENDER_CMD_FILLED_RECT,
     RENDER_CMD_SET_FRAMEBUFFER,
-    RENDER_CMD_SET_DEFAULT_FRAMEBUFFER
+    RENDER_CMD_SET_DEFAULT_FRAMEBUFFER,
+    RENDER_CMD_DRAW_FROM_FRAMEBUFFER
 };
 
 // Every draw call issues a RenderCommand.
@@ -68,6 +69,10 @@ struct RenderCommand
         struct
         {
             int framebufferHandle;
+            float pos_x;
+            float pos_y;
+            float scale_x;
+            float scale_y;
         };
     };
 };
@@ -186,7 +191,7 @@ struct refexport_t
     void (*endFrame)(DrawList* drawList);
     int (*createFramebuffer)(int width, int height);
     void (*bindFramebuffer)(int handle);
-    void (*defaultFramebuffer)(int handle);
+    void (*defaultFramebuffer)();
     void (*set_ortho_matrix)(float orthoMatrix[]);
     int (*get_framebuffer_width)(int fbHandle);
     int (*get_framebuffer_height)(int fbHandle);

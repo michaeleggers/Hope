@@ -10,6 +10,7 @@ global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
 global_var FrameBuffer gFrameBuffers[MAX_FRAMEBUFFERS];
 global_var int gFrameBufferCount;
+global_var FrameBuffer g_active_framebuffer;
 global_var GPUSprite gSpritesKnown[MAX_SPRITES]; 
 global_var int gUnknownSpriteIndex;
 global_var Texture gTexturesKnown[MAX_TEXTURES];
@@ -23,7 +24,6 @@ global_var GLint gTintLocation;
 global_var GLint gTextureLocation;
 global_var GLuint vaoHandle;
 global_var float gOrthoMatrix[16];
-
 
 global_var PlatformAPI* gPlatformAPI;
 
@@ -613,15 +613,9 @@ void gl_renderMesh(GPUMeshData* meshData)
     glDrawArrays(GL_TRIANGLES, 0, meshData->vertexCount);
 }
 
-void gl_endFrame(DrawList* drawList)
+void gl_flush(DrawList* drawList)
 {
-    glClearColor(.2, .2f, .2f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    //GLuint vaoHandle = 0;
-    //glGenVertexArrays(1, &vaoHandle);
-    glBindVertexArray(vaoHandle);
-    
+    //glBindVertexArray(vaoHandle);
     glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
     glBufferData(GL_ARRAY_BUFFER, drawList->vtxCount*sizeof(Vertex),
                  (GLvoid *)drawList->vtxBuffer, GL_STREAM_DRAW);
@@ -630,10 +624,7 @@ void gl_endFrame(DrawList* drawList)
                  (GLvoid *)drawList->idxBuffer, GL_STREAM_DRAW);
     RenderCommand * renderCommands = drawList->renderCmds;
     RenderCommand * renderCmd = renderCommands;
-    
-    for (int i = 0;
-         i < drawList->freeIndex;
-         ++i)
+    for (int i = 0; i < drawList->freeIndex; ++i)
     {
         RenderCommandType renderType = renderCmd->type;
         switch (renderType)
@@ -796,19 +787,30 @@ void gl_endFrame(DrawList* drawList)
             
             case RENDER_CMD_SET_DEFAULT_FRAMEBUFFER:
             {
-                gl_defaultFramebuffer(renderCmd->framebufferHandle);
+                gl_defaultFramebuffer();
             }
             break;
         }
         ++renderCmd;
     }
+    
     drawList->vtxCount = 0;
     drawList->idxCount = 0;
     drawList->freeIndex = 0;
     drawList->prevRenderCmd = 0;
     drawList->quadCount = 0;
     drawList->lineCount = 0;
-    //glDeleteVertexArrays(1, &vaoHandle);
+}
+
+void gl_endFrame(DrawList* drawList)
+{
+    glClearColor(.2, .2f, .2f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    //GLuint vaoHandle = 0;
+    //glGenVertexArrays(1, &vaoHandle);
+    glBindVertexArray(vaoHandle);
+    gl_flush(drawList);
     SwapBuffers(gRenderState.deviceContext);
 }
 
@@ -850,9 +852,9 @@ int gl_createFramebuffer(int width, int height)
 void gl_bindFramebuffer(int handle)
 {
     FrameBuffer framebuffer = gFrameBuffers[handle];
+    g_active_framebuffer = framebuffer;
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
     glViewport(0, 0, framebuffer.width, framebuffer.height);
-    
     // this is dumb. in C99 the following code would be valid:
     // glClearBufferfv(GL_COLOR, 0, &(0,1,0,1));
     float white[] = { 1.f, 1.f, 1.f, 0.f };
@@ -861,9 +863,9 @@ void gl_bindFramebuffer(int handle)
     glClearBufferfv(GL_DEPTH, 0, one);
 }
 
-void gl_defaultFramebuffer(int handle)
+void gl_defaultFramebuffer()
 {
-    FrameBuffer framebuffer = gFrameBuffers[handle];
+    FrameBuffer framebuffer = g_active_framebuffer;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     Rect windowSize = gPlatformAPI->getWindowDimensions();
     glViewport(0, 0, windowSize.width, windowSize.height);

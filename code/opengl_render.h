@@ -13,6 +13,6 @@ struct FrameBuffer
 
 int gl_createFramebuffer(int width, int height);
 void gl_bindFramebuffer(int handle);
-void gl_defaultFramebuffer(int handle);
+void gl_defaultFramebuffer();
 
 #endif

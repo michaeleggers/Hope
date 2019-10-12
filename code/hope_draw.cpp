@@ -669,12 +669,11 @@ void set_render_target(int handle)
     gDrawList.freeIndex++;
 }
 
-void reset_render_target(int handle)
+void reset_render_target()
 {
     RenderCommand *renderCmdPtr = 0;
     renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
     renderCmdPtr->type = RENDER_CMD_SET_DEFAULT_FRAMEBUFFER;
-    renderCmdPtr->framebufferHandle = handle;
     gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
     gDrawList.freeIndex++;
 }
@@ -692,4 +691,22 @@ int get_framebuffer_width(refexport_t * re, int handle)
 int get_framebuffer_height(refexport_t * re, int handle)
 {
     return re->get_framebuffer_height(handle);
+}
+
+void draw_from_framebuffer(int fb_handle, float x, float y, float scale_x, float scale_y)
+{
+    RenderCommand * renderCmdPtr = 0;
+    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    if (prevRenderCmd->type == RENDER_CMD_DRAW_FROM_FRAMEBUFFER &&
+        prevRenderCmd->framebufferHandle == fb_handle) {
+        renderCmdPtr = prevRenderCmd;
+    }
+    else { // flush current render commands and create new render command
+        
+        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr->pos_x = x;
+        renderCmdPtr->pos_y = y;
+        renderCmdPtr->scale_x = scale_x;
+        renderCmdPtr->scale_y = scale_y;
+    }
 }

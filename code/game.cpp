@@ -521,7 +521,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     render_blocks();
     //pushFilledRect(0, 0, 20, 20, {1,0,0});
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
-    reset_render_target(g_default_framebuffer);
+    reset_render_target();
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(
