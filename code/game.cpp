@@ -27,8 +27,11 @@ global_var Entity gEntities[2];
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
+#define MAX_BLOCKS 3
+global_var Window g_blocks[MAX_BLOCKS];
 
-global_var int fbHandle;
+global_var int g_default_framebuffer;
+global_var int g_ui_framebuffer;
 
 void initSpriteSheetFromJson(SpriteSheet * spriteSheet, char  * jsonFile)
 {
@@ -121,49 +124,6 @@ int get_window_height()
     return gPlatformAPI->getWindowDimensions().height;
 }
 
-struct HopeVector
-{
-    void * ptrToArray;
-};
-
-#define hope_vector(type, object) type * object; \
-object = (type *)malloc(sizeof(type)*3 + 2*sizeof(int)); \
-*(int *)object = 3; \
-((int *)object)[1] = 0; \
-object = (type *)&((int *)object)[2];
-
-#define hope_vector_size(object) \
-((int *)object)[-2];
-
-struct Foo
-{
-    int a, b;
-};
-
-#define hope_vector_push_back(object, item) \
-hope_vector_create( *((void **)&object)
-/*
-if (object == 0) { \
-    object = (Foo *)malloc(sizeof(item)*3 + 2*sizeof(int)); \
-    *(int *)object = 3; \
-    ((int *)object)[1] = 0; \
-} \
-object = (Foo *)&((int *)object)[2]; \
-object[((int *)object)[-1]] = item; \
-((int *)object)[-1] += 1;
-*/
-
-//if (! ((int *)object)[-2] - ((int *)object)[-1] ) \
-//object = (int *)realloc( (void *)object, ((int *)object)[-2] * 2 * sizeof(object[0]) ); \
-//object[((int *)object)[-1]] = item; \
-//((int *)object)[-1] += 1;
-
-
-struct Bar
-{
-    char c;
-};
-
 void * hope_memcpy(void * dest, void * src, int numBytes)
 {
     int i = numBytes;
@@ -174,43 +134,6 @@ void * hope_memcpy(void * dest, void * src, int numBytes)
         destByte[i] = srcByte[i];
     }
     return dest;
-}
-
-void push (void ** foothing, int sizeOfItem, void * item)
-{
-#if 1
-    void * cpyLocation = 0;
-    if (0 == *foothing)
-    {
-        *foothing = malloc(10*sizeOfItem * 2*sizeof(int));
-        *((int *)(*foothing)) = 10;
-        ((int *)*foothing)[1] = 0;
-        *foothing = &((int *)*foothing)[2];
-        cpyLocation = *foothing;
-    }
-    else
-    {
-        int currentPos = ((int *)*foothing)[-1];
-        cpyLocation = (char *)*foothing + currentPos*sizeOfItem;
-    }
-    ((int *)*foothing)[-1] += 1;
-    hope_memcpy(cpyLocation, item, sizeOfItem);
-#endif
-}
-
-#define push_macro(array, item) push((void **)&array, sizeof(*array), &item);
-
-Foo aFunction()
-{
-    return {666,666};
-}
-
-typedef int (*someFunctionPtr)(void);
-
-int lol(void)
-{
-    printf("L OOOOOO L\n");
-    return 0;
 }
 
 Entity create_entity(int  spritesheet_id, float x_pos, float y_pos)
@@ -237,8 +160,27 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     gPlatformAPI = platform_api;
     init_input(input_device);
     
+    srand(134345);
+    
+    Rect window_dim = gPlatformAPI->getWindowDimensions();
     // create new framebuffer
-    fbHandle = newFramebuffer(re, 2560, 1440);
+    g_default_framebuffer = new_framebuffer(re, 640, 480);
+    g_ui_framebuffer = new_framebuffer(re, window_dim.width, window_dim.height);
+    
+    float last_left = 0.f;
+    for (int i=0; i<MAX_BLOCKS; ++i) {
+        
+        int fb_width = window_dim.width;
+        int fb_height = window_dim.height;
+        float top = randBetween((float)fb_height-300, (float)fb_height);
+        float width = randBetween(200, 500);
+        float height = fb_height - top;
+        float left = last_left + randBetween(200.f, 500.f);
+        last_left = left;
+        Window window = {left, top, (float)width, (float)height, 0, 0};
+        g_blocks[i] = window;
+    }
+    
     
 #if 0
     Foo fooItem = {1,2};
@@ -470,6 +412,15 @@ void render_entities_ex(Entity * entities, int entityCount)
     }
 }
 
+void render_blocks()
+{
+    Window * block = g_blocks;
+    for (int i=0; i<MAX_BLOCKS; ++i) {
+        pushFilledRect(block->x, block->y, block->width, block->height, {1,0,0});
+        block++;
+    }
+}
+
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
 {
     // new rendering API proposal:
@@ -557,20 +508,20 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     
     float ortho_matrix[16];
     hope_create_ortho_matrix(
-        0.0f, (float)get_framebuffer_width(re, fbHandle),
-        (float)get_framebuffer_height(re, fbHandle), 0.f,
+        0.0f, (float)get_framebuffer_width(re, g_default_framebuffer),
+        (float)get_framebuffer_height(re, g_default_framebuffer), 0.f,
         -1.f, 1.0f,
         ortho_matrix
         );
     //set_orthographic_projection_framebuffer(re, fbHandle, ortho_matrix);
-    set_orthographic_projection(re, ortho_matrix);
     //useFramebuffer(fbHandle);
-    set_render_target(fbHandle);
+    set_render_target(g_default_framebuffer);
     render_entities(gEntities, 2);
     render_entities_ex(gFatguys, MAX_ENTITIES);
+    render_blocks();
     //pushFilledRect(0, 0, 20, 20, {1,0,0});
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
-    set_render_target_default(fbHandle);
+    reset_render_target(g_default_framebuffer);
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(

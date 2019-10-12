@@ -654,7 +654,7 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
 }
 
 // returns handle index into framebuffer slot managed by rendering implementation (OpenGL)
-int newFramebuffer(refexport_t * re, int width, int height)
+int new_framebuffer(refexport_t * re, int width, int height)
 {
     return re->createFramebuffer(width, height);
 }
@@ -669,7 +669,7 @@ void set_render_target(int handle)
     gDrawList.freeIndex++;
 }
 
-void set_render_target_default(int handle)
+void reset_render_target(int handle)
 {
     RenderCommand *renderCmdPtr = 0;
     renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
