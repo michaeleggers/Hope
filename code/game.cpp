@@ -23,7 +23,7 @@ global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gEntities[2];
-#define MAX_ENTITIES 100
+#define MAX_ENTITIES 3
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
@@ -159,6 +159,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
 {
     gPlatformAPI = platform_api;
     init_input(input_device);
+    hope_draw_init();
     
     srand(134345);
     
@@ -180,79 +181,6 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         Window window = {left, top, (float)width, (float)height, 0, 0};
         g_blocks[i] = window;
     }
-    
-    
-#if 0
-    Foo fooItem = {1,2};
-    Foo fooItem2 = {999, 888};
-    Foo fooItem3 = {321, 123};
-    Foo * myFoo = 0;
-    push_macro(myFoo, fooItem);
-    push_macro(myFoo, fooItem2);
-    push_macro(myFoo, fooItem3);
-    push_macro(myFoo, aFunction());
-    Foo getFooItem = myFoo[0];
-    
-    Foo * anItem = (Foo *)malloc(sizeof(Foo));
-    anItem->a = 777;
-    anItem->b = 89;
-    Foo ** array = 0;
-    push_macro(array, anItem);
-    push_macro(array, anItem);
-    //push((void**)&myFoo, sizeof(fooItem), (void *)&fooItem);
-    //push((void**)&myFoo, sizeof(fooItem2), (void *)&fooItem2);
-    
-    // This won't work in my implementation
-    someFunctionPtr * funcArray1;
-    push_macro(funcArray1, lol);
-    
-    someFunctionPtr * funcArray = 0;
-    sb_push(funcArray, lol);
-    someFunctionPtr lolFunc = funcArray[0];
-    lolFunc();
-#endif
-    
-#if 0    
-    std::vector<Foo> fooVec;
-    fooVec.push_back(someObj);
-    fooVec[2];
-    
-    void * thing = malloc(sizeof(int)*10);
-    ((int *)thing)[0] = 999;
-    ((int *)thing)[1] = 777;
-    *(Bar *)&((int *)thing)[2] = {'a'};
-    
-    Foo * foo = 0;
-    //int fooSize = hope_vector_size(foo);
-    Foo item = {42, 33};
-    Foo item2 = {66, 99};
-    //foo[0] = item;
-    //hope_vector_push_back(foo, item);
-    //hope_vector_push_back(foo, item);
-    //hope_vector_push_back(foo, item);
-    //hope_vector_push_back(foo, item2);
-#endif
-    
-#if 0
-    hope_vector(Bar, bar);
-    int barSize = hope_vector_size(bar);
-    Bar barItem = {'Q'};
-    hope_vector_push_back(bar, barItem);
-    hope_vector_push_back(bar, {'X'});
-    bar[2] = {'Y'};
-    
-    hope_vector_push_back(foo, item);
-    hope_vector_push_back(foo, item);
-    
-    
-    char a = 'a';
-    char b = 'b';
-    char c = 'c';
-    hope_vector(char, cfoo);
-    hope_vector_push_back(cfoo, a);
-    hope_vector_push_back(cfoo, b);
-    hope_vector_push_back(cfoo, c);
-#endif
     
     // INIT HOPE UI
     gUiBinding.getWindowWidth = get_window_width;
@@ -321,14 +249,6 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
         gFatguys[i] = fatguy;
     }
     // ! ENTITY CREATION
-    
-    // init drawlist
-    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
-    if (!gDrawList.vtxBuffer)
-        OutputDebugStringA("failed to create vtxBuffer\n");
-    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1000*1024);
-    if (!gDrawList.idxBuffer)
-        OutputDebugStringA("failed to create idxBuffer\n");
 }
 
 void update_entity_animation(Entity * entity, float dt)
@@ -506,6 +426,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     
+    hope_draw_start_frame(re);
     float ortho_matrix[16];
     hope_create_ortho_matrix(
         0.0f, (float)get_framebuffer_width(re, g_default_framebuffer),
@@ -515,13 +436,14 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         );
     //set_orthographic_projection_framebuffer(re, fbHandle, ortho_matrix);
     //useFramebuffer(fbHandle);
-    set_render_target(g_default_framebuffer);
-    render_entities(gEntities, 2);
+    set_render_target(re, g_default_framebuffer);
+    //render_entities(gEntities, 2);
     render_entities_ex(gFatguys, MAX_ENTITIES);
-    render_blocks();
+    //render_blocks();
     //pushFilledRect(0, 0, 20, 20, {1,0,0});
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
-    reset_render_target();
+    reset_render_target(re);
+    draw_from_framebuffer(re, g_default_framebuffer, 0, 0, 0, 0);
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(

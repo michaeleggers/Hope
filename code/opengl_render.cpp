@@ -4,13 +4,11 @@
 
 #include "opengl_render.h"
 
-#define MAX_FRAMEBUFFERS 3
-
 global_var RenderState gRenderState;
 global_var Shader gShaders[MAX_SHADERS];
 global_var FrameBuffer gFrameBuffers[MAX_FRAMEBUFFERS];
 global_var int gFrameBufferCount;
-global_var FrameBuffer g_active_framebuffer;
+global_var FrameBuffer * g_active_framebuffer;
 global_var GPUSprite gSpritesKnown[MAX_SPRITES]; 
 global_var int gUnknownSpriteIndex;
 global_var Texture gTexturesKnown[MAX_TEXTURES];
@@ -615,7 +613,7 @@ void gl_renderMesh(GPUMeshData* meshData)
 
 void gl_flush(DrawList* drawList)
 {
-    //glBindVertexArray(vaoHandle);
+    glBindVertexArray(vaoHandle);
     glBindBuffer(GL_ARRAY_BUFFER, gvtxHandle);
     glBufferData(GL_ARRAY_BUFFER, drawList->vtxCount*sizeof(Vertex),
                  (GLvoid *)drawList->vtxBuffer, GL_STREAM_DRAW);
@@ -778,18 +776,6 @@ void gl_flush(DrawList* drawList)
                 glUseProgram(0);
             }
             break;
-            
-            case RENDER_CMD_SET_FRAMEBUFFER:
-            {
-                gl_bindFramebuffer(renderCmd->framebufferHandle);
-            }
-            break;
-            
-            case RENDER_CMD_SET_DEFAULT_FRAMEBUFFER:
-            {
-                gl_defaultFramebuffer();
-            }
-            break;
         }
         ++renderCmd;
     }
@@ -802,14 +788,16 @@ void gl_flush(DrawList* drawList)
     drawList->lineCount = 0;
 }
 
-void gl_endFrame(DrawList* drawList)
+void gl_start_frame()
 {
     glClearColor(.2, .2f, .2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+}
+
+void gl_endFrame(DrawList* drawList)
+{
     //GLuint vaoHandle = 0;
     //glGenVertexArrays(1, &vaoHandle);
-    glBindVertexArray(vaoHandle);
     gl_flush(drawList);
     SwapBuffers(gRenderState.deviceContext);
 }
@@ -849,23 +837,33 @@ int gl_createFramebuffer(int width, int height)
     return -1;
 }
 
-void gl_bindFramebuffer(int handle)
+void gl_bind_framebuffer(int handle)
 {
     FrameBuffer framebuffer = gFrameBuffers[handle];
-    g_active_framebuffer = framebuffer;
+    g_active_framebuffer = &framebuffer;
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
     glViewport(0, 0, framebuffer.width, framebuffer.height);
     // this is dumb. in C99 the following code would be valid:
     // glClearBufferfv(GL_COLOR, 0, &(0,1,0,1));
+    
+}
+
+void gl_bind_default_framebuffer()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    Rect windowSize = gPlatformAPI->getWindowDimensions();
+    glViewport(0, 0, windowSize.width, windowSize.height);
+}
+
+void gl_render_from_framebuffer(int handle, DrawList * draw_list)
+{
+    gl_bind_framebuffer(handle);
     float white[] = { 1.f, 1.f, 1.f, 0.f };
     float one[] = { 1.f, 1.f, 1.f, 1.f };
     glClearBufferfv(GL_COLOR, 0, white);
     glClearBufferfv(GL_DEPTH, 0, one);
-}
-
-void gl_defaultFramebuffer()
-{
-    FrameBuffer framebuffer = g_active_framebuffer;
+    gl_flush(draw_list);
+    FrameBuffer framebuffer = gFrameBuffers[handle];
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     Rect windowSize = gPlatformAPI->getWindowDimensions();
     glViewport(0, 0, windowSize.width, windowSize.height);
@@ -897,12 +895,17 @@ refexport_t GetRefAPI(PlatformAPI* platform_api)
     re.registerMesh = gl_RegisterMesh;
     re.notify = gl_notify;
     re.createTexture = createTexture;
+    re.start_frame = gl_start_frame;
     re.endFrame = gl_endFrame;
     re.createTextureFromBitmap = createTextureFromBitmap;
     re.createFramebuffer = gl_createFramebuffer;
     re.set_ortho_matrix = gl_set_ortho_matrix;
     re.get_framebuffer_width = gl_get_framebuffer_width;
     re.get_framebuffer_height = gl_get_framebuffer_height;
+    re.bind_framebuffer = gl_bind_framebuffer;
+    re.bind_default_framebuffer = gl_bind_default_framebuffer;
+    re.render_from_framebuffer = gl_render_from_framebuffer;
+    re.flush = gl_flush;
     return re;
 }
 

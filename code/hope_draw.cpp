@@ -2,11 +2,14 @@
 #include "platform.h"
 #include "stb_image.h"
 #include "stb_truetype.h"
+#include "ref.h"
 
 global_var int gNumSpriteEntities;
 global_var int gNumMeshEntities;
 global_var Sprite gBitmapFontSprite;
 global_var DrawList gDrawList;
+global_var DrawList gDrawLists[MAX_FRAMEBUFFERS];
+global_var DrawList * active_draw_list = &gDrawList;
 global_var SpriteSheet gFontSpriteSheet;
 global_var SpriteSheet gTilesSpriteSheet;
 global_var SpriteSheet gTTFSpriteSheet;
@@ -16,9 +19,34 @@ global_var Texture *gTTFTexture;
 global_var PlatformAPI* gPlatformAPI;
 global_var FontInfo gFontInfo;
 
-#define MAX_SPRITESHEETS 32
 global_var SpriteSheet gSpriteSheets[MAX_SPRITESHEETS];
 global_var int spritesheet_count;
+
+void hope_draw_init()
+{
+    // init default drawlist
+    gDrawList.vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
+    if (!gDrawList.vtxBuffer)
+        OutputDebugStringA("failed to create vtxBuffer\n");
+    gDrawList.idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1000*1024);
+    if (!gDrawList.idxBuffer)
+        OutputDebugStringA("failed to create idxBuffer\n");
+    
+    // init aux drawlists for framebuffers
+    for (int i=0; i<MAX_FRAMEBUFFERS; ++i) {
+        gDrawLists[i].vtxBuffer = (Vertex *)malloc(sizeof(float)*1000*1024);
+        if (!gDrawLists[i].vtxBuffer)
+            OutputDebugStringA("failed to create vtxBuffer\n");
+        gDrawLists[i].idxBuffer = (uint16_t *)malloc(sizeof(uint16_t)*1000*1024);
+        if (!gDrawLists[i].idxBuffer)
+            OutputDebugStringA("failed to create idxBuffer\n");
+    }
+}
+
+void hope_draw_start_frame(refexport_t * re)
+{
+    re->start_frame();
+}
 
 Window createSpriteWindow(Texture *texture,
                           int xOffset, int yOffset,
@@ -180,7 +208,7 @@ void pushTexturedRect(float xPos, float yPos,
                       bool flipHorizontally)
 {
     RenderCommand *renderCmdPtr = 0;
-    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    RenderCommand *prevRenderCmd = active_draw_list->prevRenderCmd;
 #if 0
     if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXTURED_RECT))
     {
@@ -189,22 +217,22 @@ void pushTexturedRect(float xPos, float yPos,
 #endif
     //else
     //{
-    renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+    renderCmdPtr = &active_draw_list->renderCmds[active_draw_list->freeIndex];
     renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
     renderCmdPtr->tint = tint;
     renderCmdPtr->textureID = spriteSheet->texture->texture_id;
-    renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
-    renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+    renderCmdPtr->idxBufferOffset = active_draw_list->idxCount;
+    renderCmdPtr->vtxBufferOffset = active_draw_list->vtxCount;
     renderCmdPtr->quadCount = 0;
     renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
-    gDrawList.quadCount = 0;
-    gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-    gDrawList.freeIndex++;
+    active_draw_list->quadCount = 0;
+    active_draw_list->prevRenderCmd = &active_draw_list->renderCmds[active_draw_list->freeIndex];
+    active_draw_list->freeIndex++;
     //}
     
     // current free pos in global vertex/index buffers
-    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
-    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    Vertex *vertex   = active_draw_list->vtxBuffer + active_draw_list->vtxCount;
+    uint16_t *index = active_draw_list->idxBuffer  + active_draw_list->idxCount;
     
     Window window = spriteSheet->windows[frame]; // TODO(Michael): frame value legal?
     int uv0 = 0;
@@ -252,13 +280,13 @@ void pushTexturedRect(float xPos, float yPos,
     vertex[3].position.z = 0.f;
     vertex[uv3].UVs.x = window.x;
     vertex[uv3].UVs.y = window.y;
-    index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
-    index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+    index[0] = 0+active_draw_list->quadCount*4; index[1] = 1+active_draw_list->quadCount*4; index[2] = 2+active_draw_list->quadCount*4; // first triangle
+    index[3] = 2+active_draw_list->quadCount*4; index[4] = 3+active_draw_list->quadCount*4; index[5] = 0+active_draw_list->quadCount*4; // second triangle
     vertex += 4;
     index  += 6;
-    gDrawList.vtxCount += 4;
-    gDrawList.idxCount += 6;
-    gDrawList.quadCount++;
+    active_draw_list->vtxCount += 4;
+    active_draw_list->idxCount += 6;
+    active_draw_list->quadCount++;
     renderCmdPtr->quadCount++;
 }
 
@@ -659,23 +687,21 @@ int new_framebuffer(refexport_t * re, int width, int height)
     return re->createFramebuffer(width, height);
 }
 
-void set_render_target(int handle)
+void set_render_target(refexport_t * re, int handle)
 {
-    RenderCommand *renderCmdPtr = 0;
-    renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-    renderCmdPtr->type = RENDER_CMD_SET_FRAMEBUFFER;
-    renderCmdPtr->framebufferHandle = handle;
-    gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-    gDrawList.freeIndex++;
+    active_draw_list = &gDrawLists[handle];
+    re->bind_framebuffer(handle);
 }
 
-void reset_render_target()
+void reset_render_target(refexport_t * re)
 {
-    RenderCommand *renderCmdPtr = 0;
-    renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-    renderCmdPtr->type = RENDER_CMD_SET_DEFAULT_FRAMEBUFFER;
-    gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-    gDrawList.freeIndex++;
+    active_draw_list = &gDrawList;
+    re->bind_default_framebuffer();
+}
+
+void draw_from_framebuffer(refexport_t * re, int fb_handle, float x, float y, float scale_x, float scale_y)
+{
+    re->render_from_framebuffer(fb_handle, &gDrawLists[fb_handle]);
 }
 
 void set_orthographic_projection(refexport_t * re, float ortho_matrix[])
@@ -691,22 +717,4 @@ int get_framebuffer_width(refexport_t * re, int handle)
 int get_framebuffer_height(refexport_t * re, int handle)
 {
     return re->get_framebuffer_height(handle);
-}
-
-void draw_from_framebuffer(int fb_handle, float x, float y, float scale_x, float scale_y)
-{
-    RenderCommand * renderCmdPtr = 0;
-    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
-    if (prevRenderCmd->type == RENDER_CMD_DRAW_FROM_FRAMEBUFFER &&
-        prevRenderCmd->framebufferHandle == fb_handle) {
-        renderCmdPtr = prevRenderCmd;
-    }
-    else { // flush current render commands and create new render command
-        
-        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
-        renderCmdPtr->pos_x = x;
-        renderCmdPtr->pos_y = y;
-        renderCmdPtr->scale_x = scale_x;
-        renderCmdPtr->scale_y = scale_y;
-    }
 }

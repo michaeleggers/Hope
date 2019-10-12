@@ -10,10 +10,12 @@
 #include "platform.h"
 #include "stb_truetype.h"
 
-#define MAX_SPRITES             512
-#define MAX_TEXTURES            256
-#define MAX_MESHES              1024
-#define MAX_SPRITESHEET_WINDOWS 256
+#define MAX_SPRITES              512
+#define MAX_TEXTURES             256
+#define MAX_MESHES               1024
+#define MAX_SPRITESHEET_WINDOWS  256
+#define MAX_FRAMEBUFFERS         3
+#define MAX_SPRITESHEETS         32
 
 struct Vertex
 {
@@ -188,6 +190,7 @@ struct refexport_t
     void (*notify)(void);
     Texture* (*createTexture)(char * filename, unsigned char * imageData, int width, int height);
     Texture * (*createTextureFromBitmap)(unsigned char * bmp, int width, int height);
+    void (*start_frame)(void);
     void (*endFrame)(DrawList* drawList);
     int (*createFramebuffer)(int width, int height);
     void (*bindFramebuffer)(int handle);
@@ -195,6 +198,10 @@ struct refexport_t
     void (*set_ortho_matrix)(float orthoMatrix[]);
     int (*get_framebuffer_width)(int fbHandle);
     int (*get_framebuffer_height)(int fbHandle);
+    void (*bind_framebuffer)(int framebuffer_handle);
+    void (*bind_default_framebuffer)(void);
+    void (*render_from_framebuffer)(int framebuffer_handle, DrawList * draw_list);
+    void (*flush)(DrawList * drawList);
 };
 
 // creating function pointer type:
