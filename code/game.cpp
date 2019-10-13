@@ -23,7 +23,7 @@ global_var int gIsoMap[10000];
 global_var HopeUIBinding gUiBinding;
 
 global_var Entity gEntities[2];
-#define MAX_ENTITIES 3
+#define MAX_ENTITIES 100
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
@@ -166,7 +166,7 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     Rect window_dim = gPlatformAPI->getWindowDimensions();
     // create new framebuffer
     g_default_framebuffer = new_framebuffer(re, 640, 480);
-    g_ui_framebuffer = new_framebuffer(re, window_dim.width, window_dim.height);
+    g_ui_framebuffer = new_framebuffer(re, 320, 200);
     
     float last_left = 0.f;
     for (int i=0; i<MAX_BLOCKS; ++i) {
@@ -324,7 +324,7 @@ void render_entities_ex(Entity * entities, int entityCount)
 #endif
         SpriteSheet * spritesheet = get_spritesheet_from_id(entity->spritesheet);
         pushTexturedRect(entity->xPos, entity->yPos,
-                         3, 3,
+                         1, 1,
                          {1, 1, 1},
                          spritesheet, entity->currentFrame,
                          flipHorizontally);
@@ -439,10 +439,13 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     set_render_target(re, g_default_framebuffer);
     //render_entities(gEntities, 2);
     render_entities_ex(gFatguys, MAX_ENTITIES);
+    set_render_target(re, g_ui_framebuffer);
+    render_entities_ex(gFatguys, MAX_ENTITIES);
     //render_blocks();
     //pushFilledRect(0, 0, 20, 20, {1,0,0});
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
     reset_render_target(re);
+    draw_from_framebuffer(re, g_ui_framebuffer, 0, 0, 0, 0);
     draw_from_framebuffer(re, g_default_framebuffer, 0, 0, 0, 0);
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();

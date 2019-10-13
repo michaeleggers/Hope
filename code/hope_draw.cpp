@@ -209,26 +209,24 @@ void pushTexturedRect(float xPos, float yPos,
 {
     RenderCommand *renderCmdPtr = 0;
     RenderCommand *prevRenderCmd = active_draw_list->prevRenderCmd;
-#if 0
     if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TEXTURED_RECT))
     {
         renderCmdPtr = prevRenderCmd;
     }
-#endif
-    //else
-    //{
-    renderCmdPtr = &active_draw_list->renderCmds[active_draw_list->freeIndex];
-    renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
-    renderCmdPtr->tint = tint;
-    renderCmdPtr->textureID = spriteSheet->texture->texture_id;
-    renderCmdPtr->idxBufferOffset = active_draw_list->idxCount;
-    renderCmdPtr->vtxBufferOffset = active_draw_list->vtxCount;
-    renderCmdPtr->quadCount = 0;
-    renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
-    active_draw_list->quadCount = 0;
-    active_draw_list->prevRenderCmd = &active_draw_list->renderCmds[active_draw_list->freeIndex];
-    active_draw_list->freeIndex++;
-    //}
+    else
+    {
+        renderCmdPtr = &active_draw_list->renderCmds[active_draw_list->freeIndex];
+        renderCmdPtr->type = RENDER_CMD_TEXTURED_RECT;
+        renderCmdPtr->tint = tint;
+        renderCmdPtr->textureID = spriteSheet->texture->texture_id;
+        renderCmdPtr->idxBufferOffset = active_draw_list->idxCount;
+        renderCmdPtr->vtxBufferOffset = active_draw_list->vtxCount;
+        renderCmdPtr->quadCount = 0;
+        renderCmdPtr->alphaColor = 0x0000AB;// TODO(Michael): make configurable
+        active_draw_list->quadCount = 0;
+        active_draw_list->prevRenderCmd = &active_draw_list->renderCmds[active_draw_list->freeIndex];
+        active_draw_list->freeIndex++;
+    }
     
     // current free pos in global vertex/index buffers
     Vertex *vertex   = active_draw_list->vtxBuffer + active_draw_list->vtxCount;
