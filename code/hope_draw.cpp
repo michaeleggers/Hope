@@ -445,19 +445,19 @@ void pushTTFTextInBoundaries(char * text,
                              HopeDrawRect boundary, v3 tint)
 {
     RenderCommand *renderCmdPtr = 0;
-    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    RenderCommand *prevRenderCmd = active_draw_list->prevRenderCmd;
     if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_TTF))
     {
         renderCmdPtr = prevRenderCmd;
     }
     else
     {
-        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr = &active_draw_list->renderCmds[active_draw_list->freeIndex];
         renderCmdPtr->type = RENDER_CMD_TTF;
         renderCmdPtr->tint = tint;
         renderCmdPtr->textureID = gFontInfo.texture->texture_id;
-        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
-        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->idxBufferOffset = active_draw_list->idxCount;
+        renderCmdPtr->vtxBufferOffset = active_draw_list->vtxCount;
         renderCmdPtr->quadCount = 0;
         Rect windowDimensions = gPlatformAPI->getWindowDimensions();
         hope_create_ortho_matrix(
@@ -466,9 +466,9 @@ void pushTTFTextInBoundaries(char * text,
             -1.0f, 1.0f,
             renderCmdPtr->projectionMatrix.c
             );
-        gDrawList.quadCount = 0;
-        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-        gDrawList.freeIndex++;
+        active_draw_list->quadCount = 0;
+        active_draw_list->prevRenderCmd = &active_draw_list->renderCmds[active_draw_list->freeIndex];
+        active_draw_list->freeIndex++;
     }
     
     int textLength = 0;
@@ -499,8 +499,8 @@ void pushTTFTextInBoundaries(char * text,
                             1);
         
         // current free pos in global vertex/index buffers
-        Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
-        uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+        Vertex *vertex   = active_draw_list->vtxBuffer + active_draw_list->vtxCount;
+        uint16_t *index = active_draw_list->idxBuffer  + active_draw_list->idxCount;
         
         // NOTE(Michael): xPos is not added yet because the text might not
         // fit into the boundary in which case the text has to be scaled
@@ -527,13 +527,13 @@ void pushTTFTextInBoundaries(char * text,
         vertex[3].UVs.x = quad.s1;
         vertex[3].UVs.y = quad.t0;
         
-        index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
-        index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+        index[0] = 0+active_draw_list->quadCount*4; index[1] = 1+active_draw_list->quadCount*4; index[2] = 2+active_draw_list->quadCount*4; // first triangle
+        index[3] = 2+active_draw_list->quadCount*4; index[4] = 3+active_draw_list->quadCount*4; index[5] = 0+active_draw_list->quadCount*4; // second triangle
         vertex += 4;
         index  += 6;
-        gDrawList.vtxCount += 4;
-        gDrawList.idxCount += 6;
-        gDrawList.quadCount++;
+        active_draw_list->vtxCount += 4;
+        active_draw_list->idxCount += 6;
+        active_draw_list->quadCount++;
         renderCmdPtr->quadCount++;
         c++;
     }
@@ -548,7 +548,7 @@ void pushTTFTextInBoundaries(char * text,
         squeeze = (boundary.width - 2*padding)/(xOffset);
         xOffsetToCenter = padding;
     }
-    Vertex * vertex = gDrawList.vtxBuffer + renderCmdPtr->vtxBufferOffset;
+    Vertex * vertex = active_draw_list->vtxBuffer + renderCmdPtr->vtxBufferOffset;
     for (int i=0; i<textLength; ++i)
     {
         vertex[0].position.x = (vertex[0].position.x)*squeeze + xOffsetToCenter + xPos;
@@ -623,7 +623,7 @@ void pushRect2D(float left, float top, float right, float bottom, v3 tint, float
 void pushFilledRect(float left, float top, float width, float height, v3 tint)
 {
     RenderCommand *renderCmdPtr = 0;
-    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    RenderCommand *prevRenderCmd = active_draw_list->prevRenderCmd;
     if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_FILLED_RECT) &&
         (prevRenderCmd->tint.x == tint.x) && 
         (prevRenderCmd->tint.y == tint.y) &&
@@ -633,11 +633,11 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
     }
     else
     {
-        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr = &active_draw_list->renderCmds[active_draw_list->freeIndex];
         renderCmdPtr->type = RENDER_CMD_FILLED_RECT;
         renderCmdPtr->tint = tint;
-        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
-        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->idxBufferOffset = active_draw_list->idxCount;
+        renderCmdPtr->vtxBufferOffset = active_draw_list->vtxCount;
         renderCmdPtr->quadCount = 0;
 #if 0
         Rect windowDimensions = gPlatformAPI->getWindowDimensions();
@@ -648,14 +648,14 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
             renderCmdPtr->projectionMatrix.c
             );
 #endif
-        gDrawList.quadCount = 0;
-        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-        gDrawList.freeIndex++;
+        active_draw_list->quadCount = 0;
+        active_draw_list->prevRenderCmd = &active_draw_list->renderCmds[active_draw_list->freeIndex];
+        active_draw_list->freeIndex++;
     }
     
     // current free pos in global vertex/index buffers
-    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
-    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    Vertex *vertex   = active_draw_list->vtxBuffer + active_draw_list->vtxCount;
+    uint16_t *index = active_draw_list->idxBuffer  + active_draw_list->idxCount;
     
     vertex[0].position.x = left;
     vertex[0].position.y = top;
@@ -669,13 +669,13 @@ void pushFilledRect(float left, float top, float width, float height, v3 tint)
     vertex[3].position.x = left + width;
     vertex[3].position.y = top;
     vertex[3].position.z = 0.f;
-    index[0] = 0+gDrawList.quadCount*4; index[1] = 1+gDrawList.quadCount*4; index[2] = 2+gDrawList.quadCount*4; // first triangle
-    index[3] = 2+gDrawList.quadCount*4; index[4] = 3+gDrawList.quadCount*4; index[5] = 0+gDrawList.quadCount*4; // second triangle
+    index[0] = 0+active_draw_list->quadCount*4; index[1] = 1+active_draw_list->quadCount*4; index[2] = 2+active_draw_list->quadCount*4; // first triangle
+    index[3] = 2+active_draw_list->quadCount*4; index[4] = 3+active_draw_list->quadCount*4; index[5] = 0+active_draw_list->quadCount*4; // second triangle
     vertex += 4;
     index  += 6;
-    gDrawList.vtxCount += 4;
-    gDrawList.idxCount += 6;
-    gDrawList.quadCount++;
+    active_draw_list->vtxCount += 4;
+    active_draw_list->idxCount += 6;
+    active_draw_list->quadCount++;
     renderCmdPtr->quadCount++;
 }
 

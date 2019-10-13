@@ -165,8 +165,8 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     
     Rect window_dim = gPlatformAPI->getWindowDimensions();
     // create new framebuffer
+    g_ui_framebuffer = new_framebuffer(re, window_dim.width, window_dim.height);
     g_default_framebuffer = new_framebuffer(re, 640, 480);
-    g_ui_framebuffer = new_framebuffer(re, 320, 200);
     
     float last_left = 0.f;
     for (int i=0; i<MAX_BLOCKS; ++i) {
@@ -427,6 +427,25 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     }
     
     hope_draw_start_frame(re);
+    
+    
+    hope_ui_start();
+    hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
+    if (hope_ui_button(GUID, "Toggle Animation Info")) {}
+    if (hope_ui_button(GUID, "Toggle Secondary Window")) {}
+    hope_ui_end();
+    
+    hope_ui_start();
+    hope_ui_progress_bar(GUID, 0, 0, 500, 70, gEntities[0].hitpoints, 100);
+    hope_ui_progress_bar(GUID, 1000, 0, 500, 70, gEntities[1].hitpoints, 100);
+    hope_ui_end();
+    
+    set_render_target(re, g_ui_framebuffer);
+    hope_ui_render();
+    HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
+    hopeUIImpLAddToDrawList(uiDrawList);
+    reset_render_target(re);
+    
     float ortho_matrix[16];
     hope_create_ortho_matrix(
         0.0f, (float)get_framebuffer_width(re, g_default_framebuffer),
@@ -439,14 +458,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     set_render_target(re, g_default_framebuffer);
     //render_entities(gEntities, 2);
     render_entities_ex(gFatguys, MAX_ENTITIES);
-    set_render_target(re, g_ui_framebuffer);
-    render_entities_ex(gFatguys, MAX_ENTITIES);
     //render_blocks();
     //pushFilledRect(0, 0, 20, 20, {1,0,0});
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
     reset_render_target(re);
-    draw_from_framebuffer(re, g_ui_framebuffer, 0, 0, 0, 0);
-    draw_from_framebuffer(re, g_default_framebuffer, 0, 0, 0, 0);
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(
@@ -457,22 +472,8 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         );
     set_orthographic_projection(re, ortho_matrix);
     
-#if 1    
-    hope_ui_start();
-    hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
-    if (hope_ui_button(GUID, "Toggle Animation Info")) {}
-    if (hope_ui_button(GUID, "Toggle Secondary Window")) {}
-    hope_ui_end();
-    
-    hope_ui_start();
-    hope_ui_progress_bar(GUID, 0, 0, 500, 70, gEntities[0].hitpoints, 100);
-    hope_ui_progress_bar(GUID, 1000, 0, 500, 70, gEntities[1].hitpoints, 100);
-    hope_ui_end();
-#endif
-    
-    hope_ui_render();
-    HopeUIDrawList * uiDrawList = hope_ui_get_drawlist();
-    hopeUIImpLAddToDrawList(uiDrawList);
+    draw_from_framebuffer(re, g_ui_framebuffer, 0, 0, 0, 0);
+    draw_from_framebuffer(re, g_default_framebuffer, 0, 0, 0, 0);
     
     re->endFrame(&gDrawList);
 }
