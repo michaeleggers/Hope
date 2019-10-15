@@ -27,7 +27,7 @@ global_var Entity gEntities[2];
 global_var Entity gFatguys[MAX_ENTITIES];
 global_var int entity_count_fatguys;
 
-#define MAX_BLOCKS 3
+#define MAX_BLOCKS 10
 global_var Window g_blocks[MAX_BLOCKS];
 
 global_var int g_default_framebuffer;
@@ -155,31 +155,28 @@ Entity create_entity(int  spritesheet_id, float x_pos, float y_pos)
     return entity;
 }
 
+Window create_random_block(float y_offset);
+
 void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t* re)
 {
     gPlatformAPI = platform_api;
     init_input(input_device);
     hope_draw_init();
     
-    srand(134345);
+    srand(13434345);
     
     Rect window_dim = gPlatformAPI->getWindowDimensions();
     // create new framebuffer
     g_ui_framebuffer = new_framebuffer(re, window_dim.width, window_dim.height);
-    g_default_framebuffer = new_framebuffer(re, 640, 480);
+    g_default_framebuffer = new_framebuffer(re, 2560, 1440);
     
-    float last_left = 0.f;
+    float y_offset_last = 0.f;
+    float last_width = 0.f;
     for (int i=0; i<MAX_BLOCKS; ++i) {
-        
-        int fb_width = window_dim.width;
-        int fb_height = window_dim.height;
-        float top = randBetween((float)fb_height-300, (float)fb_height);
-        float width = randBetween(200, 500);
-        float height = fb_height - top;
-        float left = last_left + randBetween(200.f, 500.f);
-        last_left = left;
-        Window window = {left, top, (float)width, (float)height, 0, 0};
-        g_blocks[i] = window;
+        float y_offset = randBetween(10.f, 100.f);
+        g_blocks[i] = create_random_block(y_offset + y_offset_last + last_width);
+        y_offset_last = y_offset;
+        last_width = g_blocks[i].width;
     }
     
     // INIT HOPE UI
@@ -332,11 +329,41 @@ void render_entities_ex(Entity * entities, int entityCount)
     }
 }
 
+Window create_random_block(float x_offset)
+{
+    Rect window_dim = gPlatformAPI->getWindowDimensions();
+    float top       = randBetween((float)window_dim.height-300, (float)window_dim.height);
+    float left      = window_dim.width + x_offset;
+    float width     = randBetween(200, 500);
+    float height    = window_dim.height - top;
+    return {left, top, (float)width, (float)height, 0, 0};
+}
+
+void update_blocks()
+{
+    Window * last_block = &g_blocks[MAX_BLOCKS-1];
+    if ( (last_block->x + last_block->width) < 0) {
+        float last_x_offset = 0.f;
+        for (int i=0; i<MAX_BLOCKS; ++i) {
+            float x_offset = randBetween(0.f, 100.f);
+            g_blocks[i] = create_random_block(x_offset+last_x_offset);
+            last_x_offset += x_offset+g_blocks[i].width;
+        }
+    }
+    
+    Window * block = g_blocks;
+    for (int i=0; i<MAX_BLOCKS; ++i) {
+        block->x -= 10;
+        block++;
+    }
+}
+
 void render_blocks()
 {
     Window * block = g_blocks;
     for (int i=0; i<MAX_BLOCKS; ++i) {
         pushFilledRect(block->x, block->y, block->width, block->height, {1,0,0});
+        pushRect2D(block->x, block->y, block->x+block->width, block->y+block->height, {1,1,1}, 2.f);
         block++;
     }
 }
@@ -426,9 +453,9 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
         }
     }
     
+    update_blocks();
+    
     hope_draw_start_frame(re);
-    
-    
     hope_ui_start();
     hope_ui_begin(GUID, HOPE_UI_LAYOUT_COLUMNS);
     if (hope_ui_button(GUID, "Toggle Animation Info")) {}
@@ -438,6 +465,7 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     hope_ui_start();
     hope_ui_progress_bar(GUID, 0, 0, 500, 70, gEntities[0].hitpoints, 100);
     hope_ui_progress_bar(GUID, 1000, 0, 500, 70, gEntities[1].hitpoints, 100);
+    pushLine2D(0,0,win_dimensions.width, win_dimensions.height, {1,1,1}, 2);
     hope_ui_end();
     
     set_render_target(re, g_ui_framebuffer);
@@ -458,10 +486,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     set_render_target(re, g_default_framebuffer);
     //render_entities(gEntities, 2);
     render_entities_ex(gFatguys, MAX_ENTITIES);
-    //render_blocks();
     //pushFilledRect(0, 0, 20, 20, {1,0,0});
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
     reset_render_target(re);
+    render_blocks();
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(

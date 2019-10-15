@@ -763,6 +763,7 @@ void gl_flush(DrawList* drawList)
                 glUseProgram(gShaders[LINE].program);
                 //set_ortho(600, 400, &gShaders[LINE], "ortho");
                 GLint tintLocation = glGetUniformLocation(gShaders[LINE].program, "tint");
+                setUniformMat4fv(&gShaders[FILLED_RECT], "ortho", gOrthoMatrix);
                 glLineWidth(renderCmd->thickness);
                 glUniform3f(tintLocation, tint.x, tint.y, tint.z);
                 // positions

@@ -562,7 +562,7 @@ void pushTTFTextInBoundaries(char * text,
 void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness)
 {
     RenderCommand *renderCmdPtr = 0;
-    RenderCommand *prevRenderCmd = gDrawList.prevRenderCmd;
+    RenderCommand *prevRenderCmd = active_draw_list->prevRenderCmd;
     if (prevRenderCmd && (prevRenderCmd->type == RENDER_CMD_LINE) &&
         (prevRenderCmd->tint.x == tint.x) &&
         (prevRenderCmd->tint.y == tint.y) &&
@@ -573,21 +573,21 @@ void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness
     }
     else
     {
-        renderCmdPtr = &gDrawList.renderCmds[gDrawList.freeIndex];
+        renderCmdPtr = &active_draw_list->renderCmds[active_draw_list->freeIndex];
         renderCmdPtr->type = RENDER_CMD_LINE;
         renderCmdPtr->tint = tint;
-        renderCmdPtr->idxBufferOffset = gDrawList.idxCount;
-        renderCmdPtr->vtxBufferOffset = gDrawList.vtxCount;
+        renderCmdPtr->idxBufferOffset = active_draw_list->idxCount;
+        renderCmdPtr->vtxBufferOffset = active_draw_list->vtxCount;
         renderCmdPtr->lineCount = 0;
         renderCmdPtr->thickness = thickness;
-        gDrawList.lineCount = 0;
-        gDrawList.prevRenderCmd = &gDrawList.renderCmds[gDrawList.freeIndex];
-        gDrawList.freeIndex++;
+        active_draw_list->lineCount = 0;
+        active_draw_list->prevRenderCmd = &active_draw_list->renderCmds[active_draw_list->freeIndex];
+        active_draw_list->freeIndex++;
     }
     
     // current free pos in global vertex/index buffers
-    Vertex *vertex   = gDrawList.vtxBuffer + gDrawList.vtxCount;
-    uint16_t *index = gDrawList.idxBuffer  + gDrawList.idxCount;
+    Vertex *vertex   = active_draw_list->vtxBuffer + active_draw_list->vtxCount;
+    uint16_t *index = active_draw_list->idxBuffer  + active_draw_list->idxCount;
     
     vertex[0].position.x = x1;
     vertex[0].position.y = y1;
@@ -599,12 +599,12 @@ void pushLine2D(float x1, float y1, float x2, float y2, v3 tint, float thickness
     vertex[1].position.z = 0.0f;
     vertex[1].UVs.x = 0.f;
     vertex[1].UVs.y = 0.f;
-    index[0] = 0+gDrawList.lineCount*2; index[1] = 1+gDrawList.lineCount*2;
+    index[0] = 0+active_draw_list->lineCount*2; index[1] = 1+active_draw_list->lineCount*2;
     vertex += 2;
     index += 2;
-    gDrawList.vtxCount += 2;
-    gDrawList.idxCount += 2;
-    gDrawList.lineCount++;
+    active_draw_list->vtxCount += 2;
+    active_draw_list->idxCount += 2;
+    active_draw_list->lineCount++;
     renderCmdPtr->lineCount++;
 }
 
