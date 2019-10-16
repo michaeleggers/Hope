@@ -29,6 +29,9 @@ global_var int entity_count_fatguys;
 
 #define MAX_BLOCKS 10
 global_var Window g_blocks[MAX_BLOCKS];
+global_var Window * g_first_block;
+global_var Window * g_last_block;
+global_var int g_block_count;
 
 global_var int g_default_framebuffer;
 global_var int g_ui_framebuffer;
@@ -170,14 +173,14 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     g_ui_framebuffer = new_framebuffer(re, window_dim.width, window_dim.height);
     g_default_framebuffer = new_framebuffer(re, 2560, 1440);
     
-    float y_offset_last = 0.f;
-    float last_width = 0.f;
+    float x_offset_last = 0.f;
     for (int i=0; i<MAX_BLOCKS; ++i) {
-        float y_offset = randBetween(10.f, 100.f);
-        g_blocks[i] = create_random_block(y_offset + y_offset_last + last_width);
-        y_offset_last = y_offset;
-        last_width = g_blocks[i].width;
+        float x_offset = 0.f;//randBetween(10.f, 100.f);
+        g_blocks[i] = create_random_block(window_dim.width + x_offset + x_offset_last);
+        x_offset_last += x_offset + g_blocks[i].width;
     }
+    g_first_block = &g_blocks[0];
+    g_last_block  = &g_blocks[MAX_BLOCKS-1];
     
     // INIT HOPE UI
     gUiBinding.getWindowWidth = get_window_width;
@@ -333,22 +336,23 @@ Window create_random_block(float x_offset)
 {
     Rect window_dim = gPlatformAPI->getWindowDimensions();
     float top       = randBetween((float)window_dim.height-300, (float)window_dim.height);
-    float left      = window_dim.width + x_offset;
-    float width     = randBetween(200, 500);
+    float left      = x_offset;
+    float width     = randBetween(800, 1200);
     float height    = window_dim.height - top;
     return {left, top, (float)width, (float)height, 0, 0};
 }
 
 void update_blocks()
 {
-    Window * last_block = &g_blocks[MAX_BLOCKS-1];
-    if ( (last_block->x + last_block->width) < 0) {
-        float last_x_offset = 0.f;
-        for (int i=0; i<MAX_BLOCKS; ++i) {
-            float x_offset = randBetween(0.f, 100.f);
-            g_blocks[i] = create_random_block(x_offset+last_x_offset);
-            last_x_offset += x_offset+g_blocks[i].width;
-        }
+    Rect window_dim = gPlatformAPI->getWindowDimensions();
+    if ( (g_first_block->x + g_first_block->width) < 0) {
+        Window * tmp_first_block = g_first_block;
+        g_block_count = (g_block_count+1) % MAX_BLOCKS;
+        g_first_block = &g_blocks[g_block_count];
+        float x_offset = randBetween(0.f, 100.f);
+        float last_block_x_plus_width = g_last_block->x+g_last_block->width;
+        g_last_block = tmp_first_block;
+        *g_last_block = create_random_block(last_block_x_plus_width + x_offset);
     }
     
     Window * block = g_blocks;
