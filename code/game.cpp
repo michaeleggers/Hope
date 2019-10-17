@@ -33,6 +33,9 @@ global_var Window * g_first_block;
 global_var Window * g_last_block;
 global_var int g_block_count;
 
+global_var Window g_player_block;
+global_var Window g_test_block;
+
 global_var int g_default_framebuffer;
 global_var int g_ui_framebuffer;
 
@@ -181,6 +184,11 @@ void game_init(PlatformAPI* platform_api, InputDevice* input_device, refexport_t
     }
     g_first_block = &g_blocks[0];
     g_last_block  = &g_blocks[MAX_BLOCKS-1];
+    
+    float player_block_width  = 20;
+    float player_block_height = 20;
+    g_player_block = { 100.f, g_first_block->y-player_block_height, player_block_width, player_block_height, 0, 0 };
+    g_test_block = { 500.f, 500.f, 100.f, 100.f, 0, 0 };
     
     // INIT HOPE UI
     gUiBinding.getWindowWidth = get_window_width;
@@ -366,10 +374,46 @@ void render_blocks()
 {
     Window * block = g_blocks;
     for (int i=0; i<MAX_BLOCKS; ++i) {
-        pushFilledRect(block->x, block->y, block->width, block->height, {1,0,0});
+        pushFilledRect(block->x, block->y, block->width, block->height, {0.3f, 0.f, 5.f});
         pushRect2D(block->x, block->y, block->x+block->width, block->y+block->height, {1,1,1}, 2.f);
         block++;
     }
+}
+
+int aabb_check(int x0, int y0, int width0, int height0, int x1, int y1, int width1, int height1);
+
+void render_player()
+{
+    Window * current_block = g_blocks;
+    int is_collision = 0;
+    for (int i=0; i<MAX_BLOCKS; ++i) {
+        int x0 = g_player_block.x;
+        int y0 = g_player_block.y;
+        int width0 = g_player_block.width;
+        int height0 = g_player_block.height;
+        int x1 = current_block->x;
+        int y1 = current_block->y;
+        int width1 = current_block->width;
+        int height1 = current_block->height;
+        if (aabb_check(x0, y0, width0, height0, x1, y1, width1, height1)) {
+            is_collision = 1;
+            break;
+        }
+        current_block++;
+    }
+    if (is_collision) {
+        pushFilledRect(g_player_block.x, g_player_block.y, g_player_block.width, g_player_block.height, {1.f, 0.f, 0.f});
+    }
+    else {
+        pushFilledRect(g_player_block.x, g_player_block.y, g_player_block.width, g_player_block.height, {3.f, 0.f, 5.f});
+    }
+}
+
+int aabb_check(int x0, int y0, int width0, int height0, int x1, int y1, int width1, int height1)
+{
+    if (x0+width0 > x1 && x0 < x1+width1 &&
+        y0+height0 > y1 && y0 < y1+height1) return 1;
+    return 0;
 }
 
 void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
@@ -494,6 +538,10 @@ void game_update_and_render(float dt, InputDevice* inputDevice, refexport_t* re)
     //pushFilledRect(300, 180, 20, 20, {0,1,0});
     reset_render_target(re);
     render_blocks();
+    g_player_block.x = get_mouse_x();
+    g_player_block.y = get_mouse_y();
+    pushFilledRect(g_test_block.x, g_test_block.y, g_test_block.width, g_test_block.height, {1.f, 1.f, 1.f});
+    render_player();
     
     Rect windowDimensions = gPlatformAPI->getWindowDimensions();
     hope_create_ortho_matrix(
