@@ -1,0 +1,384 @@
+{ "frames": [
+   {
+    "filename": "indy_animation_project 0.ase",
+    "frame": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 1.ase",
+    "frame": { "x": 44, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 2.ase",
+    "frame": { "x": 88, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 3.ase",
+    "frame": { "x": 132, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 4.ase",
+    "frame": { "x": 176, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 5.ase",
+    "frame": { "x": 220, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 6.ase",
+    "frame": { "x": 264, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 7.ase",
+    "frame": { "x": 308, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 8.ase",
+    "frame": { "x": 352, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 9.ase",
+    "frame": { "x": 396, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 10.ase",
+    "frame": { "x": 440, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 11.ase",
+    "frame": { "x": 0, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 12.ase",
+    "frame": { "x": 44, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 13.ase",
+    "frame": { "x": 88, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 14.ase",
+    "frame": { "x": 132, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 15.ase",
+    "frame": { "x": 176, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 16.ase",
+    "frame": { "x": 220, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 17.ase",
+    "frame": { "x": 264, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 18.ase",
+    "frame": { "x": 308, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 19.ase",
+    "frame": { "x": 352, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 20.ase",
+    "frame": { "x": 396, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 21.ase",
+    "frame": { "x": 440, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 22.ase",
+    "frame": { "x": 0, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 23.ase",
+    "frame": { "x": 44, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 24.ase",
+    "frame": { "x": 88, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 25.ase",
+    "frame": { "x": 132, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 26.ase",
+    "frame": { "x": 176, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 27.ase",
+    "frame": { "x": 220, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 28.ase",
+    "frame": { "x": 264, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 29.ase",
+    "frame": { "x": 308, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 30.ase",
+    "frame": { "x": 352, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 31.ase",
+    "frame": { "x": 396, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 32.ase",
+    "frame": { "x": 440, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 33.ase",
+    "frame": { "x": 0, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 34.ase",
+    "frame": { "x": 44, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 35.ase",
+    "frame": { "x": 88, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 36.ase",
+    "frame": { "x": 132, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 37.ase",
+    "frame": { "x": 176, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 38.ase",
+    "frame": { "x": 220, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "indy_animation_project 39.ase",
+    "frame": { "x": 264, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.1.12-dev",
+  "image": "C:\\repos\\Hope\\assets\\indy\\indy_animation_project.png",
+  "format": "RGBA8888",
+  "size": { "w": 512, "h": 256 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "walk_back", "from": 0, "to": 5, "direction": "forward" },
+   { "name": "walk_front", "from": 6, "to": 11, "direction": "forward" },
+   { "name": "walk_right", "from": 12, "to": 18, "direction": "forward" },
+   { "name": "fight_ready", "from": 25, "to": 25, "direction": "forward" },
+   { "name": "punch_high", "from": 26, "to": 26, "direction": "forward" },
+   { "name": "punch_mid", "from": 27, "to": 27, "direction": "forward" },
+   { "name": "punch_low", "from": 28, "to": 28, "direction": "forward" },
+   { "name": "fight_walk", "from": 30, "to": 31, "direction": "forward" },
+   { "name": "hit_high", "from": 32, "to": 32, "direction": "forward" },
+   { "name": "hit_mid", "from": 33, "to": 33, "direction": "forward" },
+   { "name": "ko", "from": 34, "to": 39, "direction": "forward" }
+  ]
+ }
+}

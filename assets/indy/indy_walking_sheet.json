@@ -1,0 +1,187 @@
+{ "frames": [
+   {
+    "filename": "costume 002 in room 068, frame 000 0.png",
+    "frame": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 1.png",
+    "frame": { "x": 44, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 2.png",
+    "frame": { "x": 88, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 3.png",
+    "frame": { "x": 132, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 4.png",
+    "frame": { "x": 176, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 5.png",
+    "frame": { "x": 0, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 6.png",
+    "frame": { "x": 44, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 7.png",
+    "frame": { "x": 88, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 8.png",
+    "frame": { "x": 132, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 9.png",
+    "frame": { "x": 176, "y": 63, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 10.png",
+    "frame": { "x": 0, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 11.png",
+    "frame": { "x": 44, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 12.png",
+    "frame": { "x": 88, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 13.png",
+    "frame": { "x": 132, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 14.png",
+    "frame": { "x": 176, "y": 126, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 15.png",
+    "frame": { "x": 0, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 16.png",
+    "frame": { "x": 44, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 17.png",
+    "frame": { "x": 88, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   },
+   {
+    "filename": "costume 002 in room 068, frame 000 18.png",
+    "frame": { "x": 132, "y": 189, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.1.12-dev",
+  "image": "C:\\repos\\Hope\\assets\\indy\\indy_walking_sheet.png",
+  "format": "RGBA8888",
+  "size": { "w": 256, "h": 256 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "walk_back", "from": 0, "to": 5, "direction": "forward" },
+   { "name": "walk_front", "from": 6, "to": 11, "direction": "forward" },
+   { "name": "walk_right", "from": 12, "to": 18, "direction": "forward" }
+  ]
+ }
+}

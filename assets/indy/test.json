@@ -1,0 +1,22 @@
+{ "frames": [
+   {
+    "filename": "costume 002 in room 068, frame 000 0.png",
+    "frame": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 44, "h": 63 },
+    "sourceSize": { "w": 44, "h": 63 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+   "app": "http://www.aseprite.org/",
+   "version": "1.1.12-dev",
+   "image": "C:\\repos\\Hope\\assets\\indy\\indy_walking.png",
+   "format": "RGBA8888",
+   "size": { "w": 256, "h": 256 },
+   "scale": "1"
+  }
+}
+
+
