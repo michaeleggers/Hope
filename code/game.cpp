@@ -386,11 +386,11 @@ void render_player()
 {
     Window * current_block = g_blocks;
     int is_collision = 0;
+    int x0 = g_player_block.x;
+    int y0 = g_player_block.y;
+    int width0 = g_player_block.width;
+    int height0 = g_player_block.height;
     for (int i=0; i<MAX_BLOCKS; ++i) {
-        int x0 = g_player_block.x;
-        int y0 = g_player_block.y;
-        int width0 = g_player_block.width;
-        int height0 = g_player_block.height;
         int x1 = current_block->x;
         int y1 = current_block->y;
         int width1 = current_block->width;
@@ -405,7 +405,7 @@ void render_player()
         pushFilledRect(g_player_block.x, g_player_block.y, g_player_block.width, g_player_block.height, {1.f, 0.f, 0.f});
     }
     else {
-        pushFilledRect(g_player_block.x, g_player_block.y, g_player_block.width, g_player_block.height, {3.f, 0.f, 5.f});
+        pushFilledRect(g_player_block.x, g_player_block.y, g_player_block.width, g_player_block.height, {0.f, 1.f, 0.f});
     }
 }
 
